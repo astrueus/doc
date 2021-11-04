@@ -1,18 +1,24 @@
 package routers
 
 import (
-	"encoding/json"
-	"net/url"
-	"regexp"
-
 	"github.com/beego/beego/v2/server/web"
-	"github.com/beego/beego/v2/server/web/context"
-	"github.com/mindoc-org/mindoc/conf"
-	"github.com/mindoc-org/mindoc/models"
+	"github.com/mindoc-org/mindoc/middleware"
 )
 
 func init() {
-	var FilterUser = func(ctx *context.Context) {
+
+	web.InsertFilter("/*", web.BeforeStatic, middleware.StartRouter, web.WithReturnOnOutput(false))
+	web.InsertFilter("/manager", web.BeforeRouter, middleware.FilterUser)
+	web.InsertFilter("/manager/*", web.BeforeRouter, middleware.FilterUser)
+	web.InsertFilter("/setting", web.BeforeRouter, middleware.FilterUser)
+	web.InsertFilter("/setting/*", web.BeforeRouter, middleware.FilterUser)
+	web.InsertFilter("/book", web.BeforeRouter, middleware.FilterUser)
+	web.InsertFilter("/book/*", web.BeforeRouter, middleware.FilterUser)
+	web.InsertFilter("/api/*", web.BeforeRouter, middleware.FilterUser)
+	web.InsertFilter("/manage/*", web.BeforeRouter, middleware.FilterUser)
+
+
+	/*var FilterUser = func(ctx *context.Context) {
 		_, ok := ctx.Input.Session(conf.LoginSessionName).(models.Member)
 
 		if !ok {
@@ -30,6 +36,7 @@ func init() {
 			}
 		}
 	}
+
 	web.InsertFilter("/manager", web.BeforeRouter, FilterUser)
 	web.InsertFilter("/manager/*", web.BeforeRouter, FilterUser)
 	web.InsertFilter("/setting", web.BeforeRouter, FilterUser)
@@ -56,5 +63,5 @@ func init() {
 		}
 	}
 	web.InsertFilter("/*", web.BeforeStatic, StartRouter, web.WithReturnOnOutput(false))
-	web.InsertFilter("/*", web.BeforeRouter, FinishRouter, web.WithReturnOnOutput(false))
+	web.InsertFilter("/*", web.BeforeRouter, FinishRouter, web.WithReturnOnOutput(false))*/
 }

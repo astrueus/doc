@@ -1,3 +1,4 @@
+/*
 !function (window, document) {
     function d(a) {
         var e, c = document.createElement("iframe"),
@@ -15,4 +16,4 @@
             e.appendChild(c)
     }
     window.DDLogin = d
-}(window, document);
+}(window, document);*/
