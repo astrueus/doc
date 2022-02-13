@@ -1,8 +1,14 @@
 package routers
 
 import (
+	"encoding/json"
 	"github.com/beego/beego/v2/server/web"
+	"github.com/beego/beego/v2/server/web/context"
+	"github.com/mindoc-org/mindoc/conf"
 	"github.com/mindoc-org/mindoc/middleware"
+	"github.com/mindoc-org/mindoc/models"
+	"net/url"
+	"regexp"
 )
 
 func init() {
@@ -17,8 +23,7 @@ func init() {
 	web.InsertFilter("/api/*", web.BeforeRouter, middleware.FilterUser)
 	web.InsertFilter("/manage/*", web.BeforeRouter, middleware.FilterUser)
 
-
-	/*var FilterUser = func(ctx *context.Context) {
+	var FilterUser = func(ctx *context.Context) {
 		_, ok := ctx.Input.Session(conf.LoginSessionName).(models.Member)
 
 		if !ok {
@@ -63,5 +68,5 @@ func init() {
 		}
 	}
 	web.InsertFilter("/*", web.BeforeStatic, StartRouter, web.WithReturnOnOutput(false))
-	web.InsertFilter("/*", web.BeforeRouter, FinishRouter, web.WithReturnOnOutput(false))*/
+	web.InsertFilter("/*", web.BeforeRouter, FinishRouter, web.WithReturnOnOutput(false))
 }
