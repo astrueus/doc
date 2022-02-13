@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>{{i18n .Lang "doc.edit_doc"}} - Powered by MinDoc</title>
+    <title>{{i18n .Lang "doc.edit_doc"}} - {{.site_title_suffix}}</title>
     <script type="text/javascript">
         window.editor = null;
         window.imageUploadURL = "{{urlfor "DocumentController.Upload" "identify" .Model.Identify}}";

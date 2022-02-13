@@ -1,7 +1,7 @@
 <div class="footer">
     <div class="container">
         <div class="row text-center border-top">
-            <span><a href="https://www.iminho.me" target="_blank">{{i18n .Lang "common.official_website"}}</a></span>
+            <span><a href="https://www.admincms.top" target="_blank">{{i18n .Lang "common.official_website"}}</a></span>
             <span>&nbsp;·&nbsp;</span>
             <span><a href="https://github.com/mindoc-org/mindoc/issues" target="_blank">{{i18n .Lang "common.feedback"}}</a></span>
             <span>&nbsp;·&nbsp;</span>
