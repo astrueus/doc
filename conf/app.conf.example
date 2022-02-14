@@ -1,3 +1,4 @@
+
 appname = mindoc
 
 #默认监听的网卡,为空则监听所有
@@ -8,6 +9,15 @@ sessionon = true
 sessionname = mindoc_id
 copyrequestbody = true
 enablexsrf = "${MINDOC_ENABLE_XSRF||false}"
+
+# https 配置
+EnableHTTPS = true
+HTTPSAddr = ""
+HTTPSPort = 10443
+HTTPSCertFile = "conf/ssl.crt"
+HTTPSKeyFile = "conf/ssl.key"
+
+#autorender = false
 
 #系统完整URL(http://doc.iminho.me),如果该项不设置，会从请求头中获取地址。
 baseurl="${MINDOC_BASE_URL}"
@@ -53,12 +63,12 @@ timezone = Asia/Shanghai
 
 ####################MySQL 数据库配置###########################
 #支持MySQL和sqlite3两种数据库，如果是sqlite3 则 db_database 标识数据库的物理目录
-db_adapter="${MINDOC_DB_ADAPTER||sqlite3}"
+db_adapter="${MINDOC_DB_ADAPTER||mysql}"
 db_host="${MINDOC_DB_HOST||127.0.0.1}"
 db_port="${MINDOC_DB_PORT||3306}"
-db_database="${MINDOC_DB_DATABASE||./database/mindoc.db}"
+db_database="${MINDOC_DB_DATABASE||mindoc}"
 db_username="${MINDOC_DB_USERNAME||root}"
-db_password="${MINDOC_DB_PASSWORD||123456}"
+db_password="${MINDOC_DB_PASSWORD||liu123456}"
 
 ####################sqlite3 数据库配置###########################
 #db_adapter=sqlite3
