@@ -30,4 +30,4 @@ database
 /conf/app.conf
 /vendor
 /runtime
-/uploads
+/uploads/*
