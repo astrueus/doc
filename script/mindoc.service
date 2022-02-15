@@ -14,8 +14,8 @@ After=mysqld.service
 Type=simple
 User=www
 Group=www
-WorkingDirectory=/usr/local/mindoc
-ExecStart=/usr/local/mindoc/mindoc_linux_amd64
+WorkingDirectory=/data/wwwroot/doc.itopcms.com
+ExecStart=/data/wwwroot/doc.itopcms.com/doc
 Restart=always
 Environment=USER=www HOME=/home/www
 
