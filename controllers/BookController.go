@@ -126,7 +126,7 @@ func (c *BookController) Setting() {
 
 }
 
-//保存项目信息
+// SaveBook 保存项目信息
 func (c *BookController) SaveBook() {
 	bookResult, err := c.IsPermission()
 
@@ -216,7 +216,7 @@ func (c *BookController) SaveBook() {
 	c.JsonResult(0, "ok", bookResult)
 }
 
-//设置项目私有状态.
+// PrivatelyOwned 设置项目私有状态.
 func (c *BookController) PrivatelyOwned() {
 
 	status := c.GetString("status")
@@ -296,7 +296,7 @@ func (c *BookController) Transfer() {
 	c.JsonResult(0, "ok")
 }
 
-//上传项目封面.
+// UploadCover 上传项目封面.
 func (c *BookController) UploadCover() {
 
 	bookResult, err := c.IsPermission()
