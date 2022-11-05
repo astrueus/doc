@@ -26,7 +26,7 @@ func (c *HomeController) Index() {
 	c.TplName = "home/index.tpl"
 
 	pageIndex, _ := c.GetInt("page", 1)
-	pageSize := 18
+	pageSize := 30
 	memberId := 0
 	if c.Member != nil {
 		memberId = c.Member.MemberId
