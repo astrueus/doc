@@ -62,7 +62,7 @@
             </div>
             <div class="m-copyright">
                 <p>
-                    本文档使用 <a href="https://www.admincms.top" target="_blank">TopDoc</a> 发布
+                    本文档使用 <a href="https://doc.itopcms.com" target="_blank">TopDoc</a> 发布
                 </p>
             </div>
         </div>

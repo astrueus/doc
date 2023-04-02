@@ -8,9 +8,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="renderer" content="webkit">
-    <meta name="author" content="Minho" />
-    <meta name="site" content="https://www.iminho.me" />
-    <meta name="keywords" content="MinDoc,文档在线管理系统,WIKI,wiki,wiki在线,文档在线管理,接口文档在线管理,接口文档管理,{{.Model.BookName}},{{.Title}}">
+    <meta name="author" content="Joker.Liu" />
+    <meta name="site" content="https://doc.itopcms.com" />
+    <meta name="keywords" content="TopDoc,文档在线管理系统,WIKI,wiki,wiki在线,文档在线管理,接口文档在线管理,接口文档管理,{{.Model.BookName}},{{.Title}}">
     <meta name="description" content="{{.Title}}-{{if .Description}}{{.Description}}{{else}}{{.Model.Description}}{{end}}">
 
     <!-- Bootstrap -->
@@ -147,7 +147,7 @@
             <div class="m-copyright">
                 <p>
                     <div id="view_count">{{i18n .Lang "doc.view_count"}}：{{.ViewCount}}</div>
-                    {{i18n $.Lang "doc.doc_publish_by"}} <a href="https://www.iminho.me" target="_blank">MinDoc</a> {{i18n $.Lang "doc.doc_publish"}}
+                    {{i18n $.Lang "doc.doc_publish_by"}} <a href="https://doc.itopcms.com" target="_blank">TopDoc</a> {{i18n $.Lang "doc.doc_publish"}}
                 </p>
             </div>
         </div>
