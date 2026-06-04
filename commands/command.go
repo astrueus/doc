@@ -18,13 +18,12 @@ import (
 
 	beegoCache "github.com/beego/beego/v2/client/cache"
 	_ "github.com/beego/beego/v2/client/cache/memcache"
-	"github.com/beego/beego/v2/client/cache/redis"
 	_ "github.com/beego/beego/v2/client/cache/redis"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
 	"github.com/beego/i18n"
-	"github.com/howeyc/fsnotify"
+	"github.com/fsnotify/fsnotify"
 	"github.com/lifei6671/gocaptcha"
 	"github.com/mindoc-org/mindoc/cache"
 	"github.com/mindoc-org/mindoc/conf"
@@ -392,17 +391,17 @@ func RegisterCache() {
 		beegoCache.DefaultEvery = cacheInterval
 		cache.Init(memory)
 	} else if cacheProvider == "redis" {
-		//设置Redis前缀
-		if key := web.AppConfig.DefaultString("cache_redis_prefix", ""); key != "" {
-			redis.DefaultKey = key
-		}
 		var redisConfig struct {
 			Conn     string `json:"conn"`
 			Password string `json:"password"`
 			DbNum    string `json:"dbNum"`
+			Key      string `json:"key"`
 		}
 		redisConfig.DbNum = "0"
 		redisConfig.Conn = web.AppConfig.DefaultString("cache_redis_host", "")
+		if key := web.AppConfig.DefaultString("cache_redis_prefix", ""); key != "" {
+			redisConfig.Key = key
+		}
 		if pwd := web.AppConfig.DefaultString("cache_redis_password", ""); pwd != "" {
 			redisConfig.Password = pwd
 		}
@@ -464,9 +463,12 @@ func RegisterAutoLoadConfig() {
 		go func() {
 			for {
 				select {
-				case ev := <-watcher.Event:
+				case ev, ok := <-watcher.Events:
+					if !ok {
+						return
+					}
 					//如果是修改了配置文件
-					if ev.IsModify() {
+					if ev.Op&fsnotify.Write == fsnotify.Write || ev.Op&fsnotify.Create == fsnotify.Create {
 						if err := web.LoadAppConfig("ini", conf.ConfigurationFile); err != nil {
 							logs.Error("An error occurred ->", err)
 							continue
@@ -474,18 +476,21 @@ func RegisterAutoLoadConfig() {
 						RegisterCache()
 						RegisterLogger("")
 						logs.Info("配置文件已加载 ->", conf.ConfigurationFile)
-					} else if ev.IsRename() {
-						_ = watcher.WatchFlags(conf.ConfigurationFile, fsnotify.FSN_MODIFY|fsnotify.FSN_RENAME)
+					} else if ev.Op&fsnotify.Rename == fsnotify.Rename {
+						_ = watcher.Add(conf.ConfigurationFile)
 					}
 					logs.Info(ev.String())
-				case err := <-watcher.Error:
+				case err, ok := <-watcher.Errors:
+					if !ok {
+						return
+					}
 					logs.Error("配置文件监控器错误 ->", err)
 
 				}
 			}
 		}()
 
-		err = watcher.WatchFlags(conf.ConfigurationFile, fsnotify.FSN_MODIFY|fsnotify.FSN_RENAME)
+		err = watcher.Add(conf.ConfigurationFile)
 
 		if err != nil {
 			logs.Error("监控配置文件失败 ->", err)

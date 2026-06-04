@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/beego/beego/v2/core/logs"
-	"gopkg.in/ldap.v2"
+	"github.com/go-ldap/ldap/v3"
 )
 
 /*
@@ -75,7 +75,7 @@ func AddMember(account, password string) error {
 	defer lc.Close()
 	user := fmt.Sprintf("cn=%s,dc=minho,dc=com", account)
 
-	member := ldap.NewAddRequest(user)
+	member := ldap.NewAddRequest(user, nil)
 
 	member.Attribute("mail", []string{"longfei6671@163.com"})
 
@@ -83,7 +83,7 @@ func AddMember(account, password string) error {
 
 	if err == nil {
 
-		err = lc.Bind(user, "")
+		err = lc.UnauthenticatedBind(user)
 		if err != nil {
 			logs.Error("Bind => ", err)
 			return err

@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"gopkg.in/ldap.v2"
+	"github.com/go-ldap/ldap/v3"
 
 	"math"
 
@@ -159,6 +159,9 @@ func (m *Member) ldapLogin(account string, password string) (*Member, error) {
 		return m, ErrLDAPUserNotFoundOrTooMany
 	}
 	userdn := searchResult.Entries[0].DN
+	if strings.TrimSpace(password) == "" {
+		return m, ErrorMemberPasswordError
+	}
 	err = lc.Bind(userdn, password)
 	if err != nil {
 		logs.Error("绑定 LDAP 用户失败 ->", err)
