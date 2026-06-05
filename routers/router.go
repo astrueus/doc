@@ -1,8 +1,8 @@
-package routers
+﻿package routers
 
 import (
 	"github.com/beego/beego/v2/server/web"
-	"github.com/mindoc-org/mindoc/controllers"
+	"git.itopcms.com/jackliu/doc/controllers"
 )
 
 func init() {

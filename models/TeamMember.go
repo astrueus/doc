@@ -1,4 +1,4 @@
-package models
+﻿package models
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/i18n"
-	"github.com/mindoc-org/mindoc/conf"
+	"git.itopcms.com/jackliu/doc/conf"
 )
 
 type TeamMember struct {

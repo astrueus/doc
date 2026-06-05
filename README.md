@@ -24,21 +24,21 @@ MinDoc 的前身是 [SmartWiki](https://github.com/lifei6671/SmartWiki) 文档�
 
 更多信息请查看手册： [MinDoc 使用手册](https://www.iminho.me/wiki/docs/mindoc/mindoc-summary.md)
 
-对于没有Golang使用经验的用户，可以从 [https://github.com/mindoc-org/mindoc/releases](https://github.com/mindoc-org/mindoc/releases) 这里下载编译完的程序。
+对于没有Golang使用经验的用户，可以从内部发布渠道下载编译完的程序。
 
 如果有Golang开发经验，建议通过编译安装，要求golang版本不小于1.25.0(需支持`CGO`和`go mod`)。
 
 ```bash
 # 克隆源码
-git clone https://github.com/mindoc-org/mindoc.git
+git clone https://git.itopcms.com/jackliu/doc.git
 # go包安装
 go mod tidy
 # 编译(sqlite需要CGO支持)
-go build -ldflags "-w"
+go build -ldflags "-w" -o doc
 # 数据库初始化(此步骤执行之前，需配置`conf/app.conf`)
-./mindoc install
+./doc install
 # 执行
-./mindoc
+./doc
 ```
 
 MinDoc 如果使用MySQL储存数据，则编码必须是`utf8mb4_general_ci`。请在安装前，把数据库配置填充到项目目录下的 `conf/app.conf` 中。

@@ -1,4 +1,4 @@
-package utils
+﻿package utils
 
 import (
 	"bytes"
@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/mindoc-org/mindoc/conf"
+	"git.itopcms.com/jackliu/doc/conf"
 )
 
 func StripTags(s string) string  {

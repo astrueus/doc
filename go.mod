@@ -1,4 +1,4 @@
-module github.com/mindoc-org/mindoc
+module git.itopcms.com/jackliu/doc
 
 go 1.25.0
 

@@ -9,25 +9,24 @@ ENV CGO_ENABLED=1
 ENV GOARCH=amd64
 ENV GOOS=linux
 
-# 工作目录
-ADD . /go/src/github.com/mindoc-org/mindoc
-WORKDIR /go/src/github.com/mindoc-org/mindoc
+WORKDIR /app
+COPY . .
 
 # 编译
 RUN go env
 RUN go mod tidy -v
-RUN go build -o mindoc_linux_amd64 -ldflags "-w -s -X 'github.com/mindoc-org/mindoc/conf.VERSION=$TAG' -X 'github.com/mindoc-org/mindoc/conf.BUILD_TIME=`date`' -X 'github.com/mindoc-org/mindoc/conf.GO_VERSION=`go version`'"
+RUN go build -o doc_linux_amd64 -ldflags "-w -s -X 'git.itopcms.com/jackliu/doc/conf.VERSION=$TAG' -X 'git.itopcms.com/jackliu/doc/conf.BUILD_TIME=`date`' -X 'git.itopcms.com/jackliu/doc/conf.GO_VERSION=`go version`'"
 RUN cp conf/app.conf.example conf/app.conf
 # 清理不需要的文件
 RUN rm appveyor.yml docker-compose.yml Dockerfile .travis.yml .gitattributes .gitignore go.mod go.sum main.go README.md simsun.ttc start.sh conf/*.go
 RUN rm -rf cache commands controllers converter .git .github graphics mail models routers utils
 
-# 测试编译的mindoc是否ok
-RUN ./mindoc_linux_amd64 version
+# 测试编译的 doc 是否 ok
+RUN ./doc_linux_amd64 version
 
 # 必要的文件复制
 ADD simsun.ttc /usr/share/fonts/win/
-ADD start.sh /go/src/github.com/mindoc-org/mindoc
+ADD start.sh /app
 
 
 # Ubuntu 20.04
@@ -37,8 +36,8 @@ FROM ubuntu:focal
 SHELL ["/bin/bash", "-c"]
 
 COPY --from=build /usr/share/fonts/win/simsun.ttc /usr/share/fonts/win/
-COPY --from=build /go/src/github.com/mindoc-org/mindoc /mindoc
-WORKDIR /mindoc
+COPY --from=build /app /doc
+WORKDIR /doc
 RUN chmod a+r /usr/share/fonts/win/simsun.ttc
 
 # 备份原有源
@@ -114,22 +113,22 @@ RUN rm -rf /tmp/calibre-cache
 
 # refer: https://docs.docker.com/engine/reference/builder/#volume
 # 数据同步目录
-VOLUME /mindoc-sync-host
+VOLUME /doc-sync-host
 
 # refer: https://docs.docker.com/engine/reference/builder/#expose
 EXPOSE 8181/tcp
 
 # 如果配置文件不存在就复制
-RUN cp --no-clobber /mindoc/conf/app.conf.example /mindoc/conf/app.conf
+RUN cp --no-clobber /doc/conf/app.conf.example /doc/conf/app.conf
 
-ENV ZONEINFO=/mindoc/lib/time/zoneinfo.zip
-RUN chmod +x /mindoc/start.sh
+ENV ZONEINFO=/doc/lib/time/zoneinfo.zip
+RUN chmod +x /doc/start.sh
 
-ENTRYPOINT ["/bin/bash", "/mindoc/start.sh"]
+ENTRYPOINT ["/bin/bash", "/doc/start.sh"]
 
 # https://docs.docker.com/engine/reference/commandline/build/#options
-# docker build --progress plain --rm --build-arg TAG=2.0.1 --tag gsw945/mindoc:2.0.1 .
+# docker build --progress plain --rm --build-arg TAG=0.0.1 --tag doc:latest .
 # https://docs.docker.com/engine/reference/commandline/run/#options
-# set MINDOC=//d/mindoc # windows
-# export MINDOC=/home/ubuntu/mindoc-docker # linux
-# docker run --rm -it  -p 8181:8181 -v "%MINDOC%":"/mindoc-sync-host" --name mindoc -e MINDOC_ENABLE_EXPORT=true -d gsw945/mindoc:2.0.1
+# set DOC=//d/doc # windows
+# export DOC=/home/ubuntu/doc-docker # linux
+# docker run --rm -it -p 8181:8181 -v "%DOC%":"/doc-sync-host" --name doc -e MINDOC_ENABLE_EXPORT=true -d doc:latest

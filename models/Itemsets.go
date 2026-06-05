@@ -1,4 +1,4 @@
-package models
+﻿package models
 
 import (
 	"errors"
@@ -7,9 +7,9 @@ import (
 
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
-	"github.com/mindoc-org/mindoc/conf"
-	"github.com/mindoc-org/mindoc/utils"
-	"github.com/mindoc-org/mindoc/utils/cryptil"
+	"git.itopcms.com/jackliu/doc/conf"
+	"git.itopcms.com/jackliu/doc/utils"
+	"git.itopcms.com/jackliu/doc/utils/cryptil"
 )
 
 //项目空间

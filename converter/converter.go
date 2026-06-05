@@ -1,4 +1,4 @@
-//Author:TruthHun
+﻿//Author:TruthHun
 //Email:TruthHun@QQ.COM
 //Date:2018-01-21
 package converter
@@ -17,9 +17,9 @@ import (
 	"html"
 	"sync"
 
-	"github.com/mindoc-org/mindoc/utils/cryptil"
-	"github.com/mindoc-org/mindoc/utils/filetil"
-	"github.com/mindoc-org/mindoc/utils/ziptil"
+	"git.itopcms.com/jackliu/doc/utils/cryptil"
+	"git.itopcms.com/jackliu/doc/utils/filetil"
+	"git.itopcms.com/jackliu/doc/utils/ziptil"
 )
 
 type Converter struct {

@@ -1,4 +1,4 @@
-package commands
+﻿package commands
 
 import (
 	"errors"
@@ -12,9 +12,9 @@ import (
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
 	"github.com/beego/i18n"
-	"github.com/mindoc-org/mindoc/conf"
-	"github.com/mindoc-org/mindoc/models"
-	"github.com/mindoc-org/mindoc/utils"
+	"git.itopcms.com/jackliu/doc/conf"
+	"git.itopcms.com/jackliu/doc/models"
+	"git.itopcms.com/jackliu/doc/utils"
 )
 
 //系统安装.
@@ -46,7 +46,7 @@ func ModifyPassword() {
 
 	//账号和密码需要解析参数后才能获取
 	if len(os.Args) >= 2 && os.Args[1] == "password" {
-		flagSet := flag.NewFlagSet("MinDoc command: ", flag.ExitOnError)
+		flagSet := flag.NewFlagSet("Doc command: ", flag.ExitOnError)
 
 		flagSet.StringVar(&account, "account", "", "用户账号.")
 		flagSet.StringVar(&password, "password", "", "用户密码.")

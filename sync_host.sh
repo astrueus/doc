@@ -11,8 +11,8 @@ fi
 export MINDOC_SYNC="${MINDOC_SYNC:=}"
 export SYNC_LIST="${SYNC_LIST:=}"
 export SYNC_ACTION="${SYNC_ACTION:=sync --dry-run}"
-export HOST_DIR=/mindoc-sync-host
-export DOCKER_DIR=/mindoc
+export HOST_DIR=/doc-sync-host
+export DOCKER_DIR=/doc
 
 function doSyncCopy() {
     if [ -d "${1}" ] 

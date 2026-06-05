@@ -4,7 +4,7 @@ branches:
   - master
 image: Visual Studio 2015
 stack: go 1.25
-clone_folder: c:\gopath\src\github.com\mindoc-org\mindoc
+clone_folder: c:\gopath\src\git.itopcms.com\jackliu\doc
 init:
 - cmd: >-
     if [%tbs_arch%]==[x86] SET PATH=C:\MinGW\bin;%PATH%
@@ -30,14 +30,14 @@ install:
     where g++
 build_script:
 - cmd: >-
-    cd c:\gopath\src\github.com\mindoc-org\mindoc
+    cd c:\gopath\src\git.itopcms.com\jackliu\doc
     go mod tidy
     go build -ldflags "-w"
-    go build -v -o "mindoc_windows_%GOARCH%.exe" -ldflags="-w -X github.com/mindoc-org/mindoc/conf.VERSION=%APPVEYOR_REPO_TAG_NAME% -X 'github.com/mindoc-org/mindoc/conf.BUILD_TIME=%date% %time%' -X 'github.com/mindoc-org/mindoc/conf.GO_VERSION=%GO_VERSION%'"
-    7z a -t7z -r mindoc_windows_%GOARCH%.7z conf/*.conf* static/* mindoc_windows_%GOARCH%.exe views/* uploads/*
+    go build -v -o "doc_windows_%GOARCH%.exe" -ldflags="-w -X git.itopcms.com/jackliu/doc/conf.VERSION=%APPVEYOR_REPO_TAG_NAME% -X 'git.itopcms.com/jackliu/doc/conf.BUILD_TIME=%date% %time%' -X 'git.itopcms.com/jackliu/doc/conf.GO_VERSION=%GO_VERSION%'"
+    7z a -t7z -r doc_windows_%GOARCH%.7z conf/*.conf* static/* doc_windows_%GOARCH%.exe views/* uploads/*
 test_script:
 - cmd: >-
-    cd c:\gopath\src\github.com\mindoc-org\mindoc
+    cd c:\gopath\src\git.itopcms.com\jackliu\doc
     xcopy conf\app.conf.example conf\app.conf /F /Y
-    mindoc_windows_%GOARCH%.exe version
+    doc_windows_%GOARCH%.exe version
 deploy: off

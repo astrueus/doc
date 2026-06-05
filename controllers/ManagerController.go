@@ -1,4 +1,4 @@
-package controllers
+﻿package controllers
 
 import (
 	"encoding/json"
@@ -17,11 +17,11 @@ import (
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
 	"github.com/beego/i18n"
-	"github.com/mindoc-org/mindoc/conf"
-	"github.com/mindoc-org/mindoc/models"
-	"github.com/mindoc-org/mindoc/utils"
-	"github.com/mindoc-org/mindoc/utils/filetil"
-	"github.com/mindoc-org/mindoc/utils/pagination"
+	"git.itopcms.com/jackliu/doc/conf"
+	"git.itopcms.com/jackliu/doc/models"
+	"git.itopcms.com/jackliu/doc/utils"
+	"git.itopcms.com/jackliu/doc/utils/filetil"
+	"git.itopcms.com/jackliu/doc/utils/pagination"
 	"github.com/russross/blackfriday/v2"
 )
 

@@ -1,4 +1,4 @@
-package controllers
+﻿package controllers
 
 import (
 	"bytes"
@@ -14,9 +14,9 @@ import (
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
 	"github.com/beego/i18n"
-	"github.com/mindoc-org/mindoc/conf"
-	"github.com/mindoc-org/mindoc/models"
-	"github.com/mindoc-org/mindoc/utils"
+	"git.itopcms.com/jackliu/doc/conf"
+	"git.itopcms.com/jackliu/doc/models"
+	"git.itopcms.com/jackliu/doc/utils"
 )
 
 type BaseController struct {

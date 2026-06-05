@@ -1,4 +1,4 @@
-package daemon
+﻿package daemon
 
 import (
 	"fmt"
@@ -9,9 +9,9 @@ import (
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
 	"github.com/kardianos/service"
-	"github.com/mindoc-org/mindoc/commands"
-	"github.com/mindoc-org/mindoc/conf"
-	"github.com/mindoc-org/mindoc/controllers"
+	"git.itopcms.com/jackliu/doc/commands"
+	"git.itopcms.com/jackliu/doc/conf"
+	"git.itopcms.com/jackliu/doc/controllers"
 )
 
 type Daemon struct {
@@ -22,8 +22,8 @@ type Daemon struct {
 func NewDaemon() *Daemon {
 
 	config := &service.Config{
-		Name:             "mindocd",                               //服务显示名称
-		DisplayName:      "MinDoc service",                        //服务名称
+		Name:             "docd",                                  //服务显示名称
+		DisplayName:      "Doc service",                           //服务名称
 		Description:      "A document online management program.", //服务描述
 		WorkingDirectory: conf.WorkingDirectory,
 		Arguments:        os.Args[1:],
@@ -62,7 +62,7 @@ func (d *Daemon) Run() {
 		f = os.Args[0]
 	}
 
-	fmt.Printf("MinDoc version => %s\nbuild time => %s\nstart directory => %s\n%s\n", conf.VERSION, conf.BUILD_TIME, f, conf.GO_VERSION)
+	fmt.Printf("Doc version => %s\nbuild time => %s\nstart directory => %s\n%s\n", conf.VERSION, conf.BUILD_TIME, f, conf.GO_VERSION)
 
 	web.Run()
 }

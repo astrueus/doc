@@ -1,4 +1,4 @@
-package commands
+﻿package commands
 
 import (
 	"encoding/gob"
@@ -25,10 +25,10 @@ import (
 	"github.com/beego/i18n"
 	"github.com/fsnotify/fsnotify"
 	"github.com/lifei6671/gocaptcha"
-	"github.com/mindoc-org/mindoc/cache"
-	"github.com/mindoc-org/mindoc/conf"
-	"github.com/mindoc-org/mindoc/models"
-	"github.com/mindoc-org/mindoc/utils/filetil"
+	"git.itopcms.com/jackliu/doc/cache"
+	"git.itopcms.com/jackliu/doc/conf"
+	"git.itopcms.com/jackliu/doc/models"
+	"git.itopcms.com/jackliu/doc/utils/filetil"
 )
 
 // RegisterDataBase 注册数据库
@@ -286,10 +286,10 @@ func RegisterFunction() {
 
 // 解析命令
 func ResolveCommand(args []string) {
-	flagSet := flag.NewFlagSet("MinDoc command: ", flag.ExitOnError)
-	flagSet.StringVar(&conf.ConfigurationFile, "config", "", "MinDoc configuration file.")
-	flagSet.StringVar(&conf.WorkingDirectory, "dir", "", "MinDoc working directory.")
-	flagSet.StringVar(&conf.LogFile, "log", "", "MinDoc log file path.")
+	flagSet := flag.NewFlagSet("Doc command: ", flag.ExitOnError)
+	flagSet.StringVar(&conf.ConfigurationFile, "config", "", "Doc configuration file.")
+	flagSet.StringVar(&conf.WorkingDirectory, "dir", "", "Doc working directory.")
+	flagSet.StringVar(&conf.LogFile, "log", "", "Doc log file path.")
 
 	if err := flagSet.Parse(args); err != nil {
 		log.Fatal("解析命令失败 ->", err)

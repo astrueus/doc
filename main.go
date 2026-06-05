@@ -1,4 +1,4 @@
-package main
+﻿package main
 
 import (
 	"fmt"
@@ -10,9 +10,9 @@ import (
 	_ "github.com/beego/beego/v2/server/web/session/redis"
 	"github.com/kardianos/service"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/mindoc-org/mindoc/commands"
-	"github.com/mindoc-org/mindoc/commands/daemon"
-	_ "github.com/mindoc-org/mindoc/routers"
+	"git.itopcms.com/jackliu/doc/commands"
+	"git.itopcms.com/jackliu/doc/commands/daemon"
+	_ "git.itopcms.com/jackliu/doc/routers"
 )
 
 func main() {

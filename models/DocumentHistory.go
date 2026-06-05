@@ -1,11 +1,11 @@
-package models
+﻿package models
 
 import (
 	"time"
 
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
-	"github.com/mindoc-org/mindoc/conf"
+	"git.itopcms.com/jackliu/doc/conf"
 )
 
 type DocumentHistory struct {

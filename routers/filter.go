@@ -1,12 +1,12 @@
-package routers
+﻿package routers
 
 import (
 	"encoding/json"
 	"github.com/beego/beego/v2/server/web"
 	"github.com/beego/beego/v2/server/web/context"
-	"github.com/mindoc-org/mindoc/conf"
-	"github.com/mindoc-org/mindoc/middleware"
-	"github.com/mindoc-org/mindoc/models"
+	"git.itopcms.com/jackliu/doc/conf"
+	"git.itopcms.com/jackliu/doc/middleware"
+	"git.itopcms.com/jackliu/doc/models"
 	"net/url"
 	"regexp"
 )

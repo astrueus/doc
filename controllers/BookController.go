@@ -1,4 +1,4 @@
-package controllers
+﻿package controllers
 
 import (
 	"context"
@@ -14,17 +14,17 @@ import (
 	"time"
 
 	"github.com/beego/i18n"
-	"github.com/mindoc-org/mindoc/utils/sqltil"
+	"git.itopcms.com/jackliu/doc/utils/sqltil"
 
 	"net/http"
 
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
-	"github.com/mindoc-org/mindoc/conf"
-	"github.com/mindoc-org/mindoc/graphics"
-	"github.com/mindoc-org/mindoc/models"
-	"github.com/mindoc-org/mindoc/utils"
-	"github.com/mindoc-org/mindoc/utils/pagination"
+	"git.itopcms.com/jackliu/doc/conf"
+	"git.itopcms.com/jackliu/doc/graphics"
+	"git.itopcms.com/jackliu/doc/models"
+	"git.itopcms.com/jackliu/doc/utils"
+	"git.itopcms.com/jackliu/doc/utils/pagination"
 	"github.com/russross/blackfriday/v2"
 )
 

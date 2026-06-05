@@ -1,4 +1,4 @@
-package models
+﻿package models
 
 import (
 	"time"
@@ -17,9 +17,9 @@ import (
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
-	"github.com/mindoc-org/mindoc/cache"
-	"github.com/mindoc-org/mindoc/conf"
-	"github.com/mindoc-org/mindoc/utils"
+	"git.itopcms.com/jackliu/doc/cache"
+	"git.itopcms.com/jackliu/doc/conf"
+	"git.itopcms.com/jackliu/doc/utils"
 )
 
 // Document struct.

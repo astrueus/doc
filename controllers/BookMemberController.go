@@ -1,4 +1,4 @@
-package controllers
+﻿package controllers
 
 import (
 	"errors"
@@ -6,8 +6,8 @@ import (
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/i18n"
-	"github.com/mindoc-org/mindoc/conf"
-	"github.com/mindoc-org/mindoc/models"
+	"git.itopcms.com/jackliu/doc/conf"
+	"git.itopcms.com/jackliu/doc/models"
 )
 
 type BookMemberController struct {

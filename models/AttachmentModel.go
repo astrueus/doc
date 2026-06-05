@@ -1,4 +1,4 @@
-//数据库模型.
+﻿//数据库模型.
 package models
 
 import (
@@ -10,8 +10,8 @@ import (
 
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
-	"github.com/mindoc-org/mindoc/conf"
-	"github.com/mindoc-org/mindoc/utils/filetil"
+	"git.itopcms.com/jackliu/doc/conf"
+	"git.itopcms.com/jackliu/doc/utils/filetil"
 )
 
 // Attachment struct .

@@ -1,4 +1,4 @@
-package models
+﻿package models
 
 import (
 	"context"
@@ -20,12 +20,12 @@ import (
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/i18n"
-	"github.com/mindoc-org/mindoc/conf"
-	"github.com/mindoc-org/mindoc/utils"
-	"github.com/mindoc-org/mindoc/utils/cryptil"
-	"github.com/mindoc-org/mindoc/utils/filetil"
-	"github.com/mindoc-org/mindoc/utils/requests"
-	"github.com/mindoc-org/mindoc/utils/ziptil"
+	"git.itopcms.com/jackliu/doc/conf"
+	"git.itopcms.com/jackliu/doc/utils"
+	"git.itopcms.com/jackliu/doc/utils/cryptil"
+	"git.itopcms.com/jackliu/doc/utils/filetil"
+	"git.itopcms.com/jackliu/doc/utils/requests"
+	"git.itopcms.com/jackliu/doc/utils/ziptil"
 	"github.com/russross/blackfriday/v2"
 )
 

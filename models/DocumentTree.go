@@ -1,4 +1,4 @@
-package models
+﻿package models
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"math"
 
 	"github.com/beego/beego/v2/client/orm"
-	"github.com/mindoc-org/mindoc/conf"
+	"git.itopcms.com/jackliu/doc/conf"
 )
 
 type DocumentTree struct {

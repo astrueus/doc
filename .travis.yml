@@ -19,20 +19,20 @@ before_install:
   - go env
 
 script:
-  - go build -o mindoc_linux_amd64 -ldflags "-w"
+  - go build -o doc_linux_amd64 -ldflags "-w"
   - cp conf/app.conf.example conf/app.conf
-  - ./mindoc_linux_amd64 version
+  - ./doc_linux_amd64 version
   - rm conf/app.conf
 
 before_deploy:
-  - go mod tidy -v && GOARCH=amd64 GOOS=linux go build -o mindoc_linux_amd64 -ldflags="-w -X 'github.com/mindoc-org/mindoc/conf.VERSION=$TRAVIS_TAG' -X 'github.com/mindoc-org/mindoc/conf.BUILD_TIME=`date`' -X 'github.com/mindoc-org/mindoc/conf.GO_VERSION=`go version`'"
+  - go mod tidy -v && GOARCH=amd64 GOOS=linux go build -o doc_linux_amd64 -ldflags="-w -X 'git.itopcms.com/jackliu/doc/conf.VERSION=$TRAVIS_TAG' -X 'git.itopcms.com/jackliu/doc/conf.BUILD_TIME=`date`' -X 'git.itopcms.com/jackliu/doc/conf.GO_VERSION=`go version`'"
   # remove files
   - rm appveyor.yml docker-compose.yml Dockerfile .travis.yml .gitattributes .gitignore go.mod go.sum main.go README.md simsun.ttc start.sh
   # remove dirs
   - rm -rf cache commands controllers converter .git .github graphics mail models routers utils
   - ls -alh
   - cp conf/app.conf.example conf/app.conf
-  - zip -r mindoc_linux_amd64.zip conf static uploads views lib mindoc_linux_amd64 favicon.ico LICENSE.md
+  - zip -r doc_linux_amd64.zip conf static uploads views lib doc_linux_amd64 favicon.ico LICENSE.md
 
 deploy:
   provider: releases
@@ -40,7 +40,7 @@ deploy:
   cleanup: true
   overwrite: true
   file:
-    - mindoc_linux_amd64.zip
+    - doc_linux_amd64.zip
   on:
     tags: true
     branch: master
