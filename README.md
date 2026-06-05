@@ -28,6 +28,28 @@ MinDoc 的前身是 [SmartWiki](https://github.com/lifei6671/SmartWiki) 文档�
 
 如果有 Golang 开发经验，建议通过编译安装，要求 Go 版本不小于 **1.25.0**（需支持 `CGO` 和 `go mod`）。
 
+### 使用构建脚本（推荐）
+
+项目提供了 `scripts/build.bat`，支持 Windows 下构建 Linux / Windows 版本。默认使用 **Zig** 作为 C 工具链；编译 Windows 时传入 `mingw` 可改用 **MinGW-w64**。默认**调试模式**（产物输出到项目根目录），也可切换为**发布模式**（产物输出到 `dist/`）。
+
+```bat
+REM 日常调试：Zig 构建 Linux + Windows（需安装 Zig 并加入 PATH）
+scripts\build.bat
+
+REM 只构建 Windows（Zig）
+scripts\build.bat windows
+
+REM 使用 MinGW-w64 构建 Windows
+scripts\build.bat windows mingw
+
+REM 发布构建
+scripts\build.bat all release 1.0.0
+```
+
+更多参数说明见 [scripts/README.md](scripts/README.md)。
+
+### 手动编译
+
 ```bash
 # 克隆源码
 git clone https://git.itopcms.com/jackliu/doc.git

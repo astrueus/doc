@@ -21,6 +21,7 @@ _testmain.go
 
 *.exe
 doc
+/dist
 database
 *.test
 *.prof
