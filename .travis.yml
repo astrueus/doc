@@ -3,7 +3,7 @@ dist: focal
 
 language: go
 go:
-  - "1.13"
+  - "1.25.0"
 
 arch:
 - amd64
@@ -25,7 +25,7 @@ script:
   - rm conf/app.conf
 
 before_deploy:
-  - go mod tidy -v && GOARCH=amd64 GOOS=linux go build -o mindoc_linux_amd64 -ldflags="-w -X 'github.com/mindoc-org/mindoc/conf.VERSION=$TRAVIS_TAG' -X 'github.com/mindoc-org/mindoc/conf.BUILD_TIME=`date`' -X 'conf.GO_VERSION=`go version`'"
+  - go mod tidy -v && GOARCH=amd64 GOOS=linux go build -o mindoc_linux_amd64 -ldflags="-w -X 'github.com/mindoc-org/mindoc/conf.VERSION=$TRAVIS_TAG' -X 'github.com/mindoc-org/mindoc/conf.BUILD_TIME=`date`' -X 'github.com/mindoc-org/mindoc/conf.GO_VERSION=`go version`'"
   # remove files
   - rm appveyor.yml docker-compose.yml Dockerfile .travis.yml .gitattributes .gitignore go.mod go.sum main.go README.md simsun.ttc start.sh
   # remove dirs

@@ -3,6 +3,7 @@ branches:
   only:
   - master
 image: Visual Studio 2015
+stack: go 1.25
 clone_folder: c:\gopath\src\github.com\mindoc-org\mindoc
 init:
 - cmd: >-
@@ -32,7 +33,7 @@ build_script:
     cd c:\gopath\src\github.com\mindoc-org\mindoc
     go mod tidy
     go build -ldflags "-w"
-    go build -v -o "mindoc_windows_%GOARCH%.exe" -ldflags="-w -X github.com/mindoc-org/mindoc/conf.VERSION=%APPVEYOR_REPO_TAG_NAME% -X 'github.com/mindoc-org/mindoc/conf.BUILD_TIME=%date% %time%' -X 'conf.GO_VERSION=%GO_VERSION%'"
+    go build -v -o "mindoc_windows_%GOARCH%.exe" -ldflags="-w -X github.com/mindoc-org/mindoc/conf.VERSION=%APPVEYOR_REPO_TAG_NAME% -X 'github.com/mindoc-org/mindoc/conf.BUILD_TIME=%date% %time%' -X 'github.com/mindoc-org/mindoc/conf.GO_VERSION=%GO_VERSION%'"
     7z a -t7z -r mindoc_windows_%GOARCH%.7z conf/*.conf* static/* mindoc_windows_%GOARCH%.exe views/* uploads/*
 test_script:
 - cmd: >-
