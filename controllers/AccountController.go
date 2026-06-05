@@ -1,11 +1,12 @@
 package controllers
 
 import (
-	"github.com/beego/i18n"
 	"net/url"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/beego/i18n"
 
 	"html/template"
 
@@ -572,20 +573,26 @@ func (c *AccountController) Logout() {
 func (c *AccountController) Captcha() {
 	c.Prepare()
 
-	captchaImage := gocaptcha.NewCaptchaImage(140, 40, gocaptcha.RandLightColor())
+	captchaImage := gocaptcha.New(140, 36, gocaptcha.RandLightColor())
 
-	captchaImage.DrawNoise(gocaptcha.CaptchaComplexLower)
+	captchaImage.DrawNoise(
+		gocaptcha.NoiseDensityLower,
+		gocaptcha.NewPointNoiseDrawer(),
+	)
 
 	// captchaImage.DrawTextNoise(gocaptcha.CaptchaComplexHigh)
 	txt := gocaptcha.RandText(4)
 
-	c.SetSession(conf.CaptchaSessionName, txt)
+	_ = c.SetSession(conf.CaptchaSessionName, txt)
 
-	captchaImage.DrawText(txt)
+	captchaImage.DrawText(
+		gocaptcha.NewTextDrawer(gocaptcha.DefaultDPI),
+		txt,
+	)
 	// captchaImage.Drawline(3);
 	captchaImage.DrawBorder(gocaptcha.ColorToRGB(0x17A7A7A))
 	// captchaImage.DrawHollowLine()
 
-	captchaImage.SaveImage(c.Ctx.ResponseWriter, gocaptcha.ImageFormatJpeg)
+	_ = captchaImage.Encode(c.Ctx.ResponseWriter, gocaptcha.ImageFormatJpeg)
 	c.StopRun()
 }

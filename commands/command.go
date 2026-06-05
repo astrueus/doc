@@ -203,7 +203,7 @@ func RegisterCommand() {
 
 }
 
-//注册模板函数
+// 注册模板函数
 func RegisterFunction() {
 	err := web.AddFuncMap("config", models.GetOptionValue)
 
@@ -284,7 +284,7 @@ func RegisterFunction() {
 	}
 }
 
-//解析命令
+// 解析命令
 func ResolveCommand(args []string) {
 	flagSet := flag.NewFlagSet("MinDoc command: ", flag.ExitOnError)
 	flagSet.StringVar(&conf.ConfigurationFile, "config", "", "MinDoc configuration file.")
@@ -308,7 +308,7 @@ func ResolveCommand(args []string) {
 			_ = filetil.CopyFile(conf.ConfigurationFile, config)
 		}
 	}
-	if err := gocaptcha.ReadFonts(conf.WorkingDir("static", "fonts"), ".ttf"); err != nil {
+	if err := gocaptcha.SetFontPath(conf.WorkingDir("static", "fonts")); err != nil {
 		log.Fatal("读取字体文件时出错 -> ", err)
 	}
 
@@ -339,7 +339,7 @@ func ResolveCommand(args []string) {
 	if !filetil.FileExists(fonts) {
 		log.Fatal("Font path not exist.")
 	}
-	if err := gocaptcha.ReadFonts(filepath.Join(conf.WorkingDirectory, "static", "fonts"), ".ttf"); err != nil {
+	if err := gocaptcha.SetFontPath(filepath.Join(conf.WorkingDirectory, "static", "fonts")); err != nil {
 		log.Fatal("读取字体失败 ->", err)
 	}
 
@@ -352,7 +352,7 @@ func ResolveCommand(args []string) {
 
 }
 
-//注册缓存管道
+// 注册缓存管道
 func RegisterCache() {
 	isOpenCache := web.AppConfig.DefaultBool("cache", false)
 	if !isOpenCache {
@@ -451,7 +451,7 @@ func RegisterCache() {
 	logs.Info("缓存初始化完成.")
 }
 
-//自动加载配置文件.修改了监听端口号和数据库配置无法自动生效.
+// 自动加载配置文件.修改了监听端口号和数据库配置无法自动生效.
 func RegisterAutoLoadConfig() {
 	if conf.AutoLoadDelay > 0 {
 
@@ -498,7 +498,7 @@ func RegisterAutoLoadConfig() {
 	}
 }
 
-//注册错误处理方法.
+// 注册错误处理方法.
 func RegisterError() {
 	web.ErrorHandler("404", func(writer http.ResponseWriter, request *http.Request) {
 		var buf bytes.Buffer
@@ -533,7 +533,11 @@ func init() {
 	if configPath, err := filepath.Abs(conf.ConfigurationFile); err == nil {
 		conf.ConfigurationFile = configPath
 	}
-	if err := gocaptcha.ReadFonts(conf.WorkingDir("static", "fonts"), ".ttf"); err != nil {
+
+	// 验证码字符集：去掉易混淆字符，仅大写+数字
+	gocaptcha.TextCharacters = []rune("23456789ABCDEFGHJKMNPQRSTUVWXYZ")
+
+	if err := gocaptcha.SetFontPath(conf.WorkingDir("static", "fonts")); err != nil {
 		log.Fatal("读取字体文件失败 ->", err)
 	}
 	gob.Register(models.Member{})
