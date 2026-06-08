@@ -1,4 +1,4 @@
-﻿package commands
+package commands
 
 import (
 	"errors"
@@ -8,16 +8,16 @@ import (
 
 	"flag"
 
+	"git.itopcms.com/jackliu/doc/conf"
+	"git.itopcms.com/jackliu/doc/models"
+	"git.itopcms.com/jackliu/doc/utils"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
 	"github.com/beego/i18n"
-	"git.itopcms.com/jackliu/doc/conf"
-	"git.itopcms.com/jackliu/doc/models"
-	"git.itopcms.com/jackliu/doc/utils"
 )
 
-//系统安装.
+// 系统安装.
 func Install() {
 
 	fmt.Println("Initializing...")
@@ -40,7 +40,7 @@ func Version() {
 	}
 }
 
-//修改用户密码
+// 修改用户密码
 func ModifyPassword() {
 	var account, password string
 
@@ -94,7 +94,7 @@ func ModifyPassword() {
 
 }
 
-//初始化数据
+// 初始化数据
 func initialization() {
 
 	err := models.NewOption().Init()
@@ -129,10 +129,10 @@ func initialization() {
 		book := models.NewBook()
 
 		book.MemberId = member.MemberId
-		book.BookName = i18n.Tr(lang, "init.default_proj_name") //"MinDoc演示项目"
+		book.BookName = i18n.Tr(lang, "init.default_proj_name") //"Doc演示项目"
 		book.Status = 0
 		book.ItemId = 1
-		book.Description = i18n.Tr(lang, "init.default_proj_desc") //"这是一个MinDoc演示项目，该项目是由系统初始化时自动创建。"
+		book.Description = i18n.Tr(lang, "init.default_proj_desc") //"这是一个Doc演示项目，该项目是由系统初始化时自动创建。"
 		book.CommentCount = 0
 		book.PrivatelyOwned = 0
 		book.CommentStatus = "closed"
