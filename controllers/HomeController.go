@@ -1,11 +1,12 @@
-﻿package controllers
+package controllers
 
 import (
-	"github.com/beego/beego/v2/core/logs"
+	"math"
+
 	"git.itopcms.com/jackliu/doc/conf"
 	"git.itopcms.com/jackliu/doc/models"
 	"git.itopcms.com/jackliu/doc/utils/pagination"
-	"math"
+	"github.com/beego/beego/v2/core/logs"
 )
 
 type HomeController struct {

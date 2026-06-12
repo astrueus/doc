@@ -1,4 +1,4 @@
-﻿package migrate
+package migrate
 
 import (
 	"errors"
@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/beego/beego/v2/client/orm"
 	"git.itopcms.com/jackliu/doc/models"
+	"github.com/beego/beego/v2/client/orm"
 )
 
 type MigrationVersion03 struct {

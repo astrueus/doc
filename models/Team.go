@@ -1,15 +1,15 @@
-﻿package models
+package models
 
 import (
 	"errors"
 	"time"
 
+	"git.itopcms.com/jackliu/doc/conf"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
-	"git.itopcms.com/jackliu/doc/conf"
 )
 
-//团队.
+// 团队.
 type Team struct {
 	TeamId      int       `orm:"column(team_id);pk;auto;unique;" json:"team_id"`
 	TeamName    string    `orm:"column(team_name);size(255)" json:"team_name"`
@@ -95,7 +95,7 @@ func (t *Team) Delete(id int) (err error) {
 	return
 }
 
-//分页查询团队.
+// 分页查询团队.
 func (t *Team) FindToPager(pageIndex, pageSize int) (list []*Team, totalCount int, err error) {
 	o := orm.NewOrm()
 
@@ -138,7 +138,7 @@ func (t *Team) Include() {
 	}
 }
 
-//更新或添加一个团队.
+// 更新或添加一个团队.
 func (t *Team) Save(cols ...string) (err error) {
 	if t.TeamName == "" {
 		return NewError(5001, "团队名称不能为空")

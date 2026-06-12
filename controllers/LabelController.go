@@ -1,13 +1,13 @@
-﻿package controllers
+package controllers
 
 import (
 	"math"
 
-	"github.com/beego/beego/v2/client/orm"
-	"github.com/beego/beego/v2/core/logs"
 	"git.itopcms.com/jackliu/doc/conf"
 	"git.itopcms.com/jackliu/doc/models"
 	"git.itopcms.com/jackliu/doc/utils/pagination"
+	"github.com/beego/beego/v2/client/orm"
+	"github.com/beego/beego/v2/core/logs"
 )
 
 type LabelController struct {
@@ -24,7 +24,7 @@ func (c *LabelController) Prepare() {
 	}
 }
 
-//查看包含标签的文档列表.
+// 查看包含标签的文档列表.
 func (c *LabelController) Index() {
 	c.Prepare()
 	c.TplName = "label/index.tpl"

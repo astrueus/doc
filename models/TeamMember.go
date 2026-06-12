@@ -1,12 +1,12 @@
-﻿package models
+package models
 
 import (
 	"errors"
 
+	"git.itopcms.com/jackliu/doc/conf"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/i18n"
-	"git.itopcms.com/jackliu/doc/conf"
 )
 
 type TeamMember struct {
@@ -91,7 +91,7 @@ func (m *TeamMember) ChangeRoleId(teamId int, memberId int, roleId conf.BookRole
 	return m, err
 }
 
-//查询团队中指定的用户.
+// 查询团队中指定的用户.
 func (m *TeamMember) FindFirst(teamId, memberId int) (*TeamMember, error) {
 	if teamId <= 0 || memberId <= 0 {
 		return nil, ErrInvalidParameter
@@ -106,7 +106,7 @@ func (m *TeamMember) FindFirst(teamId, memberId int) (*TeamMember, error) {
 	return m.Include(), nil
 }
 
-//更新或插入团队用户.
+// 更新或插入团队用户.
 func (m *TeamMember) Save(cols ...string) (err error) {
 
 	if m.TeamId <= 0 {
@@ -139,7 +139,7 @@ func (m *TeamMember) Save(cols ...string) (err error) {
 	return
 }
 
-//删除一个团队用户.
+// 删除一个团队用户.
 func (m *TeamMember) Delete(id int) (err error) {
 
 	if id <= 0 {
@@ -153,7 +153,7 @@ func (m *TeamMember) Delete(id int) (err error) {
 	return
 }
 
-//分页查询团队用户.
+// 分页查询团队用户.
 func (m *TeamMember) FindToPager(teamId, pageIndex, pageSize int) (list []*TeamMember, totalCount int, err error) {
 	if teamId <= 0 {
 		err = ErrInvalidParameter
@@ -186,7 +186,7 @@ func (m *TeamMember) FindToPager(teamId, pageIndex, pageSize int) (list []*TeamM
 	return
 }
 
-//查询关联数据.
+// 查询关联数据.
 func (m *TeamMember) Include() *TeamMember {
 
 	if member, err := NewMember().Find(m.MemberId, "account", "real_name", "avatar"); err == nil {
@@ -206,7 +206,7 @@ func (m *TeamMember) Include() *TeamMember {
 	return m
 }
 
-//查询未加入团队的用户。
+// 查询未加入团队的用户。
 func (m *TeamMember) FindNotJoinMemberByAccount(teamId int, account string, limit int) (*SelectMemberResult, error) {
 	if teamId <= 0 {
 		return nil, ErrInvalidParameter

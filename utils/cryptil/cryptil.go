@@ -3,22 +3,22 @@ package cryptil
 import (
 	"crypto/hmac"
 	"crypto/md5"
+	"crypto/rand"
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 	"time"
-	"io"
-	"crypto/rand"
 )
 
 var stdChars = []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
 
-//对称加密与解密之加密【从Beego中提取出来的】
-//@param            value           需要加密的字符串
-//@param            secret          加密密钥
-//@return           encrypt			返回的加密后的字符串
+// 对称加密与解密之加密【从Beego中提取出来的】
+// @param            value           需要加密的字符串
+// @param            secret          加密密钥
+// @return           encrypt			返回的加密后的字符串
 func Encrypt(value, secret string) (encrypt string) {
 	vs := base64.URLEncoding.EncodeToString([]byte(value))
 	timestamp := strconv.FormatInt(time.Now().UnixNano(), 10)
@@ -28,10 +28,10 @@ func Encrypt(value, secret string) (encrypt string) {
 	return strings.Join([]string{vs, timestamp, sig}, ".")
 }
 
-//对称加密与解密之解密【从Beego中提取出来的】
-//@param            value           需要解密的字符串
-//@param            secret          密钥
-//@return           decrypt			返回解密后的字符串
+// 对称加密与解密之解密【从Beego中提取出来的】
+// @param            value           需要解密的字符串
+// @param            secret          密钥
+// @return           decrypt			返回解密后的字符串
 func Decrypt(value, secret string) (decrypt string) {
 	parts := strings.SplitN(value, ".", 3)
 	if len(parts) != 3 {
@@ -49,10 +49,10 @@ func Decrypt(value, secret string) (decrypt string) {
 	return string(res)
 }
 
-//MD5加密
-//@param			str			需要加密的字符串
-//@param			salt		盐值
-//@return			CryptStr	加密后返回的字符串
+// MD5加密
+// @param			str			需要加密的字符串
+// @param			salt		盐值
+// @return			CryptStr	加密后返回的字符串
 func Md5Crypt(str string, salt ...interface{}) (CryptStr string) {
 	if l := len(salt); l > 0 {
 		slice := make([]string, l+1)
@@ -61,10 +61,10 @@ func Md5Crypt(str string, salt ...interface{}) (CryptStr string) {
 	return fmt.Sprintf("%x", md5.Sum([]byte(str)))
 }
 
-//SHA1加密
-//@param			str			需要加密的字符串
-//@param			salt		盐值
-//@return			CryptStr	加密后返回的字符串
+// SHA1加密
+// @param			str			需要加密的字符串
+// @param			salt		盐值
+// @return			CryptStr	加密后返回的字符串
 func Sha1Crypt(str string, salt ...interface{}) (CryptStr string) {
 	if l := len(salt); l > 0 {
 		slice := make([]string, l+1)
@@ -73,7 +73,7 @@ func Sha1Crypt(str string, salt ...interface{}) (CryptStr string) {
 	return fmt.Sprintf("%x", sha1.Sum([]byte(str)))
 }
 
-//生成Guid字串
+// 生成Guid字串
 func UniqueId() string {
 	b := make([]byte, 48)
 
@@ -83,7 +83,7 @@ func UniqueId() string {
 	return Md5Crypt(base64.URLEncoding.EncodeToString(b))
 }
 
-//生成指定长度的字符串.
+// 生成指定长度的字符串.
 func NewRandChars(length int) string {
 	if length == 0 {
 		return ""

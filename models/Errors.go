@@ -17,9 +17,9 @@ var (
 	ErrMemberRoleError           = errors.New("用户权限不正确")
 	// ErrorMemberPasswordError 密码错误.
 	ErrorMemberPasswordError = errors.New("用户密码错误")
-	//ErrorMemberAuthMethodInvalid 不支持此认证方式
+	// ErrorMemberAuthMethodInvalid 不支持此认证方式
 	ErrMemberAuthMethodInvalid = errors.New("不支持此认证方式")
-	//ErrHTTPServerFail
+	// ErrHTTPServerFail
 	ErrHTTPServerFail = errors.New("系统内部异常")
 	//ErrLDAPConnect 无法连接到LDAP服务器
 	ErrLDAPConnect = errors.New("无法连接到LDAP服务器")
@@ -27,7 +27,7 @@ var (
 	ErrLDAPFirstBind = errors.New("第一次LDAP绑定失败")
 	//ErrLDAPSearch LDAP搜索失败
 	ErrLDAPSearch = errors.New("LDAP搜索失败")
-	//ErrLDAPUserNotFoundOrTooMany
+	// ErrLDAPUserNotFoundOrTooMany
 	ErrLDAPUserNotFoundOrTooMany = errors.New("LDAP用户不存在或者多于一个")
 
 	// ErrDataNotExist 指定的服务已存在.

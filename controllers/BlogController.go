@@ -1,4 +1,4 @@
-﻿package controllers
+package controllers
 
 import (
 	"context"
@@ -13,14 +13,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/beego/beego/v2/client/orm"
-	"github.com/beego/beego/v2/core/logs"
-	"github.com/beego/beego/v2/server/web"
-	"github.com/beego/i18n"
 	"git.itopcms.com/jackliu/doc/conf"
 	"git.itopcms.com/jackliu/doc/models"
 	"git.itopcms.com/jackliu/doc/utils"
 	"git.itopcms.com/jackliu/doc/utils/pagination"
+	"github.com/beego/beego/v2/client/orm"
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/beego/beego/v2/server/web"
+	"github.com/beego/i18n"
 )
 
 type BlogController struct {
@@ -34,7 +34,7 @@ func (c *BlogController) Prepare() {
 	}
 }
 
-//文章阅读
+// 文章阅读
 func (c *BlogController) Index() {
 	c.Prepare()
 	c.TplName = "blog/index.tpl"
@@ -87,7 +87,7 @@ func (c *BlogController) Index() {
 	}
 }
 
-//文章列表
+// 文章列表
 func (c *BlogController) List() {
 	c.Prepare()
 	c.TplName = "blog/list.tpl"
@@ -119,7 +119,7 @@ func (c *BlogController) List() {
 	c.Data["Lists"] = blogList
 }
 
-//管理后台文章列表
+// 管理后台文章列表
 func (c *BlogController) ManageList() {
 	c.Prepare()
 	c.TplName = "blog/manage_list.tpl"
@@ -142,7 +142,7 @@ func (c *BlogController) ManageList() {
 
 }
 
-//文章设置
+// 文章设置
 func (c *BlogController) ManageSetting() {
 	c.Prepare()
 	c.TplName = "blog/manage_setting.tpl"
@@ -279,7 +279,7 @@ func (c *BlogController) ManageSetting() {
 	}
 }
 
-//文章创建或编辑
+// 文章创建或编辑
 func (c *BlogController) ManageEdit() {
 	c.Prepare()
 	c.TplName = "blog/manage_edit.tpl"
@@ -392,7 +392,7 @@ func (c *BlogController) ManageEdit() {
 	c.Data["Model"] = blog
 }
 
-//删除文章
+// 删除文章
 func (c *BlogController) ManageDelete() {
 	c.Prepare()
 	blogId, _ := c.GetInt("blog_id", 0)
@@ -613,7 +613,7 @@ func (c *BlogController) RemoveAttachment() {
 	c.JsonResult(0, "ok", attach)
 }
 
-//下载附件
+// 下载附件
 func (c *BlogController) Download() {
 	c.Prepare()
 

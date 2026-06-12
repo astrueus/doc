@@ -1,4 +1,4 @@
-﻿package controllers
+package controllers
 
 import (
 	"context"
@@ -15,12 +15,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/beego/beego/v2/client/orm"
-	"github.com/beego/beego/v2/core/logs"
-	"github.com/beego/beego/v2/server/web"
-	"github.com/beego/i18n"
-	"github.com/boombuler/barcode"
-	"github.com/boombuler/barcode/qr"
 	"git.itopcms.com/jackliu/doc/conf"
 	"git.itopcms.com/jackliu/doc/models"
 	"git.itopcms.com/jackliu/doc/utils"
@@ -28,6 +22,12 @@ import (
 	"git.itopcms.com/jackliu/doc/utils/filetil"
 	"git.itopcms.com/jackliu/doc/utils/gopool"
 	"git.itopcms.com/jackliu/doc/utils/pagination"
+	"github.com/beego/beego/v2/client/orm"
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/beego/beego/v2/server/web"
+	"github.com/beego/i18n"
+	"github.com/boombuler/barcode"
+	"github.com/boombuler/barcode/qr"
 	"github.com/russross/blackfriday/v2"
 )
 
@@ -1098,7 +1098,7 @@ func (c *DocumentController) DeleteHistory() {
 	c.JsonResult(0, "ok")
 }
 
-//通过文档历史恢复文档
+// 通过文档历史恢复文档
 func (c *DocumentController) RestoreHistory() {
 	c.Prepare()
 

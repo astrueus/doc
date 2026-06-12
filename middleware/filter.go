@@ -1,12 +1,13 @@
-﻿package middleware
+package middleware
 
 import (
 	"encoding/json"
-	"github.com/beego/beego/v2/server/web"
-	"github.com/beego/beego/v2/server/web/context"
+	"regexp"
+
 	"git.itopcms.com/jackliu/doc/conf"
 	"git.itopcms.com/jackliu/doc/models"
-	"regexp"
+	"github.com/beego/beego/v2/server/web"
+	"github.com/beego/beego/v2/server/web/context"
 )
 
 func FilterUser(ctx *context.Context) {

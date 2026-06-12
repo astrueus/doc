@@ -1,4 +1,4 @@
-﻿package daemon
+package daemon
 
 import (
 	"fmt"
@@ -6,12 +6,12 @@ import (
 
 	"path/filepath"
 
-	"github.com/beego/beego/v2/core/logs"
-	"github.com/beego/beego/v2/server/web"
-	"github.com/kardianos/service"
 	"git.itopcms.com/jackliu/doc/commands"
 	"git.itopcms.com/jackliu/doc/conf"
 	"git.itopcms.com/jackliu/doc/controllers"
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/beego/beego/v2/server/web"
+	"github.com/kardianos/service"
 )
 
 type Daemon struct {

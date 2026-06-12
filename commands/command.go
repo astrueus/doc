@@ -1,4 +1,4 @@
-﻿package commands
+package commands
 
 import (
 	"encoding/gob"
@@ -16,6 +16,10 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"git.itopcms.com/jackliu/doc/cache"
+	"git.itopcms.com/jackliu/doc/conf"
+	"git.itopcms.com/jackliu/doc/models"
+	"git.itopcms.com/jackliu/doc/utils/filetil"
 	beegoCache "github.com/beego/beego/v2/client/cache"
 	_ "github.com/beego/beego/v2/client/cache/memcache"
 	_ "github.com/beego/beego/v2/client/cache/redis"
@@ -25,10 +29,6 @@ import (
 	"github.com/beego/i18n"
 	"github.com/fsnotify/fsnotify"
 	"github.com/lifei6671/gocaptcha"
-	"git.itopcms.com/jackliu/doc/cache"
-	"git.itopcms.com/jackliu/doc/conf"
-	"git.itopcms.com/jackliu/doc/models"
-	"git.itopcms.com/jackliu/doc/utils/filetil"
 )
 
 // RegisterDataBase 注册数据库

@@ -17,7 +17,7 @@ import (
 	"github.com/beego/i18n"
 )
 
-// 系统安装.
+// Install 系统安装.
 func Install() {
 
 	fmt.Println("Initializing...")
@@ -40,7 +40,7 @@ func Version() {
 	}
 }
 
-// 修改用户密码
+// ModifyPassword 修改用户密码
 func ModifyPassword() {
 	var account, password string
 

@@ -1,10 +1,10 @@
-﻿package models
+package models
 
 import (
 	"strings"
 
-	"github.com/beego/beego/v2/client/orm"
 	"git.itopcms.com/jackliu/doc/utils/filetil"
+	"github.com/beego/beego/v2/client/orm"
 )
 
 type AttachmentResult struct {

@@ -1,6 +1,3 @@
-//Author:TruthHun
-//Email:TruthHun@QQ.COM
-//Date:2018-01-21
 package converter
 
 import (
@@ -9,7 +6,7 @@ import (
 	"strings"
 )
 
-//media-type
+// media-type
 var MediaType = map[string]string{
 	".jpeg":  "image/jpeg",
 	".png":   "image/png",
@@ -29,7 +26,7 @@ var MediaType = map[string]string{
 	".css":   "text/css",
 }
 
-//根据文件扩展名，获取media-type
+// 根据文件扩展名，获取media-type
 func GetMediaType(ext string) string {
 	if mt, ok := MediaType[strings.ToLower(ext)]; ok {
 		return mt
@@ -37,7 +34,7 @@ func GetMediaType(ext string) string {
 	return ""
 }
 
-//解析配置文件
+// 解析配置文件
 func parseConfig(configFile string) (cfg Config, err error) {
 	var b []byte
 	if b, err = ioutil.ReadFile(configFile); err == nil {
@@ -45,4 +42,3 @@ func parseConfig(configFile string) (cfg Config, err error) {
 	}
 	return
 }
-

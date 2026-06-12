@@ -1,11 +1,11 @@
-﻿package models
+package models
 
 import (
 	"errors"
 
+	"git.itopcms.com/jackliu/doc/conf"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
-	"git.itopcms.com/jackliu/doc/conf"
 )
 
 type Relationship struct {
@@ -50,7 +50,7 @@ func (m *Relationship) Find(id int) (*Relationship, error) {
 	return m, err
 }
 
-//查询指定项目的创始人.
+// 查询指定项目的创始人.
 func (m *Relationship) FindFounder(book_id int) (*Relationship, error) {
 	o := orm.NewOrm()
 

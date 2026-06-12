@@ -1,23 +1,23 @@
-﻿package controllers
+package controllers
 
 import (
 	"strconv"
 	"strings"
 
-	"github.com/beego/beego/v2/core/logs"
-	"github.com/beego/i18n"
 	"git.itopcms.com/jackliu/doc/conf"
 	"git.itopcms.com/jackliu/doc/models"
 	"git.itopcms.com/jackliu/doc/utils"
 	"git.itopcms.com/jackliu/doc/utils/pagination"
 	"git.itopcms.com/jackliu/doc/utils/sqltil"
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/beego/i18n"
 )
 
 type SearchController struct {
 	BaseController
 }
 
-//搜索首页
+// 搜索首页
 func (c *SearchController) Index() {
 	c.Prepare()
 	c.TplName = "search/index.tpl"
@@ -82,7 +82,7 @@ func (c *SearchController) Index() {
 	}
 }
 
-//搜索用户
+// 搜索用户
 func (c *SearchController) User() {
 	c.Prepare()
 	key := c.Ctx.Input.Param(":key")

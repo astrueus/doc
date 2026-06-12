@@ -1,12 +1,12 @@
-﻿package models
+package models
 
 import (
 	"errors"
 	"time"
 
+	"git.itopcms.com/jackliu/doc/conf"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
-	"git.itopcms.com/jackliu/doc/conf"
 )
 
 type Template struct {
@@ -44,7 +44,7 @@ func NewTemplate() *Template {
 	return &Template{}
 }
 
-//查询指定ID的模板
+// 查询指定ID的模板
 func (t *Template) Find(templateId int) (*Template, error) {
 	if templateId <= 0 {
 		return t, ErrInvalidParameter
@@ -60,7 +60,7 @@ func (t *Template) Find(templateId int) (*Template, error) {
 	return t, err
 }
 
-//查询属于指定项目的模板.
+// 查询属于指定项目的模板.
 func (t *Template) FindByBookId(bookId int) ([]*Template, error) {
 	if bookId <= 0 {
 		return nil, ErrInvalidParameter
@@ -77,7 +77,7 @@ func (t *Template) FindByBookId(bookId int) ([]*Template, error) {
 	return templateList, err
 }
 
-//查询指定项目所有可用模板列表.
+// 查询指定项目所有可用模板列表.
 func (t *Template) FindAllByBookId(bookId int) ([]*Template, error) {
 	if bookId <= 0 {
 		return nil, ErrInvalidParameter
@@ -100,7 +100,7 @@ func (t *Template) FindAllByBookId(bookId int) ([]*Template, error) {
 	return templateList, err
 }
 
-//删除一个模板
+// 删除一个模板
 func (t *Template) Delete(templateId int, memberId int) error {
 	if templateId <= 0 {
 		return ErrInvalidParameter
@@ -121,7 +121,7 @@ func (t *Template) Delete(templateId int, memberId int) error {
 	return err
 }
 
-//添加或更新模板
+// 添加或更新模板
 func (t *Template) Save(cols ...string) (err error) {
 
 	if t.BookId <= 0 {
@@ -148,7 +148,7 @@ func (t *Template) Save(cols ...string) (err error) {
 	return
 }
 
-//预加载一些数据
+// 预加载一些数据
 func (t *Template) Preload() *Template {
 	if t != nil {
 		if t.MemberId > 0 {

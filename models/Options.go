@@ -1,8 +1,8 @@
-﻿package models
+package models
 
 import (
-	"github.com/beego/beego/v2/client/orm"
 	"git.itopcms.com/jackliu/doc/conf"
+	"github.com/beego/beego/v2/client/orm"
 )
 
 // Option struct .

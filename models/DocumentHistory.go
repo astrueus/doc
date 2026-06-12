@@ -1,11 +1,11 @@
-﻿package models
+package models
 
 import (
 	"time"
 
+	"git.itopcms.com/jackliu/doc/conf"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
-	"git.itopcms.com/jackliu/doc/conf"
 )
 
 type DocumentHistory struct {
@@ -59,7 +59,7 @@ func (m *DocumentHistory) Find(id int) (*DocumentHistory, error) {
 	return m, err
 }
 
-//清空指定文档的历史.
+// 清空指定文档的历史.
 func (m *DocumentHistory) Clear(docId int) error {
 	o := orm.NewOrm()
 
@@ -68,7 +68,7 @@ func (m *DocumentHistory) Clear(docId int) error {
 	return err
 }
 
-//删除历史.
+// 删除历史.
 func (m *DocumentHistory) Delete(historyId, docId int) error {
 	o := orm.NewOrm()
 
@@ -77,7 +77,7 @@ func (m *DocumentHistory) Delete(historyId, docId int) error {
 	return err
 }
 
-//恢复指定历史的文档.
+// 恢复指定历史的文档.
 func (m *DocumentHistory) Restore(historyId, docId, uid int) error {
 	o := orm.NewOrm()
 
@@ -152,7 +152,7 @@ func (m *DocumentHistory) InsertOrUpdate() (history *DocumentHistory, err error)
 	return
 }
 
-//分页查询指定文档的历史.
+// 分页查询指定文档的历史.
 func (m *DocumentHistory) FindToPager(docId, pageIndex, pageSize int) (docs []*DocumentHistorySimpleResult, totalCount int, err error) {
 
 	o := orm.NewOrm()

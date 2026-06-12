@@ -1,14 +1,14 @@
-﻿package models
+package models
 
 import (
 	"errors"
 	"time"
 
-	"github.com/beego/beego/v2/client/orm"
 	"git.itopcms.com/jackliu/doc/conf"
+	"github.com/beego/beego/v2/client/orm"
 )
 
-//Comment struct
+// Comment struct
 type Comment struct {
 	CommentId int `orm:"pk;auto;unique;column(comment_id)" json:"comment_id"`
 	Floor     int `orm:"column(floor);type(unsigned);default(0)" json:"floor"`
@@ -70,7 +70,7 @@ func (m *Comment) Update(cols ...string) error {
 	return err
 }
 
-//Insert 添加一条评论.
+// Insert 添加一条评论.
 func (m *Comment) Insert() error {
 	if m.DocumentId <= 0 {
 		return errors.New("评论文档不存在")

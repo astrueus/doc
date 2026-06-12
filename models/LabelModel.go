@@ -1,11 +1,11 @@
-﻿package models
+package models
 
 import (
 	"strings"
 
+	"git.itopcms.com/jackliu/doc/conf"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
-	"git.itopcms.com/jackliu/doc/conf"
 )
 
 type Label struct {
@@ -40,7 +40,7 @@ func (m *Label) FindFirst(field string, value interface{}) (*Label, error) {
 	return m, err
 }
 
-//插入或更新标签.
+// 插入或更新标签.
 func (m *Label) InsertOrUpdate(labelName string) error {
 	o := orm.NewOrm()
 
@@ -62,7 +62,7 @@ func (m *Label) InsertOrUpdate(labelName string) error {
 	return err
 }
 
-//批量插入或更新标签.
+// 批量插入或更新标签.
 func (m *Label) InsertOrUpdateMulti(labels string) {
 	if labels != "" {
 		labelArray := strings.Split(labels, ",")
@@ -75,7 +75,7 @@ func (m *Label) InsertOrUpdateMulti(labels string) {
 	}
 }
 
-//删除标签
+// 删除标签
 func (m *Label) Delete() error {
 	o := orm.NewOrm()
 	_, err := o.Raw("DELETE FROM "+m.TableNameWithPrefix()+" WHERE label_id= ?", m.LabelId).Exec()
@@ -86,7 +86,7 @@ func (m *Label) Delete() error {
 	return nil
 }
 
-//分页查找标签.
+// 分页查找标签.
 func (m *Label) FindToPager(pageIndex, pageSize int) (labels []*Label, totalCount int, err error) {
 	o := orm.NewOrm()
 

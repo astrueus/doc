@@ -1,11 +1,11 @@
-﻿package models
+package models
 
 import (
 	"time"
 
+	"git.itopcms.com/jackliu/doc/conf"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/i18n"
-	"git.itopcms.com/jackliu/doc/conf"
 )
 
 type MemberRelationshipResult struct {

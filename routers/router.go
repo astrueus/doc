@@ -1,8 +1,8 @@
-﻿package routers
+package routers
 
 import (
-	"github.com/beego/beego/v2/server/web"
 	"git.itopcms.com/jackliu/doc/controllers"
+	"github.com/beego/beego/v2/server/web"
 )
 
 func init() {

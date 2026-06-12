@@ -1,4 +1,4 @@
-﻿// Copyright 2013 bee authors
+// Copyright 2013 bee authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License"): you may
 // not use this file except in compliance with the License. You may obtain
@@ -21,9 +21,9 @@ import (
 	"fmt"
 	"log"
 
+	"git.itopcms.com/jackliu/doc/models"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/server/web"
-	"git.itopcms.com/jackliu/doc/models"
 )
 
 var (
@@ -112,7 +112,7 @@ func RunMigration() {
 	}
 }
 
-//导出数据库的表结构
+// 导出数据库的表结构
 func ExportDatabaseTable() ([]string, error) {
 	dbadapter, _ := web.AppConfig.String("db_adapter")
 	dbdatabase, _ := web.AppConfig.String("db_database")

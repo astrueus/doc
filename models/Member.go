@@ -1,4 +1,4 @@
-﻿// Package models .
+// Package models .
 package models
 
 import (
@@ -19,12 +19,12 @@ import (
 
 	"math"
 
+	"git.itopcms.com/jackliu/doc/conf"
+	"git.itopcms.com/jackliu/doc/utils"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
 	"github.com/beego/i18n"
-	"git.itopcms.com/jackliu/doc/conf"
-	"git.itopcms.com/jackliu/doc/utils"
 )
 
 type Member struct {
@@ -119,7 +119,7 @@ func (m *Member) TmpLogin(account string) (*Member, error) {
 	return member, nil
 }
 
-//ldapLogin 通过LDAP登陆
+// ldapLogin 通过LDAP登陆
 func (m *Member) ldapLogin(account string, password string) (*Member, error) {
 	if !web.AppConfig.DefaultBool("ldap_enable", false) {
 		return m, ErrMemberAuthMethodInvalid
@@ -341,7 +341,7 @@ func (m *Member) ResolveRoleName() {
 	}
 }
 
-//根据账号查找用户.
+// 根据账号查找用户.
 func (m *Member) FindByAccount(account string) (*Member, error) {
 	o := orm.NewOrm()
 
@@ -353,7 +353,7 @@ func (m *Member) FindByAccount(account string) (*Member, error) {
 	return m, err
 }
 
-//批量查询用户
+// 批量查询用户
 func (m *Member) FindByAccountList(accounts ...string) ([]*Member, error) {
 	o := orm.NewOrm()
 
@@ -368,7 +368,7 @@ func (m *Member) FindByAccountList(accounts ...string) ([]*Member, error) {
 	return members, err
 }
 
-//分页查找用户.
+// 分页查找用户.
 func (m *Member) FindToPager(pageIndex, pageSize int) ([]*Member, int, error) {
 	o := orm.NewOrm()
 
@@ -401,7 +401,7 @@ func (m *Member) IsAdministrator() bool {
 	return m.Role == 0 || m.Role == 1
 }
 
-//根据指定字段查找用户.
+// 根据指定字段查找用户.
 func (m *Member) FindByFieldFirst(field string, value interface{}) (*Member, error) {
 	o := orm.NewOrm()
 
@@ -410,7 +410,7 @@ func (m *Member) FindByFieldFirst(field string, value interface{}) (*Member, err
 	return m, err
 }
 
-//校验用户.
+// 校验用户.
 func (m *Member) Valid(is_hash_password bool) error {
 
 	//邮箱不能为空
@@ -466,7 +466,7 @@ func (m *Member) Valid(is_hash_password bool) error {
 	return nil
 }
 
-//删除一个用户.
+// 删除一个用户.
 func (m *Member) Delete(oldId int, newId int) error {
 	ormer := orm.NewOrm()
 

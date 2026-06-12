@@ -1,4 +1,4 @@
-﻿package controllers
+package controllers
 
 import (
 	"net/url"
@@ -10,14 +10,14 @@ import (
 
 	"html/template"
 
-	"github.com/beego/beego/v2/core/logs"
-	"github.com/beego/beego/v2/server/web"
-	"github.com/lifei6671/gocaptcha"
 	"git.itopcms.com/jackliu/doc/conf"
 	"git.itopcms.com/jackliu/doc/mail"
 	"git.itopcms.com/jackliu/doc/models"
 	"git.itopcms.com/jackliu/doc/utils"
 	"git.itopcms.com/jackliu/doc/utils/dingtalk"
+	"github.com/beego/beego/v2/core/logs"
+	"github.com/beego/beego/v2/server/web"
+	"github.com/lifei6671/gocaptcha"
 )
 
 // AccountController 用户登录与注册

@@ -1,13 +1,13 @@
-﻿package controllers
+package controllers
 
 import (
 	"errors"
 	"strings"
 
-	"github.com/beego/beego/v2/client/orm"
-	"github.com/beego/i18n"
 	"git.itopcms.com/jackliu/doc/conf"
 	"git.itopcms.com/jackliu/doc/models"
+	"github.com/beego/beego/v2/client/orm"
+	"github.com/beego/i18n"
 )
 
 type TemplateController struct {
@@ -46,7 +46,7 @@ func (c *TemplateController) isPermission() error {
 	return nil
 }
 
-//获取指定模板信息
+// 获取指定模板信息
 func (c *TemplateController) Get() {
 	if err := c.isPermission(); err != nil {
 		c.JsonResult(500, err.Error())
@@ -64,7 +64,7 @@ func (c *TemplateController) Get() {
 	c.JsonResult(0, "OK", template)
 }
 
-//获取模板列表
+// 获取模板列表
 func (c *TemplateController) List() {
 	c.TplName = "template/list.tpl"
 	if err := c.isPermission(); err != nil {
@@ -86,7 +86,7 @@ func (c *TemplateController) List() {
 	c.Data["List"] = templateList
 }
 
-//添加模板
+// 添加模板
 func (c *TemplateController) Add() {
 	if err := c.isPermission(); err != nil {
 		c.JsonResult(500, err.Error())
@@ -146,7 +146,7 @@ func (c *TemplateController) Add() {
 	c.JsonResult(0, "OK", template)
 }
 
-//删除模板
+// 删除模板
 func (c *TemplateController) Delete() {
 	if err := c.isPermission(); err != nil {
 		c.JsonResult(500, err.Error())

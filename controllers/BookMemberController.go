@@ -1,13 +1,13 @@
-﻿package controllers
+package controllers
 
 import (
 	"errors"
 
+	"git.itopcms.com/jackliu/doc/conf"
+	"git.itopcms.com/jackliu/doc/models"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/i18n"
-	"git.itopcms.com/jackliu/doc/conf"
-	"git.itopcms.com/jackliu/doc/models"
 )
 
 type BookMemberController struct {

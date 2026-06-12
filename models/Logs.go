@@ -1,12 +1,12 @@
-﻿package models
+package models
 
 import (
 	"errors"
 	"sync/atomic"
 	"time"
 
-	"github.com/beego/beego/v2/client/orm"
 	"git.itopcms.com/jackliu/doc/conf"
+	"github.com/beego/beego/v2/client/orm"
 )
 
 var loggerQueue = &logQueue{channel: make(chan *Logger, 100), isRuning: 0}

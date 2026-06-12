@@ -1,4 +1,4 @@
-﻿package controllers
+package controllers
 
 import (
 	"context"
@@ -13,18 +13,18 @@ import (
 	"strings"
 	"time"
 
-	"github.com/beego/i18n"
 	"git.itopcms.com/jackliu/doc/utils/sqltil"
+	"github.com/beego/i18n"
 
 	"net/http"
 
-	"github.com/beego/beego/v2/client/orm"
-	"github.com/beego/beego/v2/core/logs"
 	"git.itopcms.com/jackliu/doc/conf"
 	"git.itopcms.com/jackliu/doc/graphics"
 	"git.itopcms.com/jackliu/doc/models"
 	"git.itopcms.com/jackliu/doc/utils"
 	"git.itopcms.com/jackliu/doc/utils/pagination"
+	"github.com/beego/beego/v2/client/orm"
+	"github.com/beego/beego/v2/core/logs"
 	"github.com/russross/blackfriday/v2"
 )
 
@@ -544,7 +544,7 @@ func (c *BookController) Create() {
 	c.JsonResult(6001, "error")
 }
 
-//复制项目
+// 复制项目
 func (c *BookController) Copy() {
 	if c.Ctx.Input.IsPost() {
 		//检查是否有复制项目的权限
@@ -570,7 +570,7 @@ func (c *BookController) Copy() {
 	}
 }
 
-//导入zip压缩包
+// 导入zip压缩包
 func (c *BookController) Import() {
 
 	file, moreFile, err := c.GetFile("import-file")
@@ -721,7 +721,7 @@ func (c *BookController) Delete() {
 	c.JsonResult(0, "ok")
 }
 
-//发布项目.
+// 发布项目.
 func (c *BookController) Release() {
 	c.Prepare()
 
@@ -760,7 +760,7 @@ func (c *BookController) Release() {
 	c.JsonResult(0, i18n.Tr(c.Lang, "message.publish_to_queue"))
 }
 
-//文档排序.
+// 文档排序.
 func (c *BookController) SaveSort() {
 	c.Prepare()
 
@@ -921,7 +921,7 @@ func (c *BookController) TeamAdd() {
 	c.JsonResult(0, "OK", teamRel)
 }
 
-//删除项目的团队.
+// 删除项目的团队.
 func (c *BookController) TeamDelete() {
 	c.Prepare()
 
@@ -952,7 +952,7 @@ func (c *BookController) TeamDelete() {
 	c.JsonResult(0, "OK")
 }
 
-//团队搜索.
+// 团队搜索.
 func (c *BookController) TeamSearch() {
 	c.Prepare()
 
@@ -973,7 +973,7 @@ func (c *BookController) TeamSearch() {
 
 }
 
-//项目空间搜索.
+// 项目空间搜索.
 func (c *BookController) ItemsetsSearch() {
 	c.Prepare()
 

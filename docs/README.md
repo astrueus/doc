@@ -6,6 +6,7 @@
 
 | 文档 | 说明 |
 |------|------|
+| [routers-reference.md](./routers-reference.md) | 路由分类参考（页面渲染 vs 纯接口） |
 | [upstream-mindoc-checklist.md](./upstream-mindoc-checklist.md) | 上游 [mindoc-org/mindoc](https://github.com/mindoc-org/mindoc) 提交跟进清单 |
 
 ## 上游关系
