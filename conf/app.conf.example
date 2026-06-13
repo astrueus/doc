@@ -66,9 +66,9 @@ timezone = Asia/Shanghai
 db_adapter="${MINDOC_DB_ADAPTER||mysql}"
 db_host="${MINDOC_DB_HOST||127.0.0.1}"
 db_port="${MINDOC_DB_PORT||3306}"
-db_database="${MINDOC_DB_DATABASE||mindoc}"
+db_database="${MINDOC_DB_DATABASE||doc}"
 db_username="${MINDOC_DB_USERNAME||root}"
-db_password="${MINDOC_DB_PASSWORD||liu123456}"
+db_password="${MINDOC_DB_PASSWORD||123456}"
 
 ####################sqlite3 数据库配置###########################
 #db_adapter=sqlite3
@@ -95,7 +95,7 @@ enable_mail="${MINDOC_ENABLE_MAIL||false}"
 #每小时限制指定邮箱邮件发送次数
 mail_number="${MINDOC_MAIL_NUMBER||5}"
 #smtp服务用户名
-smtp_user_name="${MINDOC_SMTP_USER_NAME||admin@iminho.me}"
+smtp_user_name="${MINDOC_SMTP_USER_NAME||admin@admincms.top}"
 #smtp服务器地址
 smtp_host="${MINDOC_SMTP_HOST||smtp.163.com}""
 #smtp密码
