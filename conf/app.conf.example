@@ -1,5 +1,5 @@
 
-appname = mindoc
+appname = doc
 
 #默认监听的网卡,为空则监听所有
 httpaddr="${MINDOC_ADDR}"
