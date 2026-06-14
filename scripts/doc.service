@@ -1,5 +1,5 @@
 [Unit]
-Description=mindoc
+Description=doc
 After=syslog.target
 After=network.target
 After=mysqld.service
