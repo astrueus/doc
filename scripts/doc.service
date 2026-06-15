@@ -12,12 +12,12 @@ After=mysqld.service
 #LimitMEMLOCK=infinity
 #LimitNOFILE=65535
 Type=simple
-User=www
-Group=www
+User=root
+Group=root
 WorkingDirectory=/data/wwwroot/doc.itopcms.com
 ExecStart=/data/wwwroot/doc.itopcms.com/doc
 Restart=always
-Environment=USER=www HOME=/home/www
+#Environment=USER=www HOME=/home/www
 
 # Some distributions may not support these hardening directives. If you cannot start the service due
 # to an unknown option, comment out the ones not supported by your version of systemd.
