@@ -7,6 +7,8 @@
 | 文档 | 说明 |
 |------|------|
 | [routers-reference.md](./routers-reference.md) | 路由分类参考（页面渲染 vs 纯接口） |
+| [router-split-migration-plan.md](./router-split-migration-plan.md) | 路由按职责拆分与 `/api` 前缀治理计划 |
+| [frontend-backend-split-migration-plan.md](./frontend-backend-split-migration-plan.md) | 同仓内前后端目录拆分迁移执行清单 |
 | [upstream-mindoc-checklist.md](./upstream-mindoc-checklist.md) | 上游 [mindoc-org/mindoc](https://github.com/mindoc-org/mindoc) 提交跟进清单 |
 
 ## 上游关系
