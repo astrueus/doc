@@ -8,7 +8,7 @@
     <title>{{i18n .Lang "blog.edit_title"}} - Powered by MinDoc</title>
     <script type="text/javascript">
         window.baseUrl = "{{.BaseUrl}}";
-        window.katex = { js: "{{cdnjs "/static/katex/katex"}}",css: "{{cdncss "/static/katex/katex"}}"};
+        window.katex = { js: "{{cdnjs "/static/katex/katex"}}",css: "{{cdncss "/static/katex/katex"}}",jsauto: "{{cdnjs "/static/katex/contrib/auto-render.min"}}"};
         window.editormdLib = "{{cdnjs "/static/editor.md/lib/"}}";
         window.editor = null;
         window.editURL = "{{urlfor "BlogController.ManageEdit" "blogId" .Model.BlogId}}";
@@ -214,6 +214,7 @@
 <script src="{{cdnjs "/static/webuploader/webuploader.min.js"}}" type="text/javascript"></script>
 <script src="{{cdnjs "/static/jstree/3.3.4/jstree.min.js"}}" type="text/javascript"></script>
 <script src="{{cdnjs "/static/editor.md/editormd.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/editor.md/lib/mermaid/mermaid.min.js"}}" type="text/javascript"></script>
 <script src="{{cdnjs "/static/layer/layer.js"}}" type="text/javascript" ></script>
 <script src="{{cdnjs "/static/js/jquery.form.js"}}" type="text/javascript"></script>
 <script src="{{cdnjs "/static/js/array.js" "version"}}" type="text/javascript"></script>

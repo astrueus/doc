@@ -32,3 +32,4 @@ database
 /vendor
 /runtime
 /uploads/*
+/_backup_*

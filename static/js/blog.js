@@ -1,8 +1,38 @@
 $(function () {
     editormd.katexURL = {
-        js  : window.katex.js,
-        css : window.katex.css
+        css   : window.katex.css,
+        jsmain: window.katex.js,
+        jsauto: window.katex.jsauto || (window.katex.js.replace(/\/[^\/]+$/, '') + '/contrib/auto-render.min')
     };
+
+    if (window.mermaid && typeof mermaid.initialize === 'function') {
+        try {
+            mermaid.initialize({ startOnLoad: false, securityLevel: 'loose' });
+        } catch (e) {
+            if (window.console) console.warn('[blog.js] mermaid.initialize failed:', e);
+        }
+    }
+
+    function renderEditorPreviewMath(editor) {
+        if (typeof renderMathInElement !== 'function' || !editor || !editor.previewContainer) {
+            return;
+        }
+        var root = editor.previewContainer[0];
+        try {
+            renderMathInElement(root, {
+                delimiters: [
+                    { left: '$$', right: '$$', display: true },
+                    { left: '\\[', right: '\\]', display: true },
+                    { left: '\\(', right: '\\)', display: false },
+                    { left: '$', right: '$', display: false }
+                ],
+                ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+                throwOnError: false
+            });
+        } catch (e) {
+            if (window.console) console.warn('[blog.js] renderMathInElement failed:', e);
+        }
+    }
     window.editor = editormd("docEditor", {
         width: "100%",
         height: "100%",
@@ -55,9 +85,13 @@ $(function () {
                     }
                 }
             });
+            var self = this;
+            setTimeout(function () { renderEditorPreviewMath(self); }, 300);
         },
         onchange: function () {
             resetEditorChanged(true);
+            var self = this;
+            setTimeout(function () { renderEditorPreviewMath(self); }, 50);
         }
     });
     /**

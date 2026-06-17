@@ -42,6 +42,11 @@
 }
 .editormd-preview-container .sequence-diagram, .editormd-preview-container .flowchart, .editormd-html-preview .sequence-diagram, .editormd-html-preview .flowchart{
     overflow: auto;
+    min-height: 200px;
+}
+.editormd-preview-container .flowchart svg, .editormd-html-preview .flowchart svg {
+    max-width: 100%;
+    height: auto;
 }
 /**************TOC*******************/
 .editormd-preview-container{
