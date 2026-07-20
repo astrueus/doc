@@ -4123,21 +4123,21 @@
 
             text = trim(text);
 
+            var isChinese = /^[\u4e00-\u9fa5]+$/.test(text);
+            var id        = (isChinese) ? encodeURIComponent(text).replace(/\%/g, "") : text.toLowerCase().replace(/[^\w]+/g, "-");
+            var headingId = "h" + level + "-" + this.options.headerPrefix + id;
             var escapedText    = text.toLowerCase().replace(/[^\w]+/g, "-");
             var toc = {
                 text  : text,
                 level : level,
                 slug  : escapedText,
-                id : id
+                id : headingId
             };
-
-            var isChinese = /^[\u4e00-\u9fa5]+$/.test(text);
-            var id        = (isChinese) ? encodeURIComponent(text).replace(/\%/g, "") : text.toLowerCase().replace(/[^\w]+/g, "-");
             // var id = Math.floor(Math.random() * 1000000000 ).toString(36);
 
             markdownToC.push(toc);
 
-            var headingHTML = "<h" + level + " id=\"h"+ level + "-" + this.options.headerPrefix + id +"\">";
+            var headingHTML = "<h" + level + " id=\"" + headingId + "\">";
 
             headingHTML    += "<span class=\"header-link octicon octicon-link\"></span>";
             headingHTML    += (hasLinkReg) ? this.atLink(this.emoji(linkText)) : this.atLink(this.emoji(text));
