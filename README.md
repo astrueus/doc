@@ -32,10 +32,10 @@ MinDoc 的前身是 [SmartWiki](https://github.com/lifei6671/SmartWiki) 文档�
 
 项目提供了跨平台构建脚本：
 
-| 脚本 | 平台 | 说明 |
-|------|------|------|
-| `scripts/build.sh` | Linux / macOS | Linux 本机构建使用系统 gcc/clang |
-| `scripts/build.bat` | Windows | Linux 交叉编译使用 **Zig** |
+| 脚本                  | 平台            | 说明                       |
+|---------------------|---------------|--------------------------|
+| `scripts/build.sh`  | Linux / macOS | Linux 本机构建使用系统 gcc/clang |
+| `scripts/build.bat` | Windows       | Linux 交叉编译使用 **Zig**     |
 
 编译 Windows 时传入 `mingw` 可改用 **MinGW-w64**。默认**调试模式**（产物输出到项目根目录），也可切换为**发布模式**（产物输出到 `dist/`）。
 
