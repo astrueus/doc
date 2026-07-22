@@ -1,18 +1,19 @@
-﻿package main
+package main
 
 import (
 	"fmt"
 	"log"
 	"os"
+	_ "time/tzdata"
 
+	"git.itopcms.com/jackliu/doc/commands"
+	"git.itopcms.com/jackliu/doc/commands/daemon"
+	_ "git.itopcms.com/jackliu/doc/routers"
 	_ "github.com/beego/beego/v2/server/web/session/memcache"
 	_ "github.com/beego/beego/v2/server/web/session/mysql"
 	_ "github.com/beego/beego/v2/server/web/session/redis"
 	"github.com/kardianos/service"
 	_ "github.com/mattn/go-sqlite3"
-	"git.itopcms.com/jackliu/doc/commands"
-	"git.itopcms.com/jackliu/doc/commands/daemon"
-	_ "git.itopcms.com/jackliu/doc/routers"
 )
 
 func main() {

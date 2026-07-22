@@ -49,7 +49,7 @@ func RegisterDataBase() {
 		if err == nil {
 			orm.DefaultTimeLoc = location
 		} else {
-			logs.Error("加载时区配置信息失败,请检查是否存在 ZONEINFO 环境变量->", err)
+			logs.Error("加载时区配置失败 timezone=%s err=%v（已内嵌 time/tzdata；若设置了 ZONEINFO 请确认路径有效或取消该环境变量）", timezone, err)
 		}
 
 		port, _ := web.AppConfig.String("db_port")

@@ -365,7 +365,7 @@ doc_linux_amd64.zip
 ├── conf/                       # 含 app.conf.example
 ├── static/
 ├── views/
-├── lib/                        # 含 time/zoneinfo.zip
+├── lib/                        # 历史资源目录（时区已内嵌 time/tzdata，不再依赖 zoneinfo.zip）
 ├── uploads/
 ├── favicon.ico
 └── LICENSE.md

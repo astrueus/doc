@@ -121,7 +121,6 @@ EXPOSE 8181/tcp
 # 如果配置文件不存在就复制
 RUN cp --no-clobber /doc/conf/app.conf.example /doc/conf/app.conf
 
-ENV ZONEINFO=/doc/lib/time/zoneinfo.zip
 RUN chmod +x /doc/start.sh
 
 ENTRYPOINT ["/bin/bash", "/doc/start.sh"]

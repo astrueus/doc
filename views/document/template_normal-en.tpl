@@ -14,7 +14,7 @@ Demo site: [http://doc.iminho.me](http://doc.iminho.me)
 
 # Installation and use
 
-**If the golang is not installed on your server, please manually set an environment variable as follows: the key name is ZONEINFO, and the value is MinDoc and /lib/time/zoneinfo.zip in the directory.**
+Timezone data is embedded via `time/tzdata`; you do not need to set the `ZONEINFO` environment variable.
 
 **Windows tutorial:** [https://github.com/mindoc-org/mindoc/blob/master/README_WIN.md](docs/README_WIN.md)
 

@@ -58,7 +58,7 @@ doc/
 ├── uploads/                         # 用户上传（保留）
 ├── graphics/                        # 验证码图片素材（保留）
 ├── mail/                            # 邮件模板（保留）
-├── lib/                             # zoneinfo 等（保留）
+├── lib/                             # 历史资源（时区已改 time/tzdata，可择机清理）
 ├── go.mod
 ├── go.sum
 ├── README.md

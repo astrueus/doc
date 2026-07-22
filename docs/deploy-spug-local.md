@@ -217,7 +217,7 @@ WorkingDirectory=/data/wwwroot/doc.itopcms.com
 ExecStart=/data/wwwroot/doc.itopcms.com/doc
 Restart=always
 RestartSec=3
-Environment=ZONEINFO=/data/wwwroot/doc.itopcms.com/lib/time/zoneinfo.zip
+# 时区已由二进制内嵌 time/tzdata 提供，无需 ZONEINFO
 # 若需要监听 < 1024 端口（默认 8181 不需要）：
 # AmbientCapabilities=CAP_NET_BIND_SERVICE
 

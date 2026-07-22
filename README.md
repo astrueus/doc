@@ -20,7 +20,7 @@ MinDoc 的前身是 [SmartWiki](https://github.com/lifei6671/SmartWiki) 文档�
 
 # 安装与使用
 
-**如果服务器上没有安装 Go 程序，请手动设置环境变量：键名为 `ZONEINFO`，值为程序根目录下的 `/lib/time/zoneinfo.zip`。**
+时区数据已通过 `import _ "time/tzdata"` 内嵌进二进制，**无需**再设置 `ZONEINFO` 或依赖外部 `zoneinfo.zip`。若环境中仍配置了 `ZONEINFO`，Go 会优先使用该路径，建议取消以免覆盖内置数据。
 
 更多信息可参考上游 [MinDoc 使用手册](https://www.iminho.me/wiki/docs/mindoc/mindoc-summary.md)。
 
