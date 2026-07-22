@@ -14,7 +14,7 @@ MinDoc 的前身是 SmartWiki 文档系统。SmartWiki 是基于 PHP 框架 lara
 
 # 安装与使用
 
-时区数据已内嵌于程序（`time/tzdata`），无需再设置 `ZONEINFO` 环境变量。
+时区数据已内嵌于程序（`time/tzdata`）。
 
 **Windows 教程:** [https://github.com/mindoc-org/mindoc/blob/master/README_WIN.md](docs/README_WIN.md)
 

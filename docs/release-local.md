@@ -16,7 +16,7 @@
 开发者本机
   scripts/release.{ps1|sh}  ──┐
     ├─ 调 scripts/build.{bat|sh} 编 release
-    ├─ 打 zip（含 conf/static/views/lib/uploads 等）
+    ├─ 打 zip（含 conf/static/views/uploads 等）
     ├─ git tag vX.Y.Z && git push origin vX.Y.Z
     ├─ 调 Gitea API 创建 Release
     └─ 调 Gitea API 上传 zip 附件
@@ -147,7 +147,7 @@ if ($LASTEXITCODE -ne 0) { throw "build failed" }
 # ---------- 2) 打 zip ----------
 Write-Host "[2/5] Package zip ..."
 
-$shared = @("conf","static","views","lib","uploads","favicon.ico","LICENSE.md")
+$shared = @("conf","static","views","uploads","favicon.ico","LICENSE.md")
 foreach ($p in $shared) {
   if (-not (Test-Path $p)) { Write-Warning "missing shared path: $p" }
 }
@@ -279,7 +279,7 @@ echo "[1/5] build $TARGET release $VERSION"
 
 # 2) zip
 echo "[2/5] zip"
-SHARED=(conf static views lib uploads favicon.ico LICENSE.md)
+SHARED=(conf static views uploads favicon.ico LICENSE.md)
 ASSETS=()
 
 if { [ "$TARGET" = "all" ] || [ "$TARGET" = "linux" ]; } && [ -f dist/doc_linux_amd64 ]; then
@@ -365,7 +365,6 @@ doc_linux_amd64.zip
 ├── conf/                       # 含 app.conf.example
 ├── static/
 ├── views/
-├── lib/                        # 历史资源目录（时区已内嵌 time/tzdata，不再依赖 zoneinfo.zip）
 ├── uploads/
 ├── favicon.ico
 └── LICENSE.md

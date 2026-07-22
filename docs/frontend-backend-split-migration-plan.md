@@ -58,7 +58,6 @@ doc/
 ├── uploads/                         # 用户上传（保留）
 ├── graphics/                        # 验证码图片素材（保留）
 ├── mail/                            # 邮件模板（保留）
-├── lib/                             # 历史资源（时区已改 time/tzdata，可择机清理）
 ├── go.mod
 ├── go.sum
 ├── README.md
@@ -200,13 +199,13 @@ RUN rm -rf cache commands controllers converter .git .github graphics mail model
 修改前：
 
 ```text
-├─ 打 zip（含 conf/static/views/lib/uploads 等）
+├─ 打 zip（含 conf/static/views/uploads 等）
 ```
 
 修改后：
 
 ```text
-├─ 打 zip（含 conf/web/lib/uploads 等）
+├─ 打 zip（含 conf/web/uploads 等）
 ```
 
 > `docs/release-local.md` 中其他 `static`、`views` 字样也需要同步排查替换。
@@ -624,7 +623,7 @@ doc/
 ├── commands/
 ├── utils/
 ├── docs/
-├── runtime/  cache/  uploads/  graphics/  mail/  lib/
+├── runtime/  cache/  uploads/  graphics/  mail/
 ├── main.go
 ├── go.mod  go.sum
 ├── README.md  LICENSE.md

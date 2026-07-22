@@ -38,7 +38,7 @@ flowchart LR
   doc                                  ← 可执行文件（必须叫 doc）
   conf/app.conf                        ← 每次从 REPO 覆盖
   conf/app.conf.example                ← 仓库自带
-  static/  views/  lib/                ← 静态资源
+  static/  views/                      ← 静态资源
   uploads -> /data/repos/.../uploads   ← 软链
   runtime -> /data/repos/.../runtime   ← 软链
   scripts/                             ← 含 spug_run.sh、doc.service
@@ -217,7 +217,6 @@ WorkingDirectory=/data/wwwroot/doc.itopcms.com
 ExecStart=/data/wwwroot/doc.itopcms.com/doc
 Restart=always
 RestartSec=3
-# 时区已由二进制内嵌 time/tzdata 提供，无需 ZONEINFO
 # 若需要监听 < 1024 端口（默认 8181 不需要）：
 # AmbientCapabilities=CAP_NET_BIND_SERVICE
 
@@ -341,7 +340,7 @@ echo "rolled back to $TAG"
 bash /data/repos/doc.itopcms.com/resource/scripts/spug_rollback.sh v0.9.9
 ```
 
-> 注意：方案 B 只回滚可执行文件；若新版本改动了 `static/views/lib`，需用方案 A 才能完整回退。
+> 注意：方案 B 只回滚可执行文件；若新版本改动了 `static`/`views`，需用方案 A 才能完整回退。
 
 ---
 

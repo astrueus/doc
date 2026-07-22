@@ -168,7 +168,7 @@ jobs:
         run: |
           zip -r doc_linux_amd64.zip \
             dist/doc_linux_amd64 \
-            conf static views lib uploads favicon.ico LICENSE.md
+            conf static views uploads favicon.ico LICENSE.md
 
       - name: Publish to Gitea Release
         uses: akkuman/gitea-release-action@v1
@@ -241,9 +241,9 @@ jobs:
       - name: Package
         run: |
           if [ "${{ matrix.target }}" = "windows" ]; then
-            zip -r doc_windows_amd64.zip dist/doc_windows_amd64.exe conf static views lib uploads favicon.ico LICENSE.md
+            zip -r doc_windows_amd64.zip dist/doc_windows_amd64.exe conf static views uploads favicon.ico LICENSE.md
           else
-            zip -r doc_linux_amd64.zip dist/doc_linux_amd64 conf static views lib uploads favicon.ico LICENSE.md
+            zip -r doc_linux_amd64.zip dist/doc_linux_amd64 conf static views uploads favicon.ico LICENSE.md
           fi
 
       - name: Upload artifact

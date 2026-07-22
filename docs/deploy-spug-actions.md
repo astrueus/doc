@@ -253,7 +253,7 @@ Spug 发布参数 TAG = v0.9.9 → 重新发布
     run: |
       mkdir -p _pkg && cp dist/doc_linux_amd64 _pkg/
       cd _pkg && zip -r ../doc_linux_amd64.zip doc_linux_amd64
-      cd .. && zip -ur doc_linux_amd64.zip conf static views lib uploads favicon.ico LICENSE.md
+      cd .. && zip -ur doc_linux_amd64.zip conf static views uploads favicon.ico LICENSE.md
   ```
 
   对应 Spug 命令里：

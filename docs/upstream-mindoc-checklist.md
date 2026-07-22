@@ -89,7 +89,7 @@
 | 日期    | 2026-02-27 ~ 2026-03-23                                                                                         |
 | 问题    | Blog 时间显示与本地不一致；Termux 等环境时区异常                                                                                  |
 | 上游改动  | `models/Blog.go`、时间格式化相关                                                                                        |
-| 当前项目  | 已用 `import _ "time/tzdata"` 内嵌时区，不再依赖 `ZONEINFO`；Blog 时间逻辑可能仍偏旧                                         |
+| 当前项目  | 已用 `import _ "time/tzdata"` 内嵌时区；Blog 时间逻辑可能仍偏旧                                                              |
 | 建议动作  | cherry-pick 时间处理；核对 `models/Blog.go`、模板中的 `date_format`                                                         |
 | 工作量   | 小                                                                                                               |
 | 验证    | Blog 列表创建/修改时间与系统时区一致                                                                                           |

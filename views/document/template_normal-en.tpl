@@ -14,7 +14,7 @@ Demo site: [http://doc.iminho.me](http://doc.iminho.me)
 
 # Installation and use
 
-Timezone data is embedded via `time/tzdata`; you do not need to set the `ZONEINFO` environment variable.
+Timezone data is embedded via `time/tzdata`.
 
 **Windows tutorial:** [https://github.com/mindoc-org/mindoc/blob/master/README_WIN.md](docs/README_WIN.md)
 
