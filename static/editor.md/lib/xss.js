@@ -11,7 +11,7 @@ var _ = require("./util");
 
 function getDefaultWhiteList() {
   return {
-    a: ["target", "href", "title", "rel", "style", "class"],
+    a: ["target", "href", "title", "rel", "style", "class", "name", "id"],
     abbr: ["title", "style", "class"],
     address: ["style", "class"],
     area: ["shape", "coords", "href", "alt", "style", "class"],
@@ -51,12 +51,12 @@ function getDefaultWhiteList() {
     figure: ["style", "class"],
     font: ["color", "size", "face", "style", "class"],
     footer: ["style", "class"],
-    h1: ["style", "class"],
-    h2: ["style", "class"],
-    h3: ["style", "class"],
-    h4: ["style", "class"],
-    h5: ["style", "class"],
-    h6: ["style", "class"],
+    h1: ["style", "class", "id"],
+    h2: ["style", "class", "id"],
+    h3: ["style", "class", "id"],
+    h4: ["style", "class", "id"],
+    h5: ["style", "class", "id"],
+    h6: ["style", "class", "id"],
     header: ["style", "class"],
     hr: ["style", "class"],
     i: ["title", "style", "class"],

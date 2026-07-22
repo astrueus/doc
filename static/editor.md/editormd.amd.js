@@ -4138,7 +4138,7 @@
 
             var headingHTML = "<h" + level + " id=\"" + headingId + "\">";
 
-            headingHTML    += "<a id=\"" + text + "\" class=\"reference-link\"></a>";
+            headingHTML    += "<a name=\"" + text + "\" class=\"reference-link\"></a>";
             headingHTML    += "<span class=\"header-link octicon octicon-link\"></span>";
             headingHTML    += (hasLinkReg) ? this.atLink(this.emoji(linkText)) : this.atLink(this.emoji(text));
             headingHTML    += "</h" + level + ">";
