@@ -169,7 +169,7 @@
     white-space: inherit
 }
 .editormd-preview-container pre.prettyprint, .editormd-html-preview pre.prettyprint {
-    padding: 0;
+    /*padding: 0;*/
 }
 
 .editormd-preview-container ol.linenums, .editormd-html-preview ol.linenums{
