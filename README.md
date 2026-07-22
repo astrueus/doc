@@ -45,10 +45,10 @@ chmod +x scripts/build.sh
 ./scripts/build.sh
 
 # 只构建 Linux（仅需 gcc/clang）
-./scripts/build.sh linux
+./scripts/build.sh --target=linux
 
 # 发布构建
-./scripts/build.sh all release 1.0.0
+./scripts/build.sh --mode=release --version=1.0.0
 ```
 
 ```bat
@@ -56,13 +56,13 @@ REM Windows：Zig 构建 Linux + Windows（需安装 Zig 并加入 PATH）
 scripts\build.bat
 
 REM 只构建 Windows（Zig）
-scripts\build.bat windows
+scripts\build.bat --target=windows
 
 REM 使用 MinGW-w64 构建 Windows
-scripts\build.bat windows mingw
+scripts\build.bat --target=windows --toolchain=mingw
 
 REM 发布构建
-scripts\build.bat all release 1.0.0
+scripts\build.bat --mode=release --version=1.0.0
 ```
 
 更多参数说明见 [scripts/README.md](scripts/README.md)。

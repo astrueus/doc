@@ -141,7 +141,7 @@ if (-not $Owner -or -not $Repo -or -not $Base -or -not $Token) {
 
 # ---------- 1) 编译 ----------
 Write-Host "[1/5] Build $Target release $Version ..."
-cmd /c "scripts\build.bat $Target release $Version"
+cmd /c "scripts\build.bat --target=$Target --mode=release --version=$Version"
 if ($LASTEXITCODE -ne 0) { throw "build failed" }
 
 # ---------- 2) 打 zip ----------
@@ -275,7 +275,7 @@ AUTH=(-H "Authorization: token $GITEA_TOKEN")
 
 # 1) build
 echo "[1/5] build $TARGET release $VERSION"
-./scripts/build.sh "$TARGET" release "$VERSION"
+./scripts/build.sh --target="$TARGET" --mode=release --version="$VERSION"
 
 # 2) zip
 echo "[2/5] zip"

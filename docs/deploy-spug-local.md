@@ -136,7 +136,7 @@ curl "${CURL_OPTS[@]}" "$PKG_URL" -o "$PKG_FILE"
 log "解压到 $WWW"
 unzip -oq "$PKG_FILE" -d "$WWW"
 
-# build.sh release 产物路径：dist/doc_linux_amd64
+# build.sh --mode=release 产物路径：dist/doc_linux_amd64
 if [ -f "$WWW/dist/doc_linux_amd64" ]; then
   cp -f "$WWW/dist/doc_linux_amd64" "$WWW/doc"
 elif [ -f "$WWW/doc_linux_amd64" ]; then

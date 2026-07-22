@@ -5,38 +5,119 @@ setlocal EnableExtensions EnableDelayedExpansion
 REM ============================================================
 REM  Doc multi-platform build script (Windows)
 REM
-REM  Usage: build.bat [target] [mode|version|mingw] [version]
+REM  Usage:
+REM    build.bat [--target=all|linux|windows]      (-t)
+REM              [--mode=debug|release]            (-m)
+REM              [--version=X.Y.Z]                 (-v)
+REM              [--toolchain=zig|mingw]           (-x)
+REM              [-h|--help]
 REM
-REM  target      : all | linux | windows  (default: all)
-REM  mode        : debug | release        (default: debug)
-REM  version     : optional, auto-detected from git
-REM  win toolchain: mingw | mingw-w64    (default: zig for Windows & Linux)
+REM  Defaults:
+REM    --target=all
+REM    --mode=debug
+REM    --toolchain=zig            (only affects Windows target)
+REM    --version                  auto-detected via `git describe`
+REM
+REM  Toolchain:
+REM    Linux    Zig (zig cc -target x86_64-linux-gnu, cross-compile)
+REM    Windows  Zig by default (zig cc -target x86_64-windows-gnu)
+REM             --toolchain=mingw uses MinGW-w64 gcc instead
+REM             (alias: mingw-w64)
+REM
+REM  Build modes:
+REM    debug    output to project root: doc / doc.exe
+REM    release  output to dist\ with -s strip
 REM
 REM  Examples:
 REM    build.bat
-REM    build.bat windows
-REM    build.bat windows mingw
-REM    build.bat windows mingw 1.2.0
-REM    build.bat all release
-REM    build.bat linux release 2.0.0
+REM    build.bat --target=windows
+REM    build.bat --target=windows --toolchain=mingw
+REM    build.bat --target=windows --toolchain=mingw --version=1.2.0
+REM    build.bat --mode=release
+REM    build.bat -t linux -m release -v 2.0.0
+REM    build.bat -t windows -x mingw -v 1.2.0
 REM ============================================================
 
-set "ARG1=%~1"
-set "ARG2=%~2"
-set "ARG3=%~3"
-set "ARG4=%~4"
 set "TARGET=all"
 set "MODE=debug"
 set "VERSION="
-set "WIN_TOOLCHAIN=zig"
+set "TOOLCHAIN=zig"
 set "BUILD_OK=1"
 
-if /i "%ARG1%"=="help" goto :usage
-if /i "%ARG1%"=="-h" goto :usage
-if /i "%ARG1%"=="--help" goto :usage
+REM ---------- parse args (支持 --key=value / --key value / -k=value / -k value) ----------
+:parse_loop
+if "%~1"=="" goto :parse_done
 
-call :parse_args
-if errorlevel 1 exit /b 1
+set "ARG=%~1"
+if /i "%ARG%"=="-h"     goto :usage
+if /i "%ARG%"=="--help" goto :usage
+if /i "%ARG%"=="help"   goto :usage
+
+set "KEY="
+set "VAL="
+set "CONSUME_NEXT=0"
+
+for /f "tokens=1,* delims==" %%A in ("%ARG%") do (
+    set "KEY=%%A"
+    set "VAL=%%B"
+)
+
+REM 短标签归一化到长标签
+if /i "!KEY!"=="-t" set "KEY=--target"
+if /i "!KEY!"=="-m" set "KEY=--mode"
+if /i "!KEY!"=="-v" set "KEY=--version"
+if /i "!KEY!"=="-x" set "KEY=--toolchain"
+
+REM `--key value` / `-k value`：VAL 为空且下一个参数不是 flag
+if "!VAL!"=="" (
+    set "NEXT=%~2"
+    if defined NEXT (
+        set "NEXT_FIRST=!NEXT:~0,1!"
+        if not "!NEXT_FIRST!"=="-" (
+            set "VAL=%~2"
+            set "CONSUME_NEXT=1"
+        )
+    )
+)
+
+if /i "!KEY!"=="--target" (
+    if "!VAL!"=="" ( echo [ERROR] --target/-t requires a value & exit /b 1 )
+    set "TARGET=!VAL!"
+    if /i "!TARGET!"=="win" set "TARGET=windows"
+) else if /i "!KEY!"=="--mode" (
+    if "!VAL!"=="" ( echo [ERROR] --mode/-m requires a value & exit /b 1 )
+    set "MODE=!VAL!"
+) else if /i "!KEY!"=="--version" (
+    if "!VAL!"=="" ( echo [ERROR] --version/-v requires a value & exit /b 1 )
+    set "VERSION=!VAL!"
+) else if /i "!KEY!"=="--toolchain" (
+    if "!VAL!"=="" ( echo [ERROR] --toolchain/-x requires a value & exit /b 1 )
+    set "TOOLCHAIN=!VAL!"
+    if /i "!TOOLCHAIN!"=="mingw-w64" set "TOOLCHAIN=mingw"
+) else (
+    echo [ERROR] unknown option: !KEY!
+    exit /b 1
+)
+
+shift
+if "!CONSUME_NEXT!"=="1" shift
+goto :parse_loop
+
+:parse_done
+
+REM ---------- validate ----------
+if /i not "%TARGET%"=="all" if /i not "%TARGET%"=="linux" if /i not "%TARGET%"=="windows" (
+    echo [ERROR] unknown target: %TARGET% ^(expect all^|linux^|windows^)
+    exit /b 1
+)
+if /i not "%MODE%"=="debug" if /i not "%MODE%"=="release" (
+    echo [ERROR] unknown mode: %MODE% ^(expect debug^|release^)
+    exit /b 1
+)
+if /i not "!TOOLCHAIN!"=="zig" if /i not "!TOOLCHAIN!"=="mingw" (
+    echo [ERROR] unknown toolchain: !TOOLCHAIN! ^(expect zig^|mingw^)
+    exit /b 1
+)
 
 set "ROOT=%~dp0.."
 pushd "%ROOT%"
@@ -71,7 +152,7 @@ echo  Target         : %TARGET%
 echo  Version        : !VERSION!
 echo  Build Time     : !BUILD_TIME!
 echo  Linux toolchain: Zig
-echo  Win toolchain  : !WIN_TOOLCHAIN!
+echo  Win toolchain  : !TOOLCHAIN!
 echo ========================================
 echo.
 
@@ -86,7 +167,7 @@ where zig >nul 2>&1
 if errorlevel 1 (
     if /i "%TARGET%"=="linux" goto :zig_required
     if /i "%TARGET%"=="all" goto :zig_required
-    if /i "%TARGET%"=="windows" if /i not "!WIN_TOOLCHAIN!"=="mingw" goto :zig_required
+    if /i "%TARGET%"=="windows" if /i not "!TOOLCHAIN!"=="mingw" goto :zig_required
 )
 goto :after_zig_check
 
@@ -113,10 +194,6 @@ if /i "%TARGET%"=="all" (
     call :do_linux
 ) else if /i "%TARGET%"=="windows" (
     call :do_windows
-) else (
-    echo [ERROR] unknown target: %TARGET%
-    popd
-    exit /b 1
 )
 
 popd
@@ -129,120 +206,27 @@ if "!BUILD_OK!"=="1" (
     exit /b 1
 )
 
-REM ---------- argument parsing ----------
-:parse_args
-for %%A in (%*) do call :detect_mingw "%%A"
-if "%ARG1%"=="" goto :validate_target
-
-if /i "%ARG1%"=="debug" (
-    set "MODE=debug"
-    set "TARGET=all"
-    call :parse_optional_args "%ARG2%" "%ARG3%" "%ARG4%"
-    goto :validate_target
-)
-if /i "%ARG1%"=="release" (
-    set "MODE=release"
-    set "TARGET=all"
-    call :parse_optional_args "%ARG2%" "%ARG3%" "%ARG4%"
-    goto :validate_target
-)
-
-if /i "%ARG1%"=="mingw" goto :parse_mingw_first
-if /i "%ARG1%"=="mingw-w64" goto :parse_mingw_first
-
-set "TARGET=%ARG1%"
-if /i "%TARGET%"=="win" set "TARGET=windows"
-call :parse_optional_args "%ARG2%" "%ARG3%" "%ARG4%"
-goto :validate_target
-
-:parse_mingw_first
-set "TARGET=%ARG2%"
-if /i "%TARGET%"=="win" set "TARGET=windows"
-call :parse_optional_args "%ARG3%" "%ARG4%" ""
-goto :validate_target
-
-:parse_optional_args
-if /i "%~1"=="debug" (
-    set "MODE=debug"
-    call :try_set_version "%~2"
-    call :try_set_version "%~3"
-    goto :eof
-)
-if /i "%~1"=="release" (
-    set "MODE=release"
-    call :try_set_version "%~2"
-    call :try_set_version "%~3"
-    goto :eof
-)
-call :try_set_version "%~1"
-call :try_set_version "%~2"
-call :try_set_version "%~3"
-goto :eof
-
-:detect_mingw
-if /i "%~1"=="mingw" set "WIN_TOOLCHAIN=mingw"
-if /i "%~1"=="mingw-w64" set "WIN_TOOLCHAIN=mingw"
-goto :eof
-
-:try_set_version
-if "%~1"=="" goto :eof
-if /i "%~1"=="mingw" goto :eof
-if /i "%~1"=="mingw-w64" goto :eof
-if /i "%~1"=="debug" goto :eof
-if /i "%~1"=="release" goto :eof
-if /i "%~1"=="all" goto :eof
-if /i "%~1"=="linux" goto :eof
-if /i "%~1"=="windows" goto :eof
-if /i "%~1"=="win" goto :eof
-call :is_version "%~1"
-if not errorlevel 1 set "VERSION=%~1"
-goto :eof
-
-:is_version
-echo.%~1| findstr /r /c:"^[vV][0-9]" /c:"^[0-9][0-9]*\.[0-9]" >nul
-exit /b %errorlevel%
-
-:validate_target
-if /i not "%TARGET%"=="all" if /i not "%TARGET%"=="linux" if /i not "%TARGET%"=="windows" (
-    echo [ERROR] unknown target: %TARGET%
-    exit /b 1
-)
-if /i not "%MODE%"=="debug" if /i not "%MODE%"=="release" (
-    echo [ERROR] unknown mode: %MODE%
-    exit /b 1
-)
-if /i not "!WIN_TOOLCHAIN!"=="zig" if /i not "!WIN_TOOLCHAIN!"=="mingw" (
-    echo [ERROR] unknown win toolchain: !WIN_TOOLCHAIN!
-    exit /b 1
-)
-exit /b 0
-
 REM ---------- version resolution ----------
 :resolve_version
 if not "%~1"=="" (
     set "VERSION=%~1"
     goto :eof
 )
-
 set "VERSION="
 for /f "delims=" %%V in ('git describe --tags --always --dirty 2^>nul') do set "VERSION=%%V"
 if defined VERSION goto :eof
-
 for /f "delims=" %%V in ('git rev-parse --short HEAD 2^>nul') do set "VERSION=%%V"
 if defined VERSION goto :eof
-
 set "VERSION=dev"
 goto :eof
 
 REM ---------- Linux amd64 (Zig) ----------
 :do_linux
 echo [BUILD] Linux amd64 -^> !OUT_LINUX! ^(Zig^)
-
 set CGO_ENABLED=1
 set GOOS=linux
 set GOARCH=amd64
 set "CC=zig cc -target x86_64-linux-gnu"
-
 go build -ldflags "!LDFLAGS!" -o "!OUT_LINUX!" .
 if errorlevel 1 (
     echo [ERROR] Linux build failed
@@ -250,7 +234,6 @@ if errorlevel 1 (
 ) else (
     echo [OK]    !OUT_LINUX!
 )
-
 set CC=
 set GOOS=
 set GOARCH=
@@ -258,7 +241,7 @@ goto :eof
 
 REM ---------- Windows amd64 (Zig or MinGW-w64) ----------
 :do_windows
-if /i "!WIN_TOOLCHAIN!"=="mingw" (
+if /i "!TOOLCHAIN!"=="mingw" (
     echo [BUILD] Windows amd64 -^> !OUT_WINDOWS! ^(MinGW-w64^)
     where gcc >nul 2>&1
     if errorlevel 1 (
@@ -280,7 +263,7 @@ if /i "!WIN_TOOLCHAIN!"=="mingw" (
 
 go build -ldflags "!LDFLAGS!" -o "!OUT_WINDOWS!" .
 if errorlevel 1 (
-    if /i "!WIN_TOOLCHAIN!"=="mingw" (
+    if /i "!TOOLCHAIN!"=="mingw" (
         echo [ERROR] Windows build failed. Check MinGW-w64 / gcc in PATH
     ) else (
         echo [ERROR] Windows build failed. Check Zig installation
@@ -289,7 +272,6 @@ if errorlevel 1 (
 ) else (
     echo [OK]    !OUT_WINDOWS!
 )
-
 set CC=
 set GOOS=
 set GOARCH=
@@ -298,29 +280,37 @@ goto :eof
 REM ---------- help ----------
 :usage
 echo.
-echo Usage: build.bat [target] [mode^|version^|mingw] [version]
+echo Usage: build.bat [--target=all^|linux^|windows]      (-t)
+echo                  [--mode=debug^|release]            (-m)
+echo                  [--version=X.Y.Z]                 (-v)
+echo                  [--toolchain=zig^|mingw]           (-x)
+echo                  [-h^|--help]
 echo.
-echo  target         : all ^| linux ^| windows   (default: all)
-echo  mode           : debug ^| release          (default: debug)
-echo  version        : optional, auto-detected from git
-echo  win toolchain  : mingw ^| mingw-w64       (default: zig)
+echo Defaults:
+echo   --target=all
+echo   --mode=debug
+echo   --toolchain=zig            (only affects Windows target)
+echo   --version                  auto-detected via `git describe`
 echo.
-echo  Toolchain:
-echo    Linux         - always Zig (zig cc -target x86_64-linux-gnu)
-echo    Windows       - Zig by default (zig cc -target x86_64-windows-gnu)
-echo                    pass mingw / mingw-w64 to use MinGW-w64 gcc instead
+echo Toolchain:
+echo   Linux    Zig (zig cc -target x86_64-linux-gnu, cross-compile)
+echo   Windows  Zig by default (zig cc -target x86_64-windows-gnu)
+echo            --toolchain=mingw uses MinGW-w64 gcc instead
+echo            (alias: mingw-w64)
 echo.
-echo  Build modes:
-echo    debug   - output to project root: doc / doc.exe
-echo    release - output to dist\ with -s strip
+echo Build modes:
+echo   debug    output to project root: doc / doc.exe
+echo   release  output to dist\ with -s strip
 echo.
-echo  Examples:
-echo    build.bat
-echo    build.bat windows
-echo    build.bat windows mingw
-echo    build.bat windows mingw 1.2.0
-echo    build.bat mingw windows release
-echo    build.bat all release
-echo    build.bat linux release 2.0.0
+echo All flags support four forms: --key=value, --key value, -k=value, -k value.
+echo.
+echo Examples:
+echo   build.bat
+echo   build.bat --target=windows
+echo   build.bat --target=windows --toolchain=mingw
+echo   build.bat --target=windows --toolchain=mingw --version=1.2.0
+echo   build.bat --mode=release
+echo   build.bat -t linux -m release -v 2.0.0
+echo   build.bat -t windows -x mingw -v 1.2.0
 echo.
 exit /b 0

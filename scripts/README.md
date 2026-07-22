@@ -44,22 +44,32 @@ sudo apt install mingw-w64              # MinGW-w64
 
 ```bash
 # Linux / macOS
-./scripts/build.sh [target] [mode|version|mingw] [version]
+./scripts/build.sh [--target=all|linux|windows] \
+                   [--mode=debug|release] \
+                   [--version=X.Y.Z] \
+                   [--toolchain=zig|mingw]
 ```
 
 ```bat
 REM Windows
-scripts\build.bat [target] [mode|version|mingw] [version]
+scripts\build.bat [--target=all^|linux^|windows] ^
+                  [--mode=debug^|release] ^
+                  [--version=X.Y.Z] ^
+                  [--toolchain=zig^|mingw]
 ```
 
 ### 参数说明
 
-| 参数 | 可选值 | 默认值 | 说明 |
-|------|--------|--------|------|
-| `target` | `all` / `linux` / `windows` | `all` | 构建目标平台 |
-| `mode` | `debug` / `release` | `debug` | 构建模式 |
-| `version` | 任意字符串 | 自动获取 | 写入二进制的版本号 |
-| Windows 工具链 | `mingw` / `mingw-w64` | Zig | 仅影响 Windows 构建 |
+| 长标签 | 短标签 | 可选值 | 默认值 | 说明 |
+|--------|--------|--------|--------|------|
+| `--target` | `-t` | `all` / `linux` / `windows` | `all` | 构建目标平台 |
+| `--mode` | `-m` | `debug` / `release` | `debug` | 构建模式 |
+| `--version` | `-v` | 任意字符串 | 自动获取 | 写入二进制的版本号 |
+| `--toolchain` | `-x` | `zig` / `mingw`（别名 `mingw-w64`） | `zig` | 仅影响 Windows 构建 |
+| `--help` | `-h` | — | — | 显示帮助 |
+
+> 每个参数支持四种写法：`--key=value`、`--key value`、`-k=value`、`-k value`。
+> `--toolchain` 只对 Windows 构建生效；Linux 构建始终使用系统 gcc/clang（`build.sh`）或 Zig（`build.bat`）。
 
 ### 工具链说明
 
@@ -67,7 +77,7 @@ scripts\build.bat [target] [mode|version|mingw] [version]
 |------|----------------------|-------------------|
 | Linux | `zig cc -target x86_64-linux-gnu`（交叉编译） | 本机 gcc/clang（无需 Zig） |
 | Windows | `zig cc -target x86_64-windows-gnu` | 同上 |
-| Windows（`mingw`） | PATH 中的 `gcc` | `x86_64-w64-mingw32-gcc` |
+| Windows（`--toolchain=mingw`） | PATH 中的 `gcc` | `x86_64-w64-mingw32-gcc` |
 
 ### 构建模式
 
@@ -85,17 +95,20 @@ scripts\build.bat [target] [mode|version|mingw] [version]
 ./scripts/build.sh
 
 # 只构建 Linux（仅需 gcc/clang）
-./scripts/build.sh linux
+./scripts/build.sh --target=linux
 
 # 使用 MinGW-w64 交叉编译 Windows
-./scripts/build.sh windows mingw
+./scripts/build.sh --target=windows --toolchain=mingw
 
 # 发布构建
-./scripts/build.sh all release
-./scripts/build.sh linux release 2.0.0
+./scripts/build.sh --mode=release
+./scripts/build.sh --target=linux --mode=release --version=2.0.0
+
+# 短标签
+./scripts/build.sh -t linux -m release -v 2.0.0
 
 # 查看帮助
-./scripts/build.sh help
+./scripts/build.sh --help
 ```
 
 ```bat
@@ -103,17 +116,20 @@ REM Windows：默认 Zig 构建 Linux + Windows
 scripts\build.bat
 
 REM 只构建 Windows
-scripts\build.bat windows
+scripts\build.bat --target=windows
 
 REM 使用 MinGW-w64 构建 Windows
-scripts\build.bat windows mingw
+scripts\build.bat --target=windows --toolchain=mingw
 
 REM 发布构建
-scripts\build.bat all release
-scripts\build.bat windows mingw release 1.0.0
+scripts\build.bat --mode=release
+scripts\build.bat --target=windows --toolchain=mingw --mode=release --version=1.0.0
+
+REM 短标签
+scripts\build.bat -t windows -x mingw -m release -v 1.0.0
 
 REM 查看帮助
-scripts\build.bat help
+scripts\build.bat --help
 ```
 
 ### 验证构建结果
@@ -133,6 +149,6 @@ doc.exe version
 - 首次使用 `build.sh` 需赋予执行权限：`chmod +x scripts/build.sh`
 - 调试模式产物 `doc` / `doc.exe` 已在 `.gitignore` 中忽略。
 - 发布模式产物输出到 `dist/` 目录。
-- Windows 上若不使用 Zig，仅编 Windows 且已安装 MinGW-w64：`scripts\build.bat windows mingw`
-- Linux 上若不使用 Zig，可只编本机 Linux：`./scripts/build.sh linux`
+- Windows 上若不使用 Zig，仅编 Windows 且已安装 MinGW-w64：`scripts\build.bat --target=windows --toolchain=mingw`
+- Linux 上若不使用 Zig，可只编本机 Linux：`./scripts/build.sh --target=linux`
 - 也可用项目根目录 `Dockerfile` 构建 Linux 镜像。

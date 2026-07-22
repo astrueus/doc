@@ -18,7 +18,7 @@ flowchart LR
     B --> C[解析 .gitea/workflows/release.yml]
     C --> D[Act Runner 领取 Job]
     D --> E[checkout + setup-go]
-    E --> F[scripts/build.sh release]
+    E --> F[scripts/build.sh --mode=release]
     F --> G[zip 打包]
     G --> H[gitea-release-action 上传]
     H --> I[Gitea Releases 页可见]
@@ -156,7 +156,7 @@ jobs:
         run: |
           chmod +x scripts/build.sh
           # 仅编 Linux；如需 all（同时出 Windows），需先安装 Zig
-          ./scripts/build.sh linux release "${{ steps.ver.outputs.version }}"
+          ./scripts/build.sh --target=linux --mode=release --version="${{ steps.ver.outputs.version }}"
 
       - name: Verify binary
         run: |
@@ -233,9 +233,9 @@ jobs:
           chmod +x scripts/build.sh
           VERSION="${GITHUB_REF_NAME#v}"
           if [ "${{ matrix.target }}" = "windows" ]; then
-            ./scripts/build.sh windows mingw release "$VERSION"
+            ./scripts/build.sh --target=windows --toolchain=mingw --mode=release --version="$VERSION"
           else
-            ./scripts/build.sh linux release "$VERSION"
+            ./scripts/build.sh --target=linux --mode=release --version="$VERSION"
           fi
 
       - name: Package
