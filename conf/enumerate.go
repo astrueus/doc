@@ -122,29 +122,72 @@ func GetUploadFileExt() []string {
 	return exts
 }
 
-// 获取上传文件允许的最大值
-func GetUploadFileSize() int64 {
-	size := web.AppConfig.DefaultString("upload_file_size", "0")
-
-	if strings.HasSuffix(size, "MB") {
-		if s, e := strconv.ParseInt(size[0:len(size)-2], 10, 64); e == nil {
-			return s * 1024 * 1024
-		}
+// ParseDataSize 解析带单位的体积配置，支持 KB/MB/GB 后缀；无单位时按 KB 计。
+// 无法解析时返回 0。
+func ParseDataSize(size string) int64 {
+	size = strings.TrimSpace(size)
+	if size == "" || size == "0" {
+		return 0
 	}
-	if strings.HasSuffix(size, "GB") {
-		if s, e := strconv.ParseInt(size[0:len(size)-2], 10, 64); e == nil {
+	upper := strings.ToUpper(size)
+	if strings.HasSuffix(upper, "GB") {
+		if s, e := strconv.ParseInt(strings.TrimSpace(size[:len(size)-2]), 10, 64); e == nil {
 			return s * 1024 * 1024 * 1024
 		}
+		return 0
 	}
-	if strings.HasSuffix(size, "KB") {
-		if s, e := strconv.ParseInt(size[0:len(size)-2], 10, 64); e == nil {
+	if strings.HasSuffix(upper, "MB") {
+		if s, e := strconv.ParseInt(strings.TrimSpace(size[:len(size)-2]), 10, 64); e == nil {
+			return s * 1024 * 1024
+		}
+		return 0
+	}
+	if strings.HasSuffix(upper, "KB") {
+		if s, e := strconv.ParseInt(strings.TrimSpace(size[:len(size)-2]), 10, 64); e == nil {
 			return s * 1024
 		}
+		return 0
 	}
 	if s, e := strconv.ParseInt(size, 10, 64); e == nil {
 		return s * 1024
 	}
 	return 0
+}
+
+// 获取上传文件允许的最大值（业务层单文件限制）
+func GetUploadFileSize() int64 {
+	return ParseDataSize(web.AppConfig.DefaultString("upload_file_size", "0"))
+}
+
+// GetUploadMaxSize 框架层 HTTP 请求体上限，对应 Beego MaxUploadSize；默认 1GB。
+func GetUploadMaxSize() int64 {
+	if n := ParseDataSize(web.AppConfig.DefaultString("upload_max_size", "1GB")); n > 0 {
+		return n
+	}
+	return 1 << 30
+}
+
+// GetUploadMaxMemory multipart 解析内存阈值，对应 Beego MaxMemory；默认 64MB。
+func GetUploadMaxMemory() int64 {
+	if n := ParseDataSize(web.AppConfig.DefaultString("upload_max_memory", "64MB")); n > 0 {
+		return n
+	}
+	return 1 << 26
+}
+
+// ResolveWorkingDirectory 解析程序工作目录。
+// 优先级：-dir 参数 > 环境变量 DOC_HOME > 可执行文件所在目录 > 当前工作目录。
+func ResolveWorkingDirectory(dirFlag string) (string, error) {
+	if p := strings.TrimSpace(dirFlag); p != "" {
+		return filepath.Abs(p)
+	}
+	if p := strings.TrimSpace(os.Getenv("DOC_HOME")); p != "" {
+		return filepath.Abs(p)
+	}
+	if exe, err := filepath.Abs(os.Args[0]); err == nil {
+		return filepath.Dir(exe), nil
+	}
+	return filepath.Abs(".")
 }
 
 // 是否启用导出

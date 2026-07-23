@@ -217,6 +217,8 @@ WorkingDirectory=/data/wwwroot/doc.itopcms.com
 ExecStart=/data/wwwroot/doc.itopcms.com/doc
 Restart=always
 RestartSec=3
+# 可选：显式指定项目根（与 -dir 等效；未设置时默认用可执行文件所在目录）
+# Environment=DOC_HOME=/data/wwwroot/doc.itopcms.com
 # 若需要监听 < 1024 端口（默认 8181 不需要）：
 # AmbientCapabilities=CAP_NET_BIND_SERVICE
 

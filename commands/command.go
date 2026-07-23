@@ -263,7 +263,7 @@ func RegisterFunction() {
 		os.Exit(-1)
 	}
 	err = web.AddFuncMap("date_format", func(t time.Time, format string) string {
-		return t.Local().Format(format)
+		return t.In(time.Local).Format(format)
 	})
 	if err != nil {
 		logs.Error("注册函数 date_format 出错 ->", err)
@@ -277,7 +277,8 @@ func RegisterFunction() {
 	}
 	langs := strings.Split("en-us|zh-cn", "|")
 	for _, lang := range langs {
-		if err := i18n.SetMessage(lang, "conf/lang/"+lang+".ini"); err != nil {
+		msgFile := conf.WorkingDir("conf", "lang", lang+".ini")
+		if err := i18n.SetMessage(lang, msgFile); err != nil {
 			logs.Error("Fail to set message file: " + err.Error())
 			return
 		}
@@ -287,21 +288,25 @@ func RegisterFunction() {
 // 解析命令
 func ResolveCommand(args []string) {
 	flagSet := flag.NewFlagSet("Doc command: ", flag.ExitOnError)
-	flagSet.StringVar(&conf.ConfigurationFile, "config", "", "Doc configuration file.")
-	flagSet.StringVar(&conf.WorkingDirectory, "dir", "", "Doc working directory.")
-	flagSet.StringVar(&conf.LogFile, "log", "", "Doc log file path.")
+	var configFile, workingDir, logFile string
+	flagSet.StringVar(&configFile, "config", "", "Doc configuration file.")
+	flagSet.StringVar(&workingDir, "dir", "", "Doc working directory (overrides DOC_HOME).")
+	flagSet.StringVar(&logFile, "log", "", "Doc log file path.")
 
 	if err := flagSet.Parse(args); err != nil {
 		log.Fatal("解析命令失败 ->", err)
 	}
 
-	if conf.WorkingDirectory == "" {
-		if p, err := filepath.Abs(os.Args[0]); err == nil {
-			conf.WorkingDirectory = filepath.Dir(p)
-		}
+	resolvedDir, err := conf.ResolveWorkingDirectory(workingDir)
+	if err != nil {
+		log.Fatal("解析工作目录失败 ->", err)
 	}
+	conf.WorkingDirectory = resolvedDir
+	logs.Info("工作目录 ->", conf.WorkingDirectory)
 
-	if conf.ConfigurationFile == "" {
+	if configFile != "" {
+		conf.ConfigurationFile = configFile
+	} else {
 		conf.ConfigurationFile = conf.WorkingDir("conf", "app.conf")
 		config := conf.WorkingDir("conf", "app.conf.example")
 		if !filetil.FileExists(conf.ConfigurationFile) && filetil.FileExists(config) {
@@ -315,7 +320,15 @@ func ResolveCommand(args []string) {
 	if err := web.LoadAppConfig("ini", conf.ConfigurationFile); err != nil {
 		log.Fatal("An error occurred:", err)
 	}
-	if conf.LogFile == "" {
+
+	web.BConfig.MaxUploadSize = conf.GetUploadMaxSize()
+	web.BConfig.MaxMemory = conf.GetUploadMaxMemory()
+	logs.Info("上传限制 -> MaxUploadSize=%d MaxMemory=%d business_upload_file_size=%d",
+		web.BConfig.MaxUploadSize, web.BConfig.MaxMemory, conf.GetUploadFileSize())
+
+	if logFile != "" {
+		conf.LogFile = logFile
+	} else {
 		logPath, err := filepath.Abs(web.AppConfig.DefaultString("log_path", conf.WorkingDir("runtime", "logs")))
 		if err == nil {
 			conf.LogFile = logPath

@@ -55,8 +55,13 @@ func NewDocumentHistory() *DocumentHistory {
 func (m *DocumentHistory) Find(id int) (*DocumentHistory, error) {
 	o := orm.NewOrm()
 	err := o.QueryTable(m.TableNameWithPrefix()).Filter("history_id", id).One(m)
-
-	return m, err
+	if err != nil {
+		return m, err
+	}
+	if !m.ModifyTime.IsZero() {
+		m.ModifyTime = m.ModifyTime.In(time.Local)
+	}
+	return m, nil
 }
 
 // 清空指定文档的历史.
@@ -171,6 +176,11 @@ WHERE history.document_id = ? ORDER BY history.history_id DESC LIMIT ?,?;`
 
 	if err != nil {
 		return
+	}
+	for _, doc := range docs {
+		if doc != nil && !doc.ModifyTime.IsZero() {
+			doc.ModifyTime = doc.ModifyTime.In(time.Local)
+		}
 	}
 	var count int64
 	count, err = o.QueryTable(m.TableNameWithPrefix()).Filter("document_id", docId).Count()

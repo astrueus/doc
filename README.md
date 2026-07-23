@@ -22,6 +22,8 @@ MinDoc 的前身是 [SmartWiki](https://github.com/lifei6671/SmartWiki) 文档�
 
 时区数据已通过 `import _ "time/tzdata"` 内嵌进二进制，部署时无需额外时区文件。
 
+工作目录可通过环境变量 `DOC_HOME` 或启动参数 `-dir` 指定（优先级：`-dir` > `DOC_HOME` > 可执行文件所在目录）。上传相关：`upload_file_size` 为业务单文件限制；`upload_max_size` / `upload_max_memory` 为框架 HTTP 层限制（值支持 `KB`/`MB`/`GB`）。
+
 更多信息可参考上游 [MinDoc 使用手册](https://www.iminho.me/wiki/docs/mindoc/mindoc-summary.md)。
 
 对于没有 Golang 使用经验的用户，可以从内部发布渠道下载编译好的程序。

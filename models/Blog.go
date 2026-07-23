@@ -89,6 +89,20 @@ func NewBlog() *Blog {
 	}
 }
 
+// localizeTimes 将创建/修改时间转为本地时区，供模板与 JSON 展示一致。
+func (b *Blog) localizeTimes() *Blog {
+	if b == nil {
+		return b
+	}
+	if !b.Created.IsZero() {
+		b.Created = b.Created.In(time.Local)
+	}
+	if !b.Modified.IsZero() {
+		b.Modified = b.Modified.In(time.Local)
+	}
+	return b
+}
+
 // 根据文章ID查询文章
 func (b *Blog) Find(blogId int) (*Blog, error) {
 	o := orm.NewOrm()
@@ -148,7 +162,7 @@ func (b *Blog) FindByIdentify(identify string) (*Blog, error) {
 		logs.Error("查询文章时失败 -> ", err)
 		return nil, err
 	}
-	return b, nil
+	return b.localizeTimes(), nil
 }
 
 // 获取指定文章的链接内容
@@ -208,7 +222,7 @@ func (b *Blog) Link() (*Blog, error) {
 		}
 	}
 
-	return b, nil
+	return b.localizeTimes(), nil
 }
 
 // 判断指定的文章标识是否存在
@@ -320,6 +334,8 @@ func (b *Blog) FindToPager(pageIndex, pageSize int, memberId int, status string)
 	for _, blog := range blogList {
 		if blog.BlogType == 1 {
 			blog.Link()
+		} else {
+			blog.localizeTimes()
 		}
 	}
 
@@ -352,7 +368,7 @@ func (b *Blog) QueryNext(blogId int) (*Blog, error) {
 	if err != nil && err != orm.ErrNoRows {
 		logs.Error("查询文章时出错 ->", err)
 	}
-	return blog, err
+	return blog.localizeTimes(), err
 }
 
 // 查询下一篇文章
@@ -370,7 +386,7 @@ func (b *Blog) QueryPrevious(blogId int) (*Blog, error) {
 	if err != nil && err != orm.ErrNoRows {
 		logs.Error("查询文章时出错 ->", err)
 	}
-	return blog, err
+	return blog.localizeTimes(), err
 }
 
 // 关联文章附件

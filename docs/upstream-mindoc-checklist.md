@@ -71,8 +71,9 @@
 
 **本地最小升级方案**
 
-- **核心思路**：保留现有 `filepath.Dir(os.Args[0])` 行为，仅在 `conf.WorkingDir`/`commands.ResolveWorkingDir` 之类的入口增加优先级：`DOC_HOME` 环境变量 > 进程目录 > `os.Getwd()` 回退。不引入上游的"嵌入资源 + 自展开"复杂逻辑。
-- **改动文件**：`commands/command.go`（约 20 行）、`conf/enumerate.go` 中 `WorkingDir()` 函数（加 env 探测）、`conf/app.conf.example` 加一行注释说明 `DOC_HOME`。
+- **核心思路**：保留现有 `filepath.Dir(os.Args[0])` 行为，仅在入口增加优先级：`-dir` > 环境变量 `DOC_HOME` > 可执行文件目录 > `os.Getwd()`。不引入上游的"嵌入资源 + 自展开"复杂逻辑。
+- **改动文件**：`conf/enumerate.go`（`ResolveWorkingDirectory`）、`commands/command.go`、`conf/app.conf.example` / README / 部署文档说明 `DOC_HOME`。
+- **状态**：已落地（环境变量名使用 `DOC_HOME`）。
 - **放弃的上游能力**：systemd 服务模式下的工作目录自动判定、上游把 `lib/jieba` 等资源打进二进制的方案。
 - **工作量**：0.5 天。
 - **验证**：`DOC_HOME=/tmp/doc ./doc`、从 `/` 目录启动、Windows 服务方式启动均能读到 `static/`、`views/`、`conf/`。
@@ -89,7 +90,7 @@
 | 日期    | 2026-02-27 ~ 2026-03-23                                                                                         |
 | 问题    | Blog 时间显示与本地不一致；Termux 等环境时区异常                                                                                  |
 | 上游改动  | `models/Blog.go`、时间格式化相关                                                                                        |
-| 当前项目  | 已用 `import _ "time/tzdata"` 内嵌时区；Blog 时间逻辑可能仍偏旧                                                              |
+| 当前项目  | 已用 `import _ "time/tzdata"`；Blog/Document/DocumentHistory 读出后统一 `.In(time.Local)`；`date_format` 同步本地化 |
 | 建议动作  | cherry-pick 时间处理；核对 `models/Blog.go`、模板中的 `date_format`                                                         |
 | 工作量   | 小                                                                                                               |
 | 验证    | Blog 列表创建/修改时间与系统时区一致                                                                                           |
@@ -97,8 +98,9 @@
 
 **本地最小升级方案**
 
-- **核心思路**：不动 ORM 配置（`orm.DefaultTimeLoc` 已设 `time.Local`），只在模板/JSON 输出层补一道兜底：模型读出时间后统一 `t.In(time.Local).Format("2006-01-02 15:04:05")`。Blog 列表与文档列表分别核对一次即可。
-- **改动文件**：`models/Blog.go`（`Find*` 类方法返回前调 `.In(time.Local)`）、`models/Document.go` 同上；模板里 `date_format` 调用统一传 `"2006-01-02 15:04"`。
+- **核心思路**：不动 ORM 配置（`orm.DefaultTimeLoc` 已设 `time.Local`），在模型读出后统一 `t.In(time.Local)`；模板 `date_format` 同样按本地时区格式化。
+- **改动文件**：`models/Blog.go`、`models/DocumentModel.go`、`models/DocumentHistory.go`、`commands/command.go`（`date_format`）。
+- **状态**：已落地。
 - **放弃的上游能力**：Termux 等特殊环境的 `ZONEINFO` 探测、容器内时区自检脚本。
 - **工作量**：0.5 天（多数时间在回归 Blog / 文档列表 / 评论 / 历史版本）。
 - **验证**：宿主机 `TZ=Asia/Shanghai` 与容器 `TZ=UTC` 各跑一次，Blog 创建时间显示一致；MySQL 字段类型保持 `datetime` 不动。
@@ -120,11 +122,12 @@
 
 **本地最小升级方案**
 
-- **核心思路**：把"最大上传体积"做成 `conf/app.conf` 的显式配置项，启动时一次性写到 Beego `web.BConfig.MaxMemory` 与 `web.BConfig.MaxUploadSize`，避免硬编码与默认 1GB 限制。Controller 不动。
-- **改动文件**：`conf/app.conf.example` 新增 `http_max_memory_mb`、`http_max_upload_mb`；`commands/command.go` 启动初始化时读取并赋值；`controllers/DocumentController.go`/`BlogController.go` 上传处补一条配置项校验（仅日志，不强行截断）。
+- **核心思路**：把框架层上限做成 `upload_max_size` / `upload_max_memory`（值带 `KB`/`MB`/`GB`，与 `upload_file_size` 同风格），启动时写入 Beego `MaxUploadSize` / `MaxMemory`。业务层仍用已有 `upload_file_size`。
+- **改动文件**：`conf/app.conf.example`、`conf/enumerate.go`（`ParseDataSize` / `GetUploadMaxSize` / `GetUploadMaxMemory`）、`commands/command.go` 启动赋值。
+- **状态**：已落地。
 - **放弃的上游能力**：分片上传、断点续传。
 - **工作量**：极小（2~3 小时）。
-- **验证**：上传 1.5GB 附件不报 `http: request body too large`；超过配置上限时返回友好提示。
+- **验证**：上传未超 `upload_file_size` 成功；超过业务限制返回友好提示；`upload_max_size` 过小时框架层拦截。
 
 ---
 
@@ -731,7 +734,7 @@ Day 1 下午    : 回归（编辑/阅读/Blog/PDF）
 | 小节  | 主题                      | 本地最小方案要点                                                                                      | 改动量       | 放弃的上游能力                  |
 | --- | ----------------------- | --------------------------------------------------------------------------------------------- | --------- | ------------------------ |
 | 0.1 | WorkingDirectory        | 加 `DOC_HOME` env 优先级，回退 `os.Getwd()`                                                          | 0.5 天     | 嵌入资源/单二进制分发              |
-| 0.2 | 时区                      | 模型返回时间统一 `.In(time.Local)`                                                                    | 0.5 天     | Termux/ZONEINFO 特殊探测     |
+| 0.2 | 时区                      | 已落地：模型 `.In(time.Local)` + `date_format` + tzdata                                              | 0.5 天     | Termux/ZONEINFO 特殊探测     |
 | 0.3 | 大文件上传                   | `app.conf` 加 `http_max_upload_mb`，启动赋值                                                        | 2 小时      | 分片/断点续传                  |
 | 1.1 | 搜索打底                    | 标题加权 + MySQL FULLTEXT / SQLite FTS5                                                           | 1~2 天     | jieba、倒排表、TF-IDF         |
 | 1.2 | reindex                 | `doc reindex` 重建 FULLTEXT/FTS5 + 技术词白名单                                                       | 0.5~1 天   | 批量回表加权                   |

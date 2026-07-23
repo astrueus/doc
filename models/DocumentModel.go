@@ -77,6 +77,20 @@ func NewDocument() *Document {
 	}
 }
 
+// localizeTimes 将创建/修改时间转为本地时区，供模板与 JSON 展示一致。
+func (item *Document) localizeTimes() *Document {
+	if item == nil {
+		return item
+	}
+	if !item.CreateTime.IsZero() {
+		item.CreateTime = item.CreateTime.In(time.Local)
+	}
+	if !item.ModifyTime.IsZero() {
+		item.ModifyTime = item.ModifyTime.In(time.Local)
+	}
+	return item
+}
+
 // 根据文档ID查询指定文档.
 func (item *Document) Find(id int) (*Document, error) {
 	if id <= 0 {
@@ -90,8 +104,11 @@ func (item *Document) Find(id int) (*Document, error) {
 	if err == orm.ErrNoRows {
 		return item, ErrDataNotExist
 	}
+	if err != nil {
+		return item, err
+	}
 
-	return item, nil
+	return item.localizeTimes(), nil
 }
 
 // 插入和更新文档.
@@ -131,8 +148,11 @@ func (item *Document) FindByIdentityFirst(identify string, bookId int) (*Documen
 	o := orm.NewOrm()
 
 	err := o.QueryTable(item.TableNameWithPrefix()).Filter("book_id", bookId).Filter("identify", identify).One(item)
+	if err != nil {
+		return item, err
+	}
 
-	return item, err
+	return item.localizeTimes(), nil
 }
 
 // 递归删除一个文档.
@@ -197,7 +217,7 @@ func (item *Document) FromCacheById(id int) (*Document, error) {
 
 	if err := cache.Get("Document.Id."+strconv.Itoa(id), &item); err == nil && item.DocumentId > 0 {
 		logs.Info("从缓存中获取文档信息成功 ->", item.DocumentId)
-		return item, nil
+		return item.localizeTimes(), nil
 	}
 
 	if item.DocumentId > 0 {
@@ -218,7 +238,7 @@ func (item *Document) FromCacheByIdentify(identify string, bookId int) (*Documen
 
 	if err := cache.Get(key, item); err == nil && item.DocumentId > 0 {
 		logs.Info("从缓存中获取文档信息成功 ->", key)
-		return item, nil
+		return item.localizeTimes(), nil
 	}
 
 	defer func() {
@@ -234,6 +254,9 @@ func (item *Document) FindListByBookId(bookId int) (docs []*Document, err error)
 	o := orm.NewOrm()
 
 	_, err = o.QueryTable(item.TableNameWithPrefix()).Filter("book_id", bookId).OrderBy("order_sort").All(&docs)
+	for _, doc := range docs {
+		doc.localizeTimes()
+	}
 
 	return
 }
@@ -318,7 +341,7 @@ func (item *Document) Processor() *Document {
 						release += docCreator.Account
 					}
 				}
-				release += " &nbsp;" + i18n.Tr(item.Lang, "doc.ft_create_time") + item.CreateTime.Local().Format("2006-01-02 15:04") + "<br>"
+				release += " &nbsp;" + i18n.Tr(item.Lang, "doc.ft_create_time") + item.CreateTime.In(time.Local).Format("2006-01-02 15:04") + "<br>"
 
 				if item.ModifyAt > 0 {
 					docModify, err := NewMember().Find(item.ModifyAt, "real_name", "account")
@@ -330,7 +353,7 @@ func (item *Document) Processor() *Document {
 						}
 					}
 				}
-				release += " &nbsp;" + i18n.Tr(item.Lang, "doc.ft_update_time") + item.ModifyTime.Local().Format("2006-01-02 15:04") + "<br>"
+				release += " &nbsp;" + i18n.Tr(item.Lang, "doc.ft_update_time") + item.ModifyTime.In(time.Local).Format("2006-01-02 15:04") + "<br>"
 				release += "</div>"
 
 				if selector := docQuery.Find("div.markdown-article").First(); selector.Size() > 0 {
