@@ -90,7 +90,7 @@
 | 日期    | 2026-02-27 ~ 2026-03-23                                                                                         |
 | 问题    | Blog 时间显示与本地不一致；Termux 等环境时区异常                                                                                  |
 | 上游改动  | `models/Blog.go`、时间格式化相关                                                                                        |
-| 当前项目  | 已用 `import _ "time/tzdata"`；Blog/Document/DocumentHistory 读出后统一 `.In(time.Local)`；`date_format` 同步本地化 |
+| 当前项目  | 已用 `import _ "time/tzdata"`；Blog/Document/DocumentHistory 读出后统一 `.In(time.Local)`；`date_format` 同步本地化           |
 | 建议动作  | cherry-pick 时间处理；核对 `models/Blog.go`、模板中的 `date_format`                                                         |
 | 工作量   | 小                                                                                                               |
 | 验证    | Blog 列表创建/修改时间与系统时区一致                                                                                           |
@@ -259,7 +259,7 @@
 
 ---
 
-## 五、阶段 2：编辑器与阅读体验（已处理）
+## 五、阶段 2：编辑器与阅读体验
 
 ### 2.1 Editor.md + Mermaid + KaTeX
 
@@ -270,10 +270,11 @@
 | 日期    | 2026-03-31                                                                                |
 | 内容    | editor.md 升级；mermaid 8.13→10.9；KaTeX auto-render；#909/#948 修复                             |
 | 上游改动  | `static/editor.md/`**、`static/js/markdown.js`、`views/document/markdown_edit_template.tpl` |
-| 当前项目  | 有 `static/js/markdown.js`、`views/document/markdown_edit_template.tpl`，KaTeX 无 auto-render |
+| 当前项目  | **已落地**（KaTeX min/auto-render、`widgets/scripts.tpl`、阅读页渲染接线等）                              |
 | 工作量   | 中（1~2 天，需回归公式/流程图/序列图）                                                                    |
 | 风险    | 静态资源体积大，与现有 wangEditor 并存需分别测                                                             |
 | 可独立跟进 | 是                                                                                         |
+| 状态    | **已落地**                                                                                   |
 
 
 **当前差距速查（核查于 2026-06）：**
@@ -283,7 +284,7 @@
 | ------------------------------- | ----------------------------------------------------------------------- | -------------------------------- | ---------------------------------------------------------------------- |
 | `static/editor.md/editormd.js`  | v1.5.0（行 5/62）                                                          | v1.7.17                          | 编辑预览 mermaid 用 `mermaid.init()`，与 mermaid 10 不兼容                       |
 | `static/editor.md/lib/mermaid/` | 3.5.6，仅 `mermaid.slim.js`/`mermaidAPI.slim.js`，**无** `mermaid.min.js`   | 10.x                             | 编辑预览只能渲染极旧语法                                                           |
-| `static/katex/`                 | 仅 `katex.js`/`katex.css`，**无** `katex.min.*`、**无** `auto-render.min.js` | 含 min + auto-render              | `default_read.tpl:29`、`blog/index.tpl:24` 写死 `katex.min.css` → **404** |
+| `static/katex/`                 | 仅 `katex.js`/`katex.css`，**无** `katex.min.`*、**无** `auto-render.min.js` | 含 min + auto-render              | `default_read.tpl:29`、`blog/index.tpl:24` 写死 `katex.min.css` → **404** |
 | 阅读页 JS                          | `default_read.tpl` 只引 mermaid/katex **CSS**，未引 JS                       | 应引 mermaid + katex + auto-render | 公式/流程图阅读页**完全不渲染**                                                     |
 | `kancloud.js`                   | `articleOpen` 仅调 `initHighlighting()`                                   | 切文档后需补 mermaid/katex 重渲染         | AJAX 切文档后公式/图无效                                                        |
 | `views/widgets/scripts.tpl`     | **缺失**（但 `BaseController.go:79` 已读取注入 `{{.Scripts}}`）                   | —                                | 现成的"全局脚本注入点"未利用                                                        |
@@ -291,6 +292,8 @@
 
 
 **本地最小升级方案**
+
+- **状态**：已落地。
 
 按"组件升级 + 最小本地接线"四步走，不合并上游 Go/模板：
 
@@ -734,7 +737,7 @@ Day 1 下午    : 回归（编辑/阅读/Blog/PDF）
 | 小节  | 主题                      | 本地最小方案要点                                                                                      | 改动量       | 放弃的上游能力                  |
 | --- | ----------------------- | --------------------------------------------------------------------------------------------- | --------- | ------------------------ |
 | 0.1 | WorkingDirectory        | 加 `DOC_HOME` env 优先级，回退 `os.Getwd()`                                                          | 0.5 天     | 嵌入资源/单二进制分发              |
-| 0.2 | 时区                      | 已落地：模型 `.In(time.Local)` + `date_format` + tzdata                                              | 0.5 天     | Termux/ZONEINFO 特殊探测     |
+| 0.2 | 时区                      | 已落地：模型 `.In(time.Local)` + `date_format` + tzdata                                             | 0.5 天     | Termux/ZONEINFO 特殊探测     |
 | 0.3 | 大文件上传                   | `app.conf` 加 `http_max_upload_mb`，启动赋值                                                        | 2 小时      | 分片/断点续传                  |
 | 1.1 | 搜索打底                    | 标题加权 + MySQL FULLTEXT / SQLite FTS5                                                           | 1~2 天     | jieba、倒排表、TF-IDF         |
 | 1.2 | reindex                 | `doc reindex` 重建 FULLTEXT/FTS5 + 技术词白名单                                                       | 0.5~1 天   | 批量回表加权                   |
