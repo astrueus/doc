@@ -69,34 +69,46 @@
 ### 2.1 目标一：MCP Server（AI 接入）
 
 > 与 [upstream-mindoc-checklist.md §4.2](./upstream-mindoc-checklist.md) 呼应，落地本地最小方案。
+> **SDK 选型**：直接采用官方 `github.com/modelcontextprotocol/go-sdk`（v1.x），避免未来从社区 SDK 迁移的双份成本。详见 §八 决策日志。
 
 #### 现状
 
-- 无 MCP 相关代码，`go.mod` 无 `mark3labs/mcp-go`。
+- 无 MCP 相关代码，`go.mod` 无 MCP SDK 依赖。
 - 搜索只有 `models/DocumentSearchResult.go` 的 SQL `LIKE`，无倒排索引/向量搜索。
 - 权限走 Session Cookie，MCP 无天然身份接入通道。
+- **`MemberToken` 表是邮箱验证码用途**（含 `Email` / `SendTime` / `ValidTime` / 发送次数限制），**不能用于 MCP Bearer Token**。需新增 `member_api_tokens` 表（见下）。
 
 #### 方案（分两期）
 
 | 期 | 内容 | 工作量 |
 |---|---|---|
-| **MVP** | 新增 `mcp/` 包 + `commands/mcp.go` 子命令（`doc mcp`）。基于 `github.com/mark3labs/mcp-go` **stdio 模式**，暴露 4 个工具：`search_document(query, book?, limit)`、`get_document(id 或 book+identify)`、`list_books()`、`list_document_tree(book_key)`。内部直接调 `models` 层，权限按"公开项目 + 有 Token 的项目"过滤 | 1~1.5 天 |
-| **Streamable HTTP** | 增加 `mcp/http.go`，用 beego 挂 SSE / Streamable HTTP，配 Bearer Token（复用 `MemberToken` 表）；`conf/app.conf` 加 `mcp_enable` / `mcp_listen` / `mcp_token_required` | 1~2 天 |
+| **MVP · stdio + 读写工具** | 新增 `mcp/` 包 + `commands/mcp.go` 子命令（`doc mcp`）。基于 **官方 `modelcontextprotocol/go-sdk` v1.x**，stdio 模式，暴露 **10 个工具**：<br>**读（4 个）** `search_document` / `get_document` / `list_books` / `list_document_tree`<br>**写（6 个）** `create_document` / `update_document_content`（带乐观锁）/ `append_document_content` / `update_document_meta` / `release_document` / `delete_document`（强制 `confirm: true`）<br>内部直接调 `models` 层，权限走 `BookResult.FindByIdentify(identify, memberId)`；stdio 免鉴权，用 `mcp_stdio_member` 指定身份 | 2~3 天 |
+| **Streamable HTTP + API Token** | 新增 `mcp/http.go`（`http.Handler`，Beego 挂 `/mcp/*`）+ Bearer 鉴权 middleware；**新增 `models/MemberApiToken.go`** 表（`token_hash` / `scopes` / `expires_at` / `last_used_at`）+ 后台"生成/撤销 API Token"页面；`conf.d/99-mcp.conf` 加 `mcp_enable` / `mcp_listen` / `mcp_stdio_member` / `mcp_token_required` / `mcp_rate_limit` | 2~3 天 |
 
 #### 关键设计点
 
 1. **单二进制多入口**：`doc`（web 服务）、`doc mcp`（stdio）、`doc mcp --http`（Streamable HTTP）。共享 `commands.ResolveCommand` 加载 conf/DB/cache/models，只跳过 `web.Run()`。
-2. **工具输出统一走 markdown**（不是 HTML），AI 侧最好用。
-3. **`mcp/tools.go` 抽象层**：把"权限过滤 + 摘要生成"集中处理，避免下沉到 controller 的 view 逻辑。
-4. **为将来上倒排索引铺路**：`search_document` 内部走 `searchProvider` 接口，`sql_like` 是默认实现，未来切 `fulltext`/`bleve`/`qdrant` 只改一处。
+2. **工具输入用 struct + `jsonschema` tag**（官方 SDK 泛型 handler 会自动推 schema），MCP 工具的 In/Out struct 天然是 DTO，可提前落到 `internal/dto/mcpdto/`，为 Round 4 的 Repository/Service 分层铺路。
+3. **鉴权分离**：stdio 免鉴权（本地进程即身份，`mcp_stdio_member` 指定 Member）；HTTP 强制 Bearer Token（`Authorization: Bearer <token>` → `sha256` → 查 `member_api_tokens` → 注入 `context` 中的 Member）。
+4. **权限统一走现有 BookRole**：`≥ BookEditor(2)` 才有写权限；`delete_document` 额外要求 `confirm: true` 参数。
+5. **乐观锁**：`update_document_content` 必须带 `expect_version`（对应 `Document.Version` 时间戳），版本不匹配返回 `VERSION_CONFLICT`，让 AI 自行 `get_document` 后重试。
+6. **只写 Markdown**：写工具只更新 `Document.Markdown`，`Content`/`Release` HTML 由现有 `ReleaseContent()` 流程生成（`release_document` 工具或 `auto_release=true` 触发）。
+7. **`mcp/tools_*.go` 抽象层**：`tools_read.go` / `tools_write.go` 只做"参数校验 + 权限判断 + 调 model + 组装结果"，业务逻辑仍在 `models`。
+8. **为将来上倒排索引铺路**：`search_document` 内部走 `searchProvider` 接口，`sql_like` 是默认实现，未来切 `fulltext`/`bleve`/`qdrant` 只改一处。
+9. **限流**：HTTP 模式下用 `golang.org/x/time/rate` 写一个 `mcp.Middleware`，通过 `AddReceivingMiddleware` 挂上；写工具与删除工具分别做次数限制（防 AI 批量误操作）。
+10. **工具输出统一走 markdown / 结构化字段**，不返回 HTML，AI 侧最好用。
 
 #### 交付物
 
-- `mcp/server.go`、`mcp/tools.go`（≈200 行）
+- `mcp/server.go`、`mcp/http.go`、`mcp/authz.go`、`mcp/errors.go`
+- `mcp/tools_read.go`、`mcp/tools_write.go`、`mcp/convert.go`
 - `commands/mcp.go`（新增子命令）
-- `go.mod` 加 `github.com/mark3labs/mcp-go`
-- `conf/app.conf.example` 增加 mcp 段
-- `docs/mcp-integration.md`（Claude Desktop / Cursor 接入示例）
+- `models/MemberApiToken.go`（新表，**不复用 `MemberToken`**）
+- `controllers/MemberApiTokenController.go` + `views/member/api_tokens.tpl`（Token 管理页）
+- `internal/dto/mcpdto/`（工具 In/Out struct，为 Round 4 铺路）
+- `go.mod` 加 `github.com/modelcontextprotocol/go-sdk`（锁定 v1.x 稳定版）
+- `conf/app.conf.example`（或 `conf.d/99-mcp.conf`）增加 mcp 段
+- `docs/mcp-integration.md`（Claude Desktop / Cursor stdio + HTTP 接入示例）
 
 ---
 
@@ -376,34 +388,50 @@ type Cache interface {
 
 ## 五、实施顺序（四轮迭代）
 
-### 🥇 Round 1：低风险 · 高性价比（1 周）
+> **优先级说明（2026-07）**：
+> - **MCP 保留在 Round 3**。MCP 只硬依赖 Round 1（cobra 子命令 / cache 抽象 / 错误处理基础），软依赖 Round 2 的强类型 config。让 Round 2 先完成目录搬迁 + 强类型 config，Round 3 的 `mcp/` 包直接写在最终目录 `server/internal/mcp/` 下，**零重复搬迁**，且 MCP 可直接使用 `config.Global.MCP.XXX`。
+> - `BaseController.Prepare` 缓存（§三 高优先级）从 Round 2 提到 Round 1，纯性能优化、风险低、且不阻塞任何后续项。
+> - Round 1 加入 **错误处理基础（`BizError` + `JsonError` helper）**，为 Round 3 的 MCP 工具统一错误返回铺路（也让 Round 2 目录搬迁时顺带把老 controller 的错误返回收敛）。
+> - Round 1 新增 `cobra`，正是为了 Round 3 的 `doc mcp` 子命令。
 
-- [ ] **配置 Step 1+5**：`configs/` 目录独立 + 修 `smtp_host` 双引号 bug
-- [ ] **`ioutil` 全局替换 `os.ReadFile` / `os.WriteFile`**
+### 🥇 Round 1：低风险重构 + 后续轮次前置准备（1 周）
+
+- [ ] **配置 Step 1+5**：`configs/` 目录独立 + 修 `smtp_host` / `smtp_port` 双引号 bug
+- [ ] **`ioutil` 全局替换 `os.ReadFile` / `os.WriteFile`**（12 文件）
 - [ ] **`interface{}` → `any`**（Go 1.18+）
-- [ ] **`main.go` 用 `cobra`**
+- [ ] **`main.go` 用 `cobra`**（为 Round 3 的 `doc mcp` 子命令铺路）
 - [ ] **缓存方案 A**：`cache.Cache` 抽接口 + `NullCache/MemoryCache/RedisCache/FileCache` 独立文件 + 加 `context` 传递
+- [ ] **`BaseController.Prepare` 加 options 缓存**（§三 高优先级；从 Round 2 提前，纯性能优化不阻塞任何后续）
+- [ ] **错误处理基础**：`internal/errs/` 定义 `BizError{Code, Msg}` + `controllers/base` 加 `JsonError(err)` helper（§三 高优先级；为 Round 3 MCP 工具错误返回铺路）
 - [ ] **前端 P0**：修 katex 404 + editor.md 升级（引用 upstream-mindoc-checklist.md §2.1）
 
 **风险：** 低。全部是内部重构，对用户零感知。
 
-### 🥈 Round 2：目录结构调整（1~2 周）
+### 🥈 Round 2：目录结构调整 + 配置强类型（1~2 周）
+
+> 内部收拾轮次。为 Round 3 MCP 落地打好最终目录形态与配置基础。
 
 - [ ] **对齐 frontend-backend-split-migration-plan.md**：搬迁到 `server/` + `web/` + `deploy/`
-- [ ] **配置 Step 2+3+4**：`conf.d/` 分组 + 强类型 `config.Config` struct + `.env` 支持
+- [ ] **配置 Step 2+3+4**：`conf.d/` 分组 + 强类型 `config.Config` struct + `.env` 支持（含 `MCPConfig` 段占位，Round 3 直接使用）
 - [ ] **`routers` 按域拆分**（对齐 router-split-migration-plan.md）
-- [ ] **`BaseController.Prepare` 加 options 缓存**
+- [ ] 预留 `server/internal/mcp/` 与 `internal/dto/mcpdto/` 空目录（Round 3 直接写入，无重复搬迁）
 
 **风险：** 中。所有 import 路径、模板路径、脚本路径要同步改。建议开专门的 `refactor/layout` 分支。
 
-### 🥉 Round 3：MCP + 搜索基础（1~2 周）
+### 🥉 Round 3：MCP + 搜索基础（2~3 周）
 
-- [ ] **MCP MVP**：stdio + 4 个基础工具（`search_document` / `get_document` / `list_books` / `list_document_tree`）
+> 用户价值最高的一轮。**MCP 支持读写文档**，AI 助手直接接入。代码直接写在 Round 2 完成的最终目录（`server/internal/mcp/`），零重复搬迁。
+
 - [ ] **搜索最小方案**（对齐 upstream-mindoc-checklist.md §1.1）：MySQL FULLTEXT / SQLite FTS5 + 标题加权
-- [ ] **MCP Streamable HTTP**：Bearer Token（复用 `MemberToken`）
-- [ ] **`docs/mcp-integration.md`**：Claude Desktop / Cursor 接入示例
+- [ ] **MCP MVP · stdio**：官方 `modelcontextprotocol/go-sdk` v1.x，10 个工具（4 读 + 6 写）
+  - [ ] 读：`search_document` / `get_document` / `list_books` / `list_document_tree`
+  - [ ] 写：`create_document` / `update_document_content`（乐观锁）/ `append_document_content` / `update_document_meta` / `release_document` / `delete_document`（`confirm: true`）
+- [ ] **`models/MemberApiToken.go`** 新表 + 后台管理页（**不复用 `MemberToken`**）
+- [ ] **MCP Streamable HTTP + Bearer Token**：Beego 挂 `/mcp/*`，`golang.org/x/time/rate` 限流
+- [ ] **`internal/dto/mcpdto/`**：工具 In/Out struct（为 Round 4 Repository/Service 分层铺路）
+- [ ] **`docs/mcp-integration.md`**：Claude Desktop / Cursor stdio + HTTP 接入示例
 
-**风险：** 中。MCP 是新增功能，不影响存量。搜索改动限于 `models/DocumentSearchResult.go` + 建索引。
+**风险：** 中。MCP 是新增功能，不影响存量；写工具通过现有 `BookRole` + 乐观锁 + `confirm` 参数控制风险。搜索改动限于 `models/DocumentSearchResult.go` + 建索引。
 
 ### 🏅 Round 4：模型 / 日志 / 前端现代化（3~4 周，按需推进）
 
@@ -411,6 +439,7 @@ type Cache interface {
 - [ ] **日志换 `slog`** + 结构化字段
 - [ ] **`beego/i18n` 换 `nicksnyder/go-i18n/v2`**
 - [ ] **前端 P1~P2**：Vite 构建，vendor 集中化
+- [ ] （可选）根据 Round 3 MCP 使用反馈，评估是否上倒排索引（bleve / meilisearch）
 
 **风险：** 较高，但可拆多个小 PR。**ORM 迁移建议单独立项**，别混进来。
 
@@ -427,6 +456,10 @@ type Cache interface {
 | 5 | `orm.DefaultRowsLimit = -1` 全局关掉了默认分页 | `commands/command.go:39`；重构 model 时不要依赖默认 | 显式在每个 Query 里写 `Limit()` |
 | 6 | Beego `web.BConfig.WebConfig.ViewsPath` 硬编码 | `commands/command.go:345-347`；目录变动要同步 | Round 2 迁移时统一改 |
 | 7 | 前端 vendor 无版本管理 | 升级/回退困难 | Round 4 引入 Vite 时用 npm/pnpm 管起来 |
+| 8 | **AI 通过 MCP 批量误删/误覆盖文档** | `delete_document` 若无保护，AI 幻觉可导致成片文档消失 | ① 强制 `confirm: true` 参数；② 每分钟删除/写入次数限流（`golang.org/x/time/rate`）；③ 写工具保存前存快照到 `DocumentHistory`；④ Round 3 上线前先在测试项目跑 |
+| 9 | **AI 与人同时编辑同一文档** | AI 覆盖人的未保存改动，或反之 | `update_document_content` 强制带 `expect_version`（对应 `Document.Version` 时间戳）做乐观锁；版本不匹配返回 `VERSION_CONFLICT`，AI 侧 `get_document` 后重试 |
+| 10 | **MCP API Token 泄露** | Token 一旦泄露，AI 侧任何写权限都可能被滥用 | ① 数据库只存 `sha256(token)`，不存明文；② 支持 `expires_at` 和一键撤销；③ 记录 `last_used_at`，异常访问可审计；④ HTTP 强制 HTTPS（部署要求） |
+| 11 | **误将 `MemberToken` 当 API Token 用** | `MemberToken` 是邮箱验证码用途，含 `Email`/`SendTime`/发送次数限制，用作 API Token 会破坏原有找回密码逻辑 | 明确新建 `member_api_tokens` 表（见 §2.1）；两张表职责分离 |
 
 ---
 
@@ -441,20 +474,25 @@ type Cache interface {
 - [ ] `interface{}` → `any`
 - [ ] `main.go` 引入 `cobra`
 - [ ] `cache.Cache` 接口抽象
+- [ ] `BaseController.Prepare` options 缓存
+- [ ] `internal/errs/` + `BizError` + `JsonError` helper
 - [ ] KaTeX / editor.md 前端修复
 
-### Round 2
+### Round 2（目录搬迁 + 配置强类型）
 - [ ] 目录搬迁到 `server/` + `web/` + `deploy/`
 - [ ] `conf.d/` 分组配置
-- [ ] 强类型 `config.Config` struct
+- [ ] 强类型 `config.Config` struct（含 `MCPConfig` 段占位）
 - [ ] `.env` 支持
 - [ ] `routers` 按域拆分
-- [ ] `BaseController.Prepare` options 缓存
+- [ ] 预留 `server/internal/mcp/` 与 `internal/dto/mcpdto/` 空目录
 
-### Round 3
-- [ ] MCP stdio MVP
+### Round 3（MCP + 搜索）
 - [ ] 搜索 FULLTEXT/FTS5 + 标题加权
-- [ ] MCP Streamable HTTP + Bearer Token
+- [ ] MCP stdio · 4 个读工具（`search_document` / `get_document` / `list_books` / `list_document_tree`）
+- [ ] MCP stdio · 6 个写工具（`create_document` / `update_document_content` / `append_document_content` / `update_document_meta` / `release_document` / `delete_document`）
+- [ ] `models/MemberApiToken.go` + 后台管理页
+- [ ] MCP Streamable HTTP + Bearer Token + 限流
+- [ ] `internal/dto/mcpdto/`
 - [ ] `docs/mcp-integration.md`
 
 ### Round 4
@@ -476,6 +514,10 @@ type Cache interface {
 | 2026-07-23 | 配置文件分组是否引入 viper？ | 保留 beego `LoadAppConfig` + include 合并 | 减少依赖，`${ENV||default}` 语法已够用 |
 | 2026-07-23 | MCP 是否本轮做 HTTP 模式？ | 分两步（先 stdio，再 HTTP） | stdio 无鉴权顾虑，先解决 AI 接入这一刚需 |
 | 2026-07-23 | 目录结构是否走激进的 `cmd/` + `internal/` 方案？ | 短期走 `server/` + `web/` + `deploy/`；`internal/` 作为长期目标 | 已有 frontend-backend-split-migration-plan.md 详细方案，避免朝令夕改 |
+| 2026-07-23 | **MCP SDK 选型？（mark3labs/mcp-go vs 官方 modelcontextprotocol/go-sdk）** | **直接用官方 `modelcontextprotocol/go-sdk` v1.x** | ① 官方已到 v1（semver 稳定），mcp-go 仍是 v0.x，升级本身就有 API 破坏性风险；② 官方跟 MCP spec 最快（已跟到 2026-07-28）；③ 与 Round 4 的 Repository/DTO 分层天然契合（struct schema = DTO）；④ 避免未来从 mcp-go 迁移的双份成本 |
+| 2026-07-23 | **MCP 是否支持写入文档？** | **是**，MVP 就要 6 个写工具 | 用户核心诉求：AI 助手要能创建/更新文档；通过 `BookRole ≥ Editor` + 乐观锁 `expect_version` + `delete_document` 强制 `confirm: true` 控制风险 |
+| 2026-07-23 | **MCP Bearer Token 是否复用 `MemberToken` 表？** | **否**，新建 `member_api_tokens` 表 | `MemberToken` 是邮箱验证码用途（`Email`/`SendTime`/发送次数限制），职责不同；两表分离避免破坏找回密码逻辑 |
+| 2026-07-23 | **四轮优先级：MCP 与目录调整孰先？** | **MCP 保留在 Round 3，目录调整放 Round 2** | ① MCP 只硬依赖 Round 1（cobra / cache / 错误处理），软依赖 Round 2 的强类型 config；② 让 Round 2 先完成目录搬迁，Round 3 的 `mcp/` 包直接写在 `server/internal/mcp/` 最终位置，**零重复搬迁**；③ 用户价值仅推迟 1~2 周，换 MCP 代码从第一天就在正确目录下 |
 
 ---
 
@@ -485,7 +527,8 @@ type Cache interface {
 
 - [Go Project Layout Standards](https://github.com/golang-standards/project-layout)
 - [Model Context Protocol 规范](https://modelcontextprotocol.io/)
-- [mark3labs/mcp-go](https://github.com/mark3labs/mcp-go)
+- [modelcontextprotocol/go-sdk](https://github.com/modelcontextprotocol/go-sdk) — 官方 Go SDK（本项目采用）
+- [MCP Go SDK Quick Start](https://go.sdk.modelcontextprotocol.io/quick_start/)
 - [redis/go-redis](https://github.com/redis/go-redis)
 - [nicksnyder/go-i18n](https://github.com/nicksnyder/go-i18n)
 - [spf13/cobra](https://github.com/spf13/cobra) + [viper](https://github.com/spf13/viper)
