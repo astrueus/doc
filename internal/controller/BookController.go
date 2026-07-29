@@ -19,7 +19,7 @@ import (
 
 	"net/http"
 
-	"git.itopcms.com/jackliu/doc/graphics"
+	"git.itopcms.com/jackliu/doc/pkg/graphics"
 	"git.itopcms.com/jackliu/doc/internal/config"
 	"git.itopcms.com/jackliu/doc/internal/model"
 	"git.itopcms.com/jackliu/doc/pkg/pagination"

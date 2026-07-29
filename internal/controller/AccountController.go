@@ -13,7 +13,7 @@ import (
 	"git.itopcms.com/jackliu/doc/internal/config"
 	"git.itopcms.com/jackliu/doc/internal/model"
 	"git.itopcms.com/jackliu/doc/internal/thirdparty/dingtalk"
-	"git.itopcms.com/jackliu/doc/mail"
+	"git.itopcms.com/jackliu/doc/pkg/mail"
 	"git.itopcms.com/jackliu/doc/pkg/gob"
 	"git.itopcms.com/jackliu/doc/pkg/krand"
 	passutil "git.itopcms.com/jackliu/doc/pkg/password"

@@ -13,7 +13,7 @@ import (
 	"net/http"
 	"regexp"
 
-	"git.itopcms.com/jackliu/doc/converter"
+	"git.itopcms.com/jackliu/doc/internal/converter"
 	"git.itopcms.com/jackliu/doc/internal/config"
 	"git.itopcms.com/jackliu/doc/pkg/cryptil"
 	"git.itopcms.com/jackliu/doc/pkg/filetil"

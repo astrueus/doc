@@ -17,9 +17,9 @@ RUN go env
 RUN go mod tidy -v
 RUN go build -o doc -ldflags "-w -s -X 'git.itopcms.com/jackliu/doc/internal/config.VERSION=$TAG' -X 'git.itopcms.com/jackliu/doc/internal/config.BUILD_TIME=`date`' -X 'git.itopcms.com/jackliu/doc/internal/config.GO_VERSION=`go version`'" ./cmd/doc
 RUN cp configs/app.conf.example configs/app.conf
-# 清理源码与构建脚手架；保留运行所需：configs/ web/ uploads/ mail/ graphics/ doc start.sh sync_host.sh
+# 清理源码与构建脚手架；保留运行所需：configs/ web/ uploads/ 与二进制
 RUN rm -f appveyor.yml .travis.yml .gitattributes .gitignore go.mod go.sum README.md
-RUN rm -rf cache cmd internal pkg converter .git .github scripts docs
+RUN rm -rf cache cmd internal pkg .git .github scripts docs
 # 将部署脚本提升到镜像工作目录根，便于 ENTRYPOINT 与 sync 引用
 RUN cp deployments/start.sh /app/start.sh \
  && cp deployments/sync_host.sh /app/sync_host.sh \

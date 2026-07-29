@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"git.itopcms.com/jackliu/doc/graphics"
+	"git.itopcms.com/jackliu/doc/pkg/graphics"
 	"git.itopcms.com/jackliu/doc/internal/config"
 	"git.itopcms.com/jackliu/doc/internal/model"
 	"github.com/beego/beego/v2/core/logs"

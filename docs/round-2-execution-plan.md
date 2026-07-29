@@ -85,10 +85,13 @@ doc/
 │  │  ├─ router.go                             # 汇总入口
 │  │  ├─ account.go / manager.go / document.go / book.go / blog.go / api.go
 │  ├─ cache/                                   # 原 cache/（内部升级放 Round 4）
+│  ├─ converter/                               # 原根目录 converter/（电子书导出）
 │  ├─ errs/                                    # Round 1 已建好，import 路径不变（本轮 rename import）
 │  └─ mcp/                                     # 【空目录 · Round 3 写入】
 ├─ pkg/                                        # 可对外复用工具
 │  ├─ cryptil / filetil / pagination / requests / gob / krand / password / template_fun
+│  ├─ graphics/                                # 原根目录 graphics/（图片裁剪/缩放）
+│  ├─ mail/                                    # 原根目录 mail/（SMTP；模板仍在 web/views）
 │  └─ (原 utils/ 里通用部分)
 ├─ configs/                                    # Round 1 已建好；本轮新增 [section] 分组
 │  ├─ app.conf / app.conf.example / app.conf.dev.example / app.conf.prod.example
@@ -105,8 +108,6 @@ doc/
 │  └─ spug/  (spug 脚本)
 ├─ scripts/                                    # build.sh / build.bat（保留）
 ├─ docs/                                       # 保留
-├─ mail/                                       # 邮件模板（保留）
-├─ graphics/                                   # 验证码素材（保留在根，与 uploads/ 一起）
 ├─ runtime/  uploads/                           # 运行时数据（文件缓存/导出在 runtime/cache/）
 ├─ go.mod / go.sum / README.md / LICENSE.md
 └─ favicon.ico / simsun.ttc                    # 迁到 web/static/ 或保留根（评估中，见 T2）
@@ -152,7 +153,10 @@ doc/
 | `favicon.ico`                                                                                                    | `web/static/favicon.ico`                                                                                     | beego 配置 favicon 路径                                                       |
 | `simsun.ttc`                                                                                                     | `web/static/fonts/simsun.ttc`                                                                                | 若 `gocaptcha.SetFontPath` 引用                                              |
 | `cache/` (根目录运行时)                                                                                                | **删除**（已并入 `runtime/cache/`）                                                                                 | 配置默认 `./runtime/cache/`；代码在 `internal/cache/`                             |
-| `runtime/` / `uploads/` / `graphics/`                                                                            | 保留在根                                                                                                         | 运行时数据；文件缓存/导出落盘走 `runtime/cache/`                                             |
+| `converter/`                                                                                                     | `internal/converter/`                                                                                        | 电子书导出；偏业务，放 `internal/`                                                  |
+| `graphics/`                                                                                                      | `pkg/graphics/`                                                                                              | 通用图片裁剪/缩放（非「验证码素材」目录）                                                     |
+| `mail/`                                                                                                          | `pkg/mail/`                                                                                                  | SMTP 客户端；邮件 HTML 模板仍在 `web/views/`                                       |
+| `runtime/` / `uploads/`                                                                                          | 保留在根                                                                                                         | 运行时数据；文件缓存/导出落盘走 `runtime/cache/`                                             |
 
 
 ---
@@ -246,6 +250,11 @@ git mv views  web/views
 git mv favicon.ico web/static/favicon.ico
 git mv simsun.ttc  web/static/fonts/simsun.ttc
 
+# 根目录遗留 Go 包（与 utils 同类，统一收编）
+git mv converter internal/converter
+git mv graphics  pkg/graphics
+git mv mail      pkg/mail
+
 # 部署
 git mv Dockerfile deployments/Dockerfile
 git mv docker-compose.yml deployments/docker-compose.yml
@@ -272,6 +281,9 @@ $replacements = @(
     @{ From = 'git.itopcms.com/jackliu/doc/middleware';  To = 'git.itopcms.com/jackliu/doc/internal/middleware' },
     @{ From = 'git.itopcms.com/jackliu/doc/cache';       To = 'git.itopcms.com/jackliu/doc/internal/cache' },
     @{ From = 'git.itopcms.com/jackliu/doc/commands';    To = 'git.itopcms.com/jackliu/doc/internal/cli' },
+    @{ From = 'git.itopcms.com/jackliu/doc/converter';  To = 'git.itopcms.com/jackliu/doc/internal/converter' },
+    @{ From = 'git.itopcms.com/jackliu/doc/graphics';   To = 'git.itopcms.com/jackliu/doc/pkg/graphics' },
+    @{ From = 'git.itopcms.com/jackliu/doc/mail';       To = 'git.itopcms.com/jackliu/doc/pkg/mail' },
     @{ From = 'git.itopcms.com/jackliu/doc/utils/cryptil';    To = 'git.itopcms.com/jackliu/doc/pkg/cryptil' },
     @{ From = 'git.itopcms.com/jackliu/doc/utils/filetil';    To = 'git.itopcms.com/jackliu/doc/pkg/filetil' },
     # ... 其余 utils 子包同上
@@ -368,7 +380,7 @@ go mod tidy
 - `internal/model/DocumentModel.go:285, 286` — 删除 book 缓存目录，保持 `uploads/` 不动
 - `internal/model/BookModel.go:516, 790, 795, 805, 808, 859, 863` — 上传路径处理，保持 `uploads/` 不动
 
-> **结论：** `uploads/` / `runtime/` / `graphics/` **保留在根**，URL `/uploads/`* 不变，controllers/models 里对这些目录的引用一行不用改。只有 `static/` 和 `views/` 变成 `web/static/` 和 `web/views/` 需要改。
+> **结论：** `uploads/` / `runtime/` **保留在根**，URL `/uploads/`* 不变。根目录 Go 包 `converter/` / `graphics/` / `mail/` 已分别迁入 `internal/converter/`、`pkg/graphics/`、`pkg/mail/`。只有 `static/` 和 `views/` 变成 `web/static/` 和 `web/views/` 需要改资源路径。
 
 
 

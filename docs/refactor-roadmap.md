@@ -194,9 +194,12 @@ doc/
 │  ├─ middleware/                # 合并原 middleware/ + routers/filter.go
 │  ├─ router/                    # 按域拆：api.go / manager.go / document.go / blog.go / router.go(汇总)
 │  ├─ cache/                     # 升级（见 §2.4）
+│  ├─ converter/                 # 电子书导出（原根目录 converter/）
 │  ├─ errs/                      # 【新增】BizError + 错误码
 │  └─ mcp/                       # 【新增】MCP server（Round 3 落地）
 ├─ pkg/                          # 可对外复用工具（原 utils/* 中通用部分）
+│  ├─ graphics/                  # 图片裁剪/缩放（原根目录 graphics/）
+│  └─ mail/                      # SMTP（原根目录 mail/；模板在 web/views）
 ├─ configs/                      # 【新增】只放配置文件（不含 .go）
 │  ├─ app.conf / app.conf.example
 │  # 本轮不拆多文件；`app.conf` 内部走 [section] 分组，见 §2.3
@@ -213,9 +216,7 @@ doc/
 │  └─ scripts/
 ├─ scripts/                      # 构建脚本 build.sh / build.bat
 ├─ docs/                         # 项目文档（保留）
-├─ mail/                         # 邮件模板（保留）
-├─ graphics/                     # 验证码素材（保留）
-├─ runtime/  uploads/  cache/    # 运行时数据（保留在根，路径不变）
+├─ runtime/  uploads/            # 运行时数据（文件缓存/导出在 runtime/cache/）
 ├─ go.mod  go.sum
 └─ README.md  LICENSE.md
 ```
