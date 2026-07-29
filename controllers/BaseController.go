@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 
 	"git.itopcms.com/jackliu/doc/conf"
+	"git.itopcms.com/jackliu/doc/internal/errs"
 	"git.itopcms.com/jackliu/doc/models"
 	"git.itopcms.com/jackliu/doc/utils"
 	"github.com/beego/beego/v2/core/logs"
@@ -125,6 +126,16 @@ func (c *BaseController) JsonResult(errCode int, errMsg string, data ...any) {
 	}
 
 	c.StopRun()
+}
+
+// JsonError writes a BizError (or a generic internal error) as JSON and stops the request.
+func (c *BaseController) JsonError(err error) {
+	if b, ok := errs.AsBiz(err); ok {
+		c.JsonResult(b.Code, b.Msg)
+		return
+	}
+	logs.Error("unhandled error:", err)
+	c.JsonResult(errs.CodeInternal, "系统内部错误")
 }
 
 // 如果错误不为空，则响应错误信息到浏览器.

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"git.itopcms.com/jackliu/doc/conf"
+	"git.itopcms.com/jackliu/doc/internal/errs"
 	"git.itopcms.com/jackliu/doc/models"
 	"git.itopcms.com/jackliu/doc/utils"
 	"git.itopcms.com/jackliu/doc/utils/pagination"
@@ -88,23 +89,27 @@ func (c *SearchController) User() {
 	key := c.Ctx.Input.Param(":key")
 	keyword := strings.TrimSpace(c.GetString("q"))
 	if key == "" || keyword == "" {
-		c.JsonResult(404, i18n.Tr(c.Lang, "message.param_error"))
+		c.JsonError(errs.New(errs.CodeInvalidParam, i18n.Tr(c.Lang, "message.param_error")))
+		return
 	}
 	keyword = sqltil.EscapeLike(keyword)
 
 	book, err := models.NewBookResult().FindByIdentify(key, c.Member.MemberId)
 	if err != nil {
 		if err == models.ErrPermissionDenied {
-			c.JsonResult(403, i18n.Tr(c.Lang, "message.no_permission"))
+			c.JsonError(errs.New(errs.CodeForbidden, i18n.Tr(c.Lang, "message.no_permission")))
+			return
 		}
-		c.JsonResult(500, i18n.Tr(c.Lang, "message.item_not_exist"))
+		c.JsonError(errs.New(errs.CodeNotFound, i18n.Tr(c.Lang, "message.item_not_exist")))
+		return
 	}
 
 	//members, err := models.NewMemberRelationshipResult().FindNotJoinUsersByAccount(book.BookId, 10, "%"+keyword+"%")
 	members, err := models.NewMemberRelationshipResult().FindNotJoinUsersByAccountOrRealName(book.BookId, 10, "%"+keyword+"%")
 	if err != nil {
 		logs.Error("查询用户列表出错：" + err.Error())
-		c.JsonResult(500, err.Error())
+		c.JsonError(errs.Wrap(errs.CodeInternal, err.Error(), err))
+		return
 	}
 	result := models.SelectMemberResult{}
 	items := make([]models.KeyValueItem, 0)
