@@ -579,7 +579,7 @@ Day 1 下午    : 回归（编辑/阅读/Blog/PDF）
 | 上游 PR | [#1010](https://github.com/mindoc-org/mindoc/pull/1010)、[#1012](https://github.com/mindoc-org/mindoc/pull/1012) |
 | 日期    | 2025-09 ~ 2025-10                                                                                               |
 | 内容    | MCP 文档全局检索；配置文档                                                                                                 |
-| 上游新增  | `mcp/` 包、`mark3labs/mcp-go` 依赖                                                                                  |
+| 上游新增  | `mcp/` 包、`mark3labs/mcp-go` 依赖（上游事实。**本项目选官方 `modelcontextprotocol/go-sdk`**，见 [refactor-roadmap.md §八 决策日志](./refactor-roadmap.md#八决策记录decision-log)） |
 | 与搜索关系 | #1027 后 MCP 改用 `PerformSearchV2Raw`（倒排索引）                                                                       |
 | 建议动作  | 若要 AI 集成，建议在搜索体系完成后移植                                                                                           |
 | 工作量   | 中（2~3 天，强依赖搜索）                                                                                                  |
@@ -587,12 +587,17 @@ Day 1 下午    : 回归（编辑/阅读/Blog/PDF）
 
 **本地最小升级方案**
 
-- **核心思路**：MCP 实现强依赖优质搜索。若**不**上倒排索引（即 1.1/1.2 走的也是最小方案），可以做一个**最小可用 MCP shim**：基于 `github.com/mark3labs/mcp-go` 的 stdio server，工具仅暴露 `search_document(query, limit)`、`get_document(id)` 两个，内部直接调现有 `DocumentSearchResult.FindToPager` 与 `models/Document.FindById`，权限按公开文档过滤。
-- **改动文件**：`mcp/server.go`（新建，约 150 行）、`commands/mcp.go`（新增子命令 `doc mcp`）、`go.mod` 加 `mark3labs/mcp-go`。
-- **放弃的上游能力**：HTTP 模式 MCP、文档级权限二次校验、上游配置文档示例、依赖倒排的相关性排序。
-- **工作量**：1 天（不依赖搜索 V2 时）。
-- **验证**：Claude Desktop / Cursor 配置 `doc mcp` 后能列出工具；`search_document("foo")` 返回与 web 搜索一致的前 N 条。
-- **升级路径**：等 1.1/1.2 升级到 #1027/#1034，把内部调用换成 `PerformSearchV2Raw` 即可，不影响 MCP 协议层。
+> ⚠️ **已被 refactor-roadmap.md §2.1 取代（2026-07）**：本节原提出的"仅 2 个只读工具、`mark3labs/mcp-go`、无 HTTP、无鉴权"最小 shim 方案不再执行。
+> 现行方案见 [refactor-roadmap.md §2.1](./refactor-roadmap.md#21-目标一mcp-serverai-接入)：
+> - SDK：**官方 `github.com/modelcontextprotocol/go-sdk` v1.x**（非 mark3labs/mcp-go）
+> - MVP：**10 个工具**（4 读 + 6 写，含创建/更新/删除）
+> - HTTP：Streamable HTTP + Bearer Token + `member_api_tokens` 新表 + 后台管理页
+> - 落地位置：`internal/mcp/`（Round 2 目录调整完成后）
+> - 落地轮次：Round 3（用户价值最高的一轮）
+>
+> **保留的历史信息**（对齐上游 mindoc 时可参考）：
+> - MCP 与搜索的耦合关系仍在，本项目 Round 3 会一并上 MySQL FULLTEXT / SQLite FTS5 + 标题加权
+> - 内部数据源仍走 `DocumentSearchResult.FindToPager` 与 `models/Document.FindById`，权限按 `BookRole` 过滤（比公开文档过滤更严格）
 
 ---
 
@@ -750,7 +755,7 @@ Day 1 下午    : 回归（编辑/阅读/Blog/PDF）
 | 3.2 | OAuth2                  | 并行新增 `WeWorkController`，保留钉钉不重写                                                               | 1~2 天     | 统一 OAuth 抽象              |
 | 3.3 | LDAPS                   | `utils/ldap.go` 加 `useTLS` 参数                                                                 | 2 小时      | mTLS、证书指纹                |
 | 4.1 | i18n                    | `app.conf` 加 `enabled_langs`，模板循环                                                             | 0.5 天     | 后台 UI、俄语翻译               |
-| 4.2 | MCP                     | mcp-go stdio shim，仅 `search_document`/`get_document`                                          | 1 天       | HTTP MCP、依赖倒排排序          |
+| 4.2 | MCP                     | **官方 `modelcontextprotocol/go-sdk`**，10 个工具（4 读 + 6 写），stdio + HTTP Bearer；详见 [refactor-roadmap.md §2.1](./refactor-roadmap.md#21-目标一mcp-serverai-接入) | 4~6 天    | 依赖倒排排序（Round 3 内一并做）    |
 | 5.1 | PostgreSQL              | 仅把 `LIMIT ?, ?` → `LIMIT ? OFFSET ?` 铺路                                                       | 0.5 天     | PG 驱动                    |
 | 5.2 | Docker/PDF              | `Dockerfile` 加 `fonts-noto-cjk` + `tzdata` + 锁 Calibre                                        | 1~2 小时    | 多阶段重排                    |
 
@@ -787,7 +792,7 @@ Day 1 下午    : 回归（编辑/阅读/Blog/PDF）
 ### 14.3 通用原则
 
 - **只动会带来用户可见改进**的部分；其余保留现状。
-- **不引入新依赖**优先；必须引入时（如 mcp-go、KaTeX）选用稳定独立模块。
+- **不引入新依赖**优先；必须引入时（如 `modelcontextprotocol/go-sdk`、KaTeX）选用稳定独立模块。
 - **保留上升路径**：每个最小方案都要让以后可以平滑切换到上游完整实现，不引入"反向锁定"。
 - **不动 Go 后端核心**：能用前端/模板/配置解决就不改 Controller、Model。
 - **可独立验证**：每一步都能单独跑回归，避免"动了 A 才能测 B"。

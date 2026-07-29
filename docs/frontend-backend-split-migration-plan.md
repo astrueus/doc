@@ -1,5 +1,28 @@
 # 前后端目录拆分迁移执行清单
 
+> ⚠️ **文档状态：部分修订（2026-07-29）**
+>
+> 本文档原提出的**目标目录树**（`server/` + `web/` + `deploy/` 三段式）已被 [refactor-roadmap.md §2.2](./refactor-roadmap.md#22-目标二前后端目录结构调整规范化) 的**一步到位 `cmd/` + `internal/` 激进方案**取代。请以 refactor-roadmap.md §2.2 为准。
+>
+> **本文档仍然有效的部分**：
+> - `ViewsPath` / `StaticDir` / 字体路径 / 导出资源拷贝路径的**代码硬编码定位**（第四、五节 + 附录 A）
+> - `commands/install.go` / `commands/command.go` 中的 `conf/lang/` i18n 硬编码位置
+> - Docker / spug / `start.sh` / `sync_host.sh` / systemd 脚本的改动清单
+> - URL 与磁盘路径对照表（附录 B）
+>
+> 在执行 refactor-roadmap.md Round 2（PR-1 + PR-2）时，把本文档中出现的 `server/`、`web/`、`deploy/` 目标路径替换为激进方案的对应位置即可：
+> - `server/controllers/` → `internal/controller/`
+> - `server/models/` → `internal/model/`
+> - `server/routers/` → `internal/router/`
+> - `server/middleware/` → `internal/middleware/`
+> - `server/commands/` → `internal/app/`（装配）+ `cmd/doc/main.go`（入口）
+> - `server/utils/` → `pkg/`（通用部分）
+> - `conf/` → 拆成 `internal/config/`（Go 代码）+ `configs/`（配置文件）
+> - `deploy/` → `deployments/`
+> - `web/` 保持不变
+>
+> ---
+>
 > 在**同一个仓库内**通过目录结构把"服务端 Go 代码"和"前端视图/静态资源"分离，便于阅读、维护和后续演进。
 > 不拆仓、不引入构建工具、不改变现有功能与 URL。
 

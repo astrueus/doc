@@ -9,10 +9,16 @@
 > 同时汇总"顺带发现的技术债"与"前端现代化"两条支线，给出四轮可独立上线的迭代计划。
 >
 > **相关文档：**
-> - [frontend-backend-split-migration-plan.md](./frontend-backend-split-migration-plan.md) — 前后端目录拆分执行清单（同仓内）
-> - [router-split-migration-plan.md](./router-split-migration-plan.md) — 路由按职责拆分与 `/api` 前缀治理
-> - [routers-reference.md](./routers-reference.md) — 现有路由分类参考
-> - [upstream-mindoc-checklist.md](./upstream-mindoc-checklist.md) — 上游 MinDoc 提交跟进清单
+> - **执行文档（每轮独立可落地）：**
+>   - [round-1-execution-plan.md](./round-1-execution-plan.md) — Round 1 · 低风险重构 + 后续前置
+>   - [round-2-execution-plan.md](./round-2-execution-plan.md) — Round 2 · `cmd/`+`internal/` 一步到位 + 强类型 Config
+>   - [round-3-execution-plan.md](./round-3-execution-plan.md) — Round 3 · MCP Server（10 工具 + Bearer + 搜索）
+>   - [round-4-execution-plan.md](./round-4-execution-plan.md) — Round 4 · 模型 / 日志 / i18n / 前端 Vite
+> - **参考文档：**
+>   - [frontend-backend-split-migration-plan.md](./frontend-backend-split-migration-plan.md) — 前后端目录拆分（Round 2 目标目录已更新，附录 A/B 硬编码定位仍适用）
+>   - [router-split-migration-plan.md](./router-split-migration-plan.md) — 路由按职责拆分与 `/api` 前缀治理（Round 2 T6 使用）
+>   - [routers-reference.md](./routers-reference.md) — 现有路由分类参考
+>   - [upstream-mindoc-checklist.md](./upstream-mindoc-checklist.md) — 上游 MinDoc 提交跟进清单
 >
 > **文档生成依据：** 当前仓库代码基线（2026-07），Go 1.25 + Beego v2。
 
@@ -83,7 +89,7 @@
 | 期 | 内容 | 工作量 |
 |---|---|---|
 | **MVP · stdio + 读写工具** | 新增 `mcp/` 包 + `commands/mcp.go` 子命令（`doc mcp`）。基于 **官方 `modelcontextprotocol/go-sdk` v1.x**，stdio 模式，暴露 **10 个工具**：<br>**读（4 个）** `search_document` / `get_document` / `list_books` / `list_document_tree`<br>**写（6 个）** `create_document` / `update_document_content`（带乐观锁）/ `append_document_content` / `update_document_meta` / `release_document` / `delete_document`（强制 `confirm: true`）<br>内部直接调 `models` 层，权限走 `BookResult.FindByIdentify(identify, memberId)`；stdio 免鉴权，用 `mcp_stdio_member` 指定身份 | 2~3 天 |
-| **Streamable HTTP + API Token** | 新增 `mcp/http.go`（`http.Handler`，Beego 挂 `/mcp/*`）+ Bearer 鉴权 middleware；**新增 `models/MemberApiToken.go`** 表（`token_hash` / `scopes` / `expires_at` / `last_used_at`）+ 后台"生成/撤销 API Token"页面；`conf.d/99-mcp.conf` 加 `mcp_enable` / `mcp_listen` / `mcp_stdio_member` / `mcp_token_required` / `mcp_rate_limit` | 2~3 天 |
+| **Streamable HTTP + API Token** | 新增 `mcp/http.go`（`http.Handler`，Beego 挂 `/mcp/*`）+ Bearer 鉴权 middleware；**新增 `models/MemberApiToken.go`** 表（`token_hash` / `scopes` / `expires_at` / `last_used_at`）+ 后台"生成/撤销 API Token"页面；`configs/app.conf` 新增 `[mcp]` section（`mcp_enable` / `mcp_listen` / `mcp_stdio_member` / `mcp_token_required` / `mcp_rate_limit`） | 2~3 天 |
 
 #### 关键设计点
 
@@ -107,76 +113,111 @@
 - `controllers/MemberApiTokenController.go` + `views/member/api_tokens.tpl`（Token 管理页）
 - `internal/dto/mcpdto/`（工具 In/Out struct，为 Round 4 铺路）
 - `go.mod` 加 `github.com/modelcontextprotocol/go-sdk`（锁定 v1.x 稳定版）
-- `conf/app.conf.example`（或 `conf.d/99-mcp.conf`）增加 mcp 段
+- `configs/app.conf.example` 增加 `[mcp]` section
 - `docs/mcp-integration.md`（Claude Desktop / Cursor stdio + HTTP 接入示例）
 
 ---
 
 ### 2.2 目标二：前后端目录结构调整（规范化）
 
-> 与 [frontend-backend-split-migration-plan.md](./frontend-backend-split-migration-plan.md) 深度配合。已有文档采用"轻量方案"（`server/` + `web/` + `deploy/`，保留 `conf/` 在根），本目标可选**激进方案**作为**长期目标**参考。
+> **决策更新（2026-07-29）**：本轮**一步到位** `cmd/` + `internal/` 激进方案，不再走 `server/` + `web/` + `deploy/` 过渡形态。
+> 理由：过渡方案完成后仍要迁到 `internal/`，等于**搬两次**；MCP 从 Round 3 开始就直接落在 `internal/mcp/` 最终位置。
+> [frontend-backend-split-migration-plan.md](./frontend-backend-split-migration-plan.md) 中关于 `ViewsPath` / `StaticDir` / 字体路径 / `conf/lang/` i18n 硬编码 / Docker & spug 脚本改动的**执行细节仍适用**，只是目标目录换成本节的最终结构。
 
 #### 现状问题
 
 ```
 d:\jcwork\doc\
-├─ controllers/    ← 15 个巨型文件
-├─ models/         ← 30+ 文件，Model+Result+Service 混一层
+├─ controllers/    ← 15 个巨型文件（Document 37KB / Book 27KB / Manager 30KB / Blog 20KB）
+├─ models/         ← 33 个文件，Model+Result+Service 混一层
 ├─ routers/        ← 148 行全平铺
 ├─ views/          ← 按业务分了子目录，还行
 ├─ static/         ← 24 个第三方库 + 自写 css/js 全平铺
 ├─ cache/          ← 只有 cache.go + cache_null.go
 ├─ commands/       ← 混着 CLI 注册 + DB/缓存/日志初始化（562 行）
 ├─ conf/           ← ⚠️ Go 源码 + 配置文件混在一起
+├─ middleware/  + routers/filter.go  ← 中间件两处分裂
+├─ Dockerfile / start.sh / sync_host.sh  ← 部署脚本散落根目录
 ```
 
-#### 短期目标（对齐已有 frontend-backend-split-migration-plan）
-
-采用 `server/` + `web/` + `deploy/` 三段式，**`conf/` 保留在根**（因为它既是配置目录又是 Go 包）。执行细节见该文档。
-
-#### 长期目标（可选，激进方案）
+#### 目标目录结构（一步到位）
 
 ```
 doc/
 ├─ cmd/
-│  └─ doc/main.go                # 只做 flag 解析 + 子命令派发（cobra）
+│  └─ doc/
+│     └─ main.go                 # 只做 flag 解析 + cobra 子命令派发
 ├─ internal/                     # Go 私有包，防止外部误引
-│  ├─ app/                       # 装配层（原 commands 的初始化部分）
-│  ├─ controller/                # 按域拆子目录：document/ book/ manager/ ...
-│  ├─ service/                   # 【新增】业务逻辑下沉
+│  ├─ app/                       # 装配层（原 commands/ 的初始化部分）
+│  ├─ config/                    # 【新增】强类型 Config struct + Load()（原 conf/enumerate.go/mail.go 的 Go 部分）
+│  ├─ controller/                # 按域拆子目录：document/ book/ manager/ blog/ member/ ...
+│  ├─ service/                   # 【新增】业务逻辑下沉（Round 4 逐步落地）
+│  ├─ repository/                # 【新增】ORM 查询集中（Round 4 逐步落地）
 │  ├─ model/                     # 按域拆子目录：book/ document/ member/ ...
-│  ├─ dto/                       # 【新增】原 *Result.go 挪进来
-│  ├─ repository/                # 【新增】ORM 查询集中
-│  ├─ middleware/
+│  ├─ dto/                       # 【新增】原 *Result.go 挪进来；含 mcpdto/（Round 3 使用）
+│  ├─ middleware/                # 合并原 middleware/ + routers/filter.go
 │  ├─ router/                    # 按域拆：api.go / manager.go / document.go / blog.go / router.go(汇总)
-│  ├─ cache/                     # 升级（见 2.4）
-│  ├─ config/                    # 【新增】Go 侧配置结构体
-│  └─ mcp/                       # 【新增】MCP server
-├─ pkg/                          # 可复用工具（原 utils/*）
-├─ configs/                      # 【新增】只放配置文件（不放 .go）
+│  ├─ cache/                     # 升级（见 §2.4）
+│  ├─ errs/                      # 【新增】BizError + 错误码
+│  └─ mcp/                       # 【新增】MCP server（Round 3 落地）
+├─ pkg/                          # 可对外复用工具（原 utils/* 中通用部分）
+├─ configs/                      # 【新增】只放配置文件（不含 .go）
 │  ├─ app.conf / app.conf.example
-│  ├─ conf.d/                    # 分组配置
-│  └─ lang/
+│  # 本轮不拆多文件；`app.conf` 内部走 [section] 分组，见 §2.3
+│  └─ lang/                      # zh-cn.ini / en-us.ini
 ├─ web/                          # 前端资源
-│  ├─ static/vendor/  css/  js/  images/  fonts/  editors/
+│  ├─ static/
+│  │  ├─ vendor/                 # 24 个第三方库集中管理
+│  │  ├─ css/  js/  images/  fonts/  editors/
 │  └─ views/
-├─ scripts/
-├─ deployments/                  # 【新增】Dockerfile / docker-compose 等
-├─ docs/
-├─ runtime/  uploads/
+├─ deployments/                  # 【新增】Docker / spug / systemd 等
+│  ├─ Dockerfile
+│  ├─ docker-compose.yml
+│  ├─ start.sh / sync_host.sh
+│  └─ scripts/
+├─ scripts/                      # 构建脚本 build.sh / build.bat
+├─ docs/                         # 项目文档（保留）
+├─ mail/                         # 邮件模板（保留）
+├─ graphics/                     # 验证码素材（保留）
+├─ runtime/  uploads/  cache/    # 运行时数据（保留在根，路径不变）
+├─ go.mod  go.sum
+└─ README.md  LICENSE.md
 ```
 
 #### 关键改动点
 
-1. **`cmd/` + `internal/`** 是 Go 生态事实标准（`golang-standards/project-layout`）。
-2. **Controller 拆分**：`DocumentController.go` 37KB 按方法组拆成 `controller/document/read.go`、`edit.go`、`history.go`、`export.go`。
-3. **`routers` 拆分**：见 [router-split-migration-plan.md](./router-split-migration-plan.md)。
-4. **模板/静态资源路径**：`web.BConfig.WebConfig.ViewsPath`、`StaticDir` 在 `commands/command.go:345-347` 硬编码，随目录变动同步改。
+1. **`cmd/` + `internal/`** 是 Go 生态事实标准（`golang-standards/project-layout`），`internal/` 天然防止外部 module 误引。
+2. **`conf/` 彻底拆解**（激进方案必须一起做，否则「一步到位」不成立）：
+   - `conf/enumerate.go` / `conf/mail.go`（Go 源码）→ `internal/config/`（`package config`）
+   - `conf/app.conf` / `.example` → `configs/app.conf`
+   - `conf/lang/*.ini` → `configs/lang/`
+   - 全仓 30+ 处 `import "git.itopcms.com/jackliu/doc/conf"` → `internal/config`
+   - 硬编码 `"./conf/app.conf"`、`"conf/lang/"+lang+".ini"` → `"./configs/..."`（含 `commands/install.go:106`、`commands/command.go:280` 等）
+3. **Controller 拆分**（可选，建议 Round 4 再做）：`DocumentController.go` 37KB 按方法组拆成 `internal/controller/document/read.go`、`edit.go`、`history.go`、`export.go`。**Round 2 只搬目录、不拆域**，减小 blast radius。
+4. **`routers` 拆分**：见 [router-split-migration-plan.md](./router-split-migration-plan.md)，落到 `internal/router/`。
+5. **模板/静态资源路径**：`commands/command.go:311, 332, 334, 337, 342, 345-347` 的 `ViewsPath` / `StaticDir` / 字体路径全部同步；`BookResult.go` 里的导出资源拷贝路径也要一起改（详见 frontend-backend-split-migration-plan.md 附录 A）。
+6. **中间件合并**：原 `middleware/filter.go` + `routers/filter.go` 合到 `internal/middleware/`。
+7. **`utils/` 拆分**：通用工具（`cryptil`、`filetil`、`pagination`、`requests` 等）→ `pkg/`；耦合业务的（如 `gopool` 若被 model 用）留 `internal/`。
+8. **模块路径不变**：`git.itopcms.com/jackliu/doc` 保持，只改子包 import。
+
+#### 迁移执行阶段（Round 2 内部拆两次 PR）
+
+| PR | 内容 | 工作量 | 可回滚 |
+|---|---|---|---|
+| **PR-1：目录搬迁 + import 改写** | 全仓 `git mv` + `gofmt -r` + `goimports`；不改逻辑；启动跑通 | 3~5 天 | 是（单 revert） |
+| **PR-2：路径硬编码 + 部署脚本修正** | `ViewsPath` / `StaticDir` / `conf/lang/` / `./conf/app.conf` / Docker / spug 脚本 / 启动验证 | 2~3 天 | 是 |
+
+**Round 2 总工期**：2~4 周（含测试与联调），比轻量方案的 1~2 周长约 1~2 周，但**换来最终形态**，Round 3~4 无重复搬迁。
 
 #### 迁移风险
 
-- 模板路径、静态资源路径、上传目录、日志目录、session 目录都在 `conf/app.conf` 里配置，需要一起改。
-- 建议**分两次 PR**：① 只搬目录 + 改 import；② 拆大文件。
+- **模板/静态路径硬编码分散**：`commands/command.go`、`controllers/BlogController.go`、`controllers/SettingController.go`、`models/BookResult.go` 都有 `conf.WorkingDirectory` 拼路径，PR-2 要一并处理。
+- **`i18n.SetMessage(lang, "conf/lang/...")` 硬编码**：`commands/install.go:106`、`commands/command.go:280` 各一处，必改。
+- **Session 存了 `models.Member` 结构体**（`controllers/BaseController.go`）：改包路径后旧 session 反序列化会失败，Round 2 上线前需要清 session 或在 `SetMember` 加 version 字段做降级。
+- **`gob.Register` 硬编码类型**（`commands/command.go:113-115`）：包路径变了 gob 类型名会变，缓存里旧数据反序列化会崩，Round 2 上线前需清缓存。
+- **Docker / spug / systemd 脚本**：`Dockerfile`、`start.sh`、`sync_host.sh`、`doc.service`、`spug_run.sh` 都假设从根目录启动、`./conf/app.conf`、`./views/`、`./static/`；PR-2 全部改到新路径。
+- **`WorkingDirectory` 兼容性**：现有 `--workDir` 参数指向的目录里必须包含 `configs/`、`web/`、`runtime/` 等新目录结构；老部署环境升级时要一起搬。
+- **PR 大小控制**：PR-1 会触碰几乎每个 Go 文件（import 改写），review 只能看 diff summary，**必须先在个人分支跑完编译 + 冒烟测试再合**。
 
 ---
 
@@ -207,26 +248,81 @@ configs/
    └─ en-us.ini
 ```
 
-**Step 2：拆分 `app.conf` 为多个 include**（启动时按字典序 merge）
+**Step 2：单文件内 section 分组**（本轮先做；不拆多文件）
 
+> **决策（2026-07-29）**：本轮**不**拆 `conf.d/` 多文件方案，先把 253 行平铺的 `app.conf` 通过 beego ini 原生的 `[section]` 语法做**同文件分组**。理由：① beego `web.AppConfig` 天然支持 `section::key` 语法，改动量小；② 单文件仍便于运维、diff、Docker 挂载；③ 拆多文件后维护 include 顺序、部署脚本、样例同步都更重，收益不明显；④ Step 3 上强类型 `Config` struct 后，无论单文件还是多文件对调用方都是透明的。
+
+改造后的 `configs/app.conf` 骨架：
+
+```ini
+# ---- 根配置（不属于任何 section） ----
+appname  = doc
+runmode  = ${DOC_RUN_MODE||dev}
+httpport = ${DOC_HTTP_PORT||8181}
+baseurl  = ${DOC_BASE_URL||}
+
+[session]
+sessionprovider = ${DOC_SESSION_PROVIDER||file}
+sessionname     = mindoc_id
+...
+
+[database]
+db_adapter = ${DOC_DB_ADAPTER||mysql}
+db_host    = ${DOC_DB_HOST||127.0.0.1}
+...
+
+[cache]
+cache_provider = ${DOC_CACHE_PROVIDER||file}
+...
+
+[mail]
+enable_mail = ${DOC_ENABLE_MAIL||false}
+smtp_host   = ${DOC_SMTP_HOST||smtp.163.com}
+smtp_port   = ${DOC_SMTP_PORT||25}
+...
+
+[upload]
+upload_file_size = ${DOC_UPLOAD_FILE_SIZE||10M}
+...
+
+[log]
+log_level = ${DOC_LOG_LEVEL||info}
+log_path  = ${DOC_LOG_PATH||./runtime/logs}
+...
+
+[ldap]
+ldap_enable = ${DOC_LDAP_ENABLE||false}
+...
+
+[dingtalk]
+dingtalk_enable = ${DOC_DINGTALK_ENABLE||false}
+...
+
+[oauth]                          # 【新增】微信/企微/Google（如需）
+...
+
+[export]
+export_process_num = ${DOC_EXPORT_PROCESS_NUM||1}
+...
+
+[cdn]
+cdn_url = ${DOC_CDN_URL||}
+...
+
+[i18n]
+i18n_default_lang = ${DOC_I18N_DEFAULT_LANG||zh-cn}
+
+[mcp]                            # 【新增】MCP 配置
+mcp_enable         = ${DOC_MCP_ENABLE||false}
+mcp_listen         = ${DOC_MCP_LISTEN||127.0.0.1:8280}
+mcp_stdio_member   = ${DOC_MCP_STDIO_MEMBER||admin}
+mcp_token_required = ${DOC_MCP_TOKEN_REQUIRED||true}
+mcp_rate_limit     = ${DOC_MCP_RATE_LIMIT||60}
 ```
-configs/
-├─ app.conf                      # 只保留 appname/runmode/httpport/baseurl 等根配置
-└─ conf.d/
-   ├─ 10-session.conf
-   ├─ 20-database.conf           # MySQL / SQLite / (未来 PostgreSQL)
-   ├─ 30-cache.conf
-   ├─ 40-mail.conf
-   ├─ 50-upload.conf
-   ├─ 60-log.conf
-   ├─ 70-ldap.conf
-   ├─ 71-dingtalk.conf
-   ├─ 72-oauth.conf              # 【新增】微信/企微/Google（如需）
-   ├─ 80-export.conf             # PDF/EPUB/MOBI
-   ├─ 90-cdn.conf
-   ├─ 91-i18n.conf
-   └─ 99-mcp.conf                # 【新增】MCP 配置
-```
+
+调用方兼容期用 `web.AppConfig.DefaultString("mcp::mcp_enable", "false")` 之类语法，后续通过 Step 3 强类型 struct 统一收敛。
+
+**未来可选**：若配置项进一步膨胀（比如超过 500 行、跨环境覆盖变复杂），再评估拆到 `configs/conf.d/*.conf` 多文件按字典序 merge。本轮不做。
 
 **Step 3：强类型 config struct**（推荐）
 
@@ -345,7 +441,7 @@ type Cache interface {
 
 | 主题 | 现状问题 | 建议 | 优先级 |
 |---|---|---|---|
-| **日志** | `commands/RegisterLogger` 用 `beego/logs`，无结构化，`logs.Error("xx", err)` 拼字符串 | 换 `log/slog`（Go 1.21+ 标准库）或 `zap`，与 OpenTelemetry 对接 | 中 |
+| **日志** | `commands/RegisterLogger` 用 `beego/logs`，无结构化，`logs.Error("xx", err)` 拼字符串 | **换 `uber-go/zap`**（业界事实标准 · 性能最佳 · 生态完善），结构化字段 + Sugared/非 Sugared 双 API + `zapcore.Core` 便于对接 OpenTelemetry / Sentry / Lumberjack 轮转 | 中 |
 | **HTTP 框架** | Beego v2 社区活跃度不如 echo/gin/fiber | 短期继续 beego；长期规划评估。**切走成本很大**（模板/session/orm 全绑定 beego），不建议现在动 | 低 |
 | **错误处理** | `errors.New` + `fmt.Errorf` 混用，无错误分类；`if err != nil { c.JsonResult(6001, "系统内部错误") }` 遍地 | 引入 `pkg/errors` 或 `cockroachdb/errors`；定义 `BizError { Code; Msg }`；controller 统一 `WriteError(err)` | 高 |
 | **中间件** | `middleware/filter.go` 和 `routers/filter.go` 两处分裂 | 合并到 `middleware/`：`auth.go` / `logger.go` / `recover.go` / `csrf.go` / `ratelimit.go` | 中 |
@@ -370,15 +466,18 @@ type Cache interface {
 
 - Bootstrap 3.2（2014 年，官方已 EOL）
 - jQuery 全家桶（jquery / jstree / layer / nprogress / select2 / cropper / webuploader / respond.js / html5shiv）
-- editor.md v1.5.0（[upstream-mindoc-checklist.md §2.1](./upstream-mindoc-checklist.md) 指出应升到 v1.7.17）
+- ✅ editor.md **已升 v1.7.17**（历史 PR 完成）
+- ✅ katex **已修复 404**（历史 PR 完成）
+- ✅ mermaid **已升 10.x**（历史 PR 完成）
 - Vue.js 2
-- katex 缺 `.min.` 文件，reader 页 CSS 404
+
+> ⚠️ **本路线图不再列 P0 前端修复项**。editor.md / katex / mermaid 三项已在历史 PR 中完成，若后续再次生成 roadmap 或做代码扫描，**不要**把它们当作待办重新列入。相关状态见 [upstream-mindoc-checklist.md §2.1](./upstream-mindoc-checklist.md) 的历史记录。
 
 **分阶段方案**
 
 | 阶段 | 内容 | 工作量 |
 |---|---|---|
-| **P0** | 修 katex 404、editor.md 升 v1.7.17、mermaid 升 10.x（详见 upstream-mindoc-checklist.md §2.1） | 0.5 天 |
+| ~~**P0**~~ | ~~修 katex 404、editor.md 升 v1.7.17、mermaid 升 10.x~~ ✅ **已完成（历史 PR）** | ~~0.5 天~~ |
 | **P1** | 静态资源加版本号（现有 `cdnjs "..." "version"` 机制铺开）；删 `respond.js` / `html5shiv`（不再支持 IE8） | 1~2 天 |
 | **P2** | 引入前端构建工具（Vite），vendor 集中管理；抽离 `views/*.tpl` 里的内联 JS | 1~2 周 |
 | **P3** | 逐步替换：Bootstrap 3 → Bootstrap 5 或 Tailwind；jQuery 组件 → Vue 3 组件（增量迁移，不用一次性 SPA 化） | 3~4 周 |
@@ -389,7 +488,7 @@ type Cache interface {
 ## 五、实施顺序（四轮迭代）
 
 > **优先级说明（2026-07）**：
-> - **MCP 保留在 Round 3**。MCP 只硬依赖 Round 1（cobra 子命令 / cache 抽象 / 错误处理基础），软依赖 Round 2 的强类型 config。让 Round 2 先完成目录搬迁 + 强类型 config，Round 3 的 `mcp/` 包直接写在最终目录 `server/internal/mcp/` 下，**零重复搬迁**，且 MCP 可直接使用 `config.Global.MCP.XXX`。
+> - **MCP 保留在 Round 3**。MCP 只硬依赖 Round 1（cobra 子命令 / cache 抽象 / 错误处理基础），软依赖 Round 2 的强类型 config。让 Round 2 先完成一步到位的 `cmd/`+`internal/` 目录搬迁 + 强类型 config，Round 3 的 `mcp/` 包直接写在最终目录 `internal/mcp/` 下，**零重复搬迁**，且 MCP 可直接使用 `config.Global.MCP.XXX`。
 > - `BaseController.Prepare` 缓存（§三 高优先级）从 Round 2 提到 Round 1，纯性能优化、风险低、且不阻塞任何后续项。
 > - Round 1 加入 **错误处理基础（`BizError` + `JsonError` helper）**，为 Round 3 的 MCP 工具统一错误返回铺路（也让 Round 2 目录搬迁时顺带把老 controller 的错误返回收敛）。
 > - Round 1 新增 `cobra`，正是为了 Round 3 的 `doc mcp` 子命令。
@@ -403,24 +502,27 @@ type Cache interface {
 - [ ] **缓存方案 A**：`cache.Cache` 抽接口 + `NullCache/MemoryCache/RedisCache/FileCache` 独立文件 + 加 `context` 传递
 - [ ] **`BaseController.Prepare` 加 options 缓存**（§三 高优先级；从 Round 2 提前，纯性能优化不阻塞任何后续）
 - [ ] **错误处理基础**：`internal/errs/` 定义 `BizError{Code, Msg}` + `controllers/base` 加 `JsonError(err)` helper（§三 高优先级；为 Round 3 MCP 工具错误返回铺路）
-- [ ] **前端 P0**：修 katex 404 + editor.md 升级（引用 upstream-mindoc-checklist.md §2.1）
+<!-- 前端 P0（katex/editor.md/mermaid）已在历史 PR 完成，Round 1 不再包含此项；见 §四 -->
+
 
 **风险：** 低。全部是内部重构，对用户零感知。
 
-### 🥈 Round 2：目录结构调整 + 配置强类型（1~2 周）
+### 🥈 Round 2：目录结构调整（一步到位激进）+ 配置强类型（2~4 周）
 
-> 内部收拾轮次。为 Round 3 MCP 落地打好最终目录形态与配置基础。
+> 内部收拾轮次。**一步到位** `cmd/` + `internal/` 布局，见 §2.2。为 Round 3 MCP 落地打好最终目录形态与配置基础。
 
-- [ ] **对齐 frontend-backend-split-migration-plan.md**：搬迁到 `server/` + `web/` + `deploy/`
-- [ ] **配置 Step 2+3+4**：`conf.d/` 分组 + 强类型 `config.Config` struct + `.env` 支持（含 `MCPConfig` 段占位，Round 3 直接使用）
-- [ ] **`routers` 按域拆分**（对齐 router-split-migration-plan.md）
-- [ ] 预留 `server/internal/mcp/` 与 `internal/dto/mcpdto/` 空目录（Round 3 直接写入，无重复搬迁）
+- [ ] **PR-1 目录搬迁 + import 改写**：`cmd/doc/main.go` + `internal/**` + `configs/` + `web/` + `deploy/`（`conf/` 彻底拆解到 `internal/config/` 与 `configs/`）
+- [ ] **PR-2 路径硬编码 + 部署脚本**：`ViewsPath` / `StaticDir` / `conf/lang/` / `./conf/app.conf` / Docker / spug / systemd 全部改到新路径
+- [ ] **配置 Step 2+3+4**：`configs/app.conf` 内部 `[section]` 分组 + 强类型 `config.Config` struct（`internal/config/`）+ `.env` 支持（含 `[mcp]` section 占位，Round 3 直接使用）
+- [ ] **`internal/router/` 按域拆分**（对齐 router-split-migration-plan.md）
+- [ ] **中间件合并**：`middleware/filter.go` + `routers/filter.go` → `internal/middleware/`
+- [ ] 预留 `internal/mcp/` 与 `internal/dto/mcpdto/` 空目录（Round 3 直接写入，无重复搬迁）
 
-**风险：** 中。所有 import 路径、模板路径、脚本路径要同步改。建议开专门的 `refactor/layout` 分支。
+**风险：** 中高。触碰几乎每个 Go 文件的 import；Docker/session/gob 缓存都需要同步。建议开专门的 `refactor/layout` 分支，PR-1 与 PR-2 分次合并，每次都通过 `go build` + Docker 构建 + 冒烟测试。详见 §2.2 迁移风险与 §六 风险 12~14。
 
 ### 🥉 Round 3：MCP + 搜索基础（2~3 周）
 
-> 用户价值最高的一轮。**MCP 支持读写文档**，AI 助手直接接入。代码直接写在 Round 2 完成的最终目录（`server/internal/mcp/`），零重复搬迁。
+> 用户价值最高的一轮。**MCP 支持读写文档**，AI 助手直接接入。代码直接写在 Round 2 完成的最终目录（`internal/mcp/`），零重复搬迁。
 
 - [ ] **搜索最小方案**（对齐 upstream-mindoc-checklist.md §1.1）：MySQL FULLTEXT / SQLite FTS5 + 标题加权
 - [ ] **MCP MVP · stdio**：官方 `modelcontextprotocol/go-sdk` v1.x，10 个工具（4 读 + 6 写）
@@ -436,7 +538,7 @@ type Cache interface {
 ### 🏅 Round 4：模型 / 日志 / 前端现代化（3~4 周，按需推进）
 
 - [ ] **模型层**：`BookModel.go` (34KB) 拆解 + Repository 抽象 + `md_` 硬编码修复
-- [ ] **日志换 `slog`** + 结构化字段
+- [ ] **日志换 `uber-go/zap`** + 结构化字段（`zap.String` / `zap.Error` 等），保留 `beego/logs` 兼容 shim 作过渡
 - [ ] **`beego/i18n` 换 `nicksnyder/go-i18n/v2`**
 - [ ] **前端 P1~P2**：Vite 构建，vendor 集中化
 - [ ] （可选）根据 Round 3 MCP 使用反馈，评估是否上倒排索引（bleve / meilisearch）
@@ -460,6 +562,9 @@ type Cache interface {
 | 9 | **AI 与人同时编辑同一文档** | AI 覆盖人的未保存改动，或反之 | `update_document_content` 强制带 `expect_version`（对应 `Document.Version` 时间戳）做乐观锁；版本不匹配返回 `VERSION_CONFLICT`，AI 侧 `get_document` 后重试 |
 | 10 | **MCP API Token 泄露** | Token 一旦泄露，AI 侧任何写权限都可能被滥用 | ① 数据库只存 `sha256(token)`，不存明文；② 支持 `expires_at` 和一键撤销；③ 记录 `last_used_at`，异常访问可审计；④ HTTP 强制 HTTPS（部署要求） |
 | 11 | **误将 `MemberToken` 当 API Token 用** | `MemberToken` 是邮箱验证码用途，含 `Email`/`SendTime`/发送次数限制，用作 API Token 会破坏原有找回密码逻辑 | 明确新建 `member_api_tokens` 表（见 §2.1）；两张表职责分离 |
+| 12 | **Round 2 一步到位迁移触碰几乎每个文件** | `cmd/`+`internal/` 激进方案导致全仓 import 改写；PR 巨大，review 只能看 diff summary | ① PR-1 只搬目录 + `goimports`，不改任何逻辑；② PR-2 单独处理路径硬编码与部署脚本；③ 每个 PR 合并前跑通 `go build` + Docker 构建 + 冒烟测试；④ 开专门 `refactor/layout` 分支，避免与业务开发冲突 |
+| 13 | **gob 缓存与 session 反序列化在包路径变更后失败** | `commands/command.go:113-115` `gob.Register` 硬编码类型名 = `包路径.类型名`；`controllers/BaseController.go` session 里存了 `models.Member`；Round 2 后旧数据反序列化会崩 | ① Round 2 上线前发布 note 明确要求**清 `cache/` 目录 + 清 session store**；② `SetMember` 加 version 字段做降级自动重登；③ 有条件的话在 Round 1 就把 gob 换 msgpack/json，从根上避免绑定包路径 |
+| 14 | **老部署环境 `--workDir` 目录结构不匹配** | 现有 `--workDir` 指向的目录假设根下有 `conf/`、`views/`、`static/`；Round 2 后应该有 `configs/`、`web/views/`、`web/static/` | ① 部署脚本升级步骤加入"目录结构迁移"检查；② `commands/install.go` 首次启动检测新结构并给出清晰错误提示；③ 更新 `README.md` 与 `docs/mcp-integration.md` 的部署示例 |
 
 ---
 
@@ -476,15 +581,23 @@ type Cache interface {
 - [ ] `cache.Cache` 接口抽象
 - [ ] `BaseController.Prepare` options 缓存
 - [ ] `internal/errs/` + `BizError` + `JsonError` helper
-- [ ] KaTeX / editor.md 前端修复
+<!-- KaTeX / editor.md / mermaid 前端修复已在历史 PR 完成，不再列入追踪；见 §四 -->
 
-### Round 2（目录搬迁 + 配置强类型）
-- [ ] 目录搬迁到 `server/` + `web/` + `deploy/`
-- [ ] `conf.d/` 分组配置
+
+### Round 2（一步到位 cmd/+internal/ + 配置强类型）
+- [ ] PR-1 目录搬迁到 `cmd/doc/` + `internal/**` + `configs/` + `web/` + `deploy/`
+- [ ] PR-1 `conf/` 拆解：Go → `internal/config/`；配置文件 → `configs/`；`lang/` → `configs/lang/`
+- [ ] PR-1 全仓 30+ import 路径改写
+- [ ] PR-2 `ViewsPath` / `StaticDir` / 字体路径 / 导出资源拷贝路径修正
+- [ ] PR-2 `conf/lang/` i18n 硬编码修正（`commands/install.go`、`command.go`）
+- [ ] PR-2 Docker / spug / systemd / `start.sh` / `sync_host.sh` 路径修正
+- [ ] `configs/app.conf` 内部 `[section]` 分组（不拆多文件）
 - [ ] 强类型 `config.Config` struct（含 `MCPConfig` 段占位）
 - [ ] `.env` 支持
-- [ ] `routers` 按域拆分
-- [ ] 预留 `server/internal/mcp/` 与 `internal/dto/mcpdto/` 空目录
+- [ ] `internal/router/` 按域拆分
+- [ ] `internal/middleware/` 合并原 middleware + routers/filter.go
+- [ ] 预留 `internal/mcp/` 与 `internal/dto/mcpdto/` 空目录
+- [ ] Session/gob 缓存清理提示写入部署 note
 
 ### Round 3（MCP + 搜索）
 - [ ] 搜索 FULLTEXT/FTS5 + 标题加权
@@ -499,7 +612,7 @@ type Cache interface {
 - [ ] `BookModel.go` 拆分
 - [ ] Repository 抽象
 - [ ] `md_` 硬编码修复
-- [ ] `slog` 日志
+- [ ] `zap` 日志（结构化字段 + Lumberjack 轮转）
 - [ ] `nicksnyder/go-i18n/v2`
 - [ ] Vite 前端构建
 
@@ -513,11 +626,15 @@ type Cache interface {
 | 2026-07-23 | ORM 是否本轮迁移 gorm/ent？ | 否，先封 Repository 层 | 减小 blast radius，Round 4 再评估 |
 | 2026-07-23 | 配置文件分组是否引入 viper？ | 保留 beego `LoadAppConfig` + include 合并 | 减少依赖，`${ENV||default}` 语法已够用 |
 | 2026-07-23 | MCP 是否本轮做 HTTP 模式？ | 分两步（先 stdio，再 HTTP） | stdio 无鉴权顾虑，先解决 AI 接入这一刚需 |
-| 2026-07-23 | 目录结构是否走激进的 `cmd/` + `internal/` 方案？ | 短期走 `server/` + `web/` + `deploy/`；`internal/` 作为长期目标 | 已有 frontend-backend-split-migration-plan.md 详细方案，避免朝令夕改 |
+| 2026-07-23 | ~~目录结构是否走激进的 `cmd/` + `internal/` 方案？~~ | ~~短期走 `server/` + `web/` + `deploy/`；`internal/` 作为长期目标~~ | ~~已有 frontend-backend-split-migration-plan.md 详细方案，避免朝令夕改~~ |
+| **2026-07-29** | **目录结构：一步到位 vs 分阶段？** | **一步到位 `cmd/` + `internal/` 激进方案** | ① 分阶段先轻量再激进等于**搬两次家**；② MCP（Round 3）从第一天就落在 `internal/mcp/` 最终位置；③ `conf/` 一次拆到位（Go → `internal/config/`；配置 → `configs/`），避免长期"半激进"状态；④ Round 2 从 1~2 周延到 2~4 周，换来 Round 3~4 零重复搬迁；⑤ frontend-backend-split-migration-plan.md 中的路径修正细节仍适用，但目标目录换成本方案 |
 | 2026-07-23 | **MCP SDK 选型？（mark3labs/mcp-go vs 官方 modelcontextprotocol/go-sdk）** | **直接用官方 `modelcontextprotocol/go-sdk` v1.x** | ① 官方已到 v1（semver 稳定），mcp-go 仍是 v0.x，升级本身就有 API 破坏性风险；② 官方跟 MCP spec 最快（已跟到 2026-07-28）；③ 与 Round 4 的 Repository/DTO 分层天然契合（struct schema = DTO）；④ 避免未来从 mcp-go 迁移的双份成本 |
 | 2026-07-23 | **MCP 是否支持写入文档？** | **是**，MVP 就要 6 个写工具 | 用户核心诉求：AI 助手要能创建/更新文档；通过 `BookRole ≥ Editor` + 乐观锁 `expect_version` + `delete_document` 强制 `confirm: true` 控制风险 |
 | 2026-07-23 | **MCP Bearer Token 是否复用 `MemberToken` 表？** | **否**，新建 `member_api_tokens` 表 | `MemberToken` 是邮箱验证码用途（`Email`/`SendTime`/发送次数限制），职责不同；两表分离避免破坏找回密码逻辑 |
-| 2026-07-23 | **四轮优先级：MCP 与目录调整孰先？** | **MCP 保留在 Round 3，目录调整放 Round 2** | ① MCP 只硬依赖 Round 1（cobra / cache / 错误处理），软依赖 Round 2 的强类型 config；② 让 Round 2 先完成目录搬迁，Round 3 的 `mcp/` 包直接写在 `server/internal/mcp/` 最终位置，**零重复搬迁**；③ 用户价值仅推迟 1~2 周，换 MCP 代码从第一天就在正确目录下 |
+| 2026-07-23 | **四轮优先级：MCP 与目录调整孰先？** | **MCP 保留在 Round 3，目录调整放 Round 2** | ① MCP 只硬依赖 Round 1（cobra / cache / 错误处理），软依赖 Round 2 的强类型 config；② 让 Round 2 先完成一步到位的 `cmd/`+`internal/` 目录搬迁，Round 3 的 `mcp/` 包直接写在 `internal/mcp/` 最终位置，**零重复搬迁**；③ 用户价值仅推迟 2~3 周，换 MCP 代码从第一天就在正确目录下 |
+| **2026-07-29** | **配置文件本轮是否拆多文件？** | **否**，`configs/app.conf` 内部 `[section]` 分组即可；`conf.d/` 多文件方案作为**未来可选** | ① beego ini 原生支持 `[section]` + `section::key`，改动量最小；② 单文件便于运维/diff/Docker 挂载；③ Step 3 上强类型 `Config` struct 后，无论单/多文件对调用方透明；④ 现有配置 253 行，未到拆文件收益门槛 |
+| **2026-07-29** | **日志库选型：slog vs zap？** | **`uber-go/zap`** | ① 业界事实标准，性能最佳（分配数最少）；② 生态最完善：Lumberjack 轮转 / Sentry / OpenTelemetry 桥接现成；③ Sugared/非 Sugared 双 API 便于从 `beego/logs` 渐进式迁移（先用 Sugared 保留 printf 风格，再逐步换成 zap.Field）；④ `slog` 是标准库但社区桥接仍在补齐，且团队后续接入 APM/告警系统时 zap 生态更省事；⑤ Round 1 已经引入 `cobra` 等新依赖，多一个 `go.uber.org/zap` 边际成本低 |
+| **2026-07-29** | **前端 P0 修复项（editor.md / katex / mermaid）是否再做？** | **不做**，已在历史 PR 完成 | ① editor.md 已升 v1.7.17；② katex 404 已修；③ mermaid 已升 10.x；④ **本路线图后续任何一轮不再重复列入**，避免下次生成/审阅时又把它们当待办；如未来因回归再次出现，另开新条目 |
 
 ---
 
@@ -532,14 +649,29 @@ type Cache interface {
 - [redis/go-redis](https://github.com/redis/go-redis)
 - [nicksnyder/go-i18n](https://github.com/nicksnyder/go-i18n)
 - [spf13/cobra](https://github.com/spf13/cobra) + [viper](https://github.com/spf13/viper)
-- [uber-go/zap](https://github.com/uber-go/zap) / [log/slog](https://pkg.go.dev/log/slog)
+- [uber-go/zap](https://github.com/uber-go/zap) — 日志（本项目采用）+ [natefinch/lumberjack](https://github.com/natefinch/lumberjack) 轮转
 
 ### 9.2 本文档与其他文档的关系
 
 ```text
 refactor-roadmap.md（本文，总纲）
-├─► frontend-backend-split-migration-plan.md   （目标二 · 短期执行细节）
-├─► router-split-migration-plan.md              （目标二 · 路由拆分执行细节）
-├─► routers-reference.md                        （现有路由分类参考）
-└─► upstream-mindoc-checklist.md                （功能特性对齐 · MCP/搜索/前端等）
+│
+├─► 【每轮执行文档】具体到文件/行号/命令的可执行分解
+│   ├─► round-1-execution-plan.md    （Round 1 · T1~T7 详细步骤 + PR 拆分）
+│   ├─► round-2-execution-plan.md    （Round 2 · PR-1/PR-2 + 目录映射总表）
+│   ├─► round-3-execution-plan.md    （Round 3 · MCP 10 工具 + Bearer + 搜索）
+│   └─► round-4-execution-plan.md    （Round 4 · T1~T12 按需推进）
+│
+├─► 【参考文档】历史决策与横向清单
+│   ├─► frontend-backend-split-migration-plan.md   （目标二 · 硬编码定位表，Round 2 引用）
+│   ├─► router-split-migration-plan.md              （目标二 · 路由拆分详情，Round 2 T6 引用）
+│   ├─► routers-reference.md                        （现有路由分类参考）
+│   └─► upstream-mindoc-checklist.md                （功能特性对齐 · MCP/搜索/前端等）
 ```
+
+**阅读顺序建议：**
+
+1. 新加入项目：先读本文 §一~五（现状 + 四大目标 + 迭代计划）
+2. 开始某一轮：直接跳到对应 `round-N-execution-plan.md`，逐 T 执行
+3. 遇到具体文件/硬编码：查 `frontend-backend-split-migration-plan.md` 附录 A/B 或 `routers-reference.md`
+4. 决策疑问：查本文 §八 决策日志
