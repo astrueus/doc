@@ -451,10 +451,10 @@ func (c *BaseController) JsonError(err error) {
 | 项 | 结果 |
 |---|---|
 | 分支 | `v2.1.0`（未另开 `feature/round-1-refactor`） |
-| 提交数 | 8（7 项任务 + 1 个 T1 session 回归补丁；说明已改写为中文） |
+| 提交数 | 7 项任务 + T1-fix `4214e96` + 若干实施记录文档补记（中文说明） |
 | 英文原稿备份 | ~~`backup/round1-english-msgs`~~ **已删除**（2026-07-29） |
 | 构建 | 各任务完成后 `go build` 通过；`doc version` / `doc mcp` / `doc --help` 冒烟通过；补丁后首页 `GET /` → 302（登录）无 panic |
-| 远端 | 相对 `origin/v2.1.0` **ahead 8**，尚未 push |
+| 远端 | 相对 `origin/v2.1.0` ahead，**尚未 push** |
 
 ### 10.2 相对原文档的偏差与决策
 
