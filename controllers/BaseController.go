@@ -66,15 +66,12 @@ func (c *BaseController) Prepare() {
 	conf.BaseUrl = c.BaseUrl()
 	c.Data["BaseUrl"] = c.BaseUrl()
 
-	if options, err := models.NewOption().All(); err == nil {
-		c.Option = make(map[string]string, len(options))
-		for _, item := range options {
-			c.Data[item.OptionName] = item.OptionValue
-			c.Option[item.OptionName] = item.OptionValue
-		}
-		c.EnableAnonymous = strings.EqualFold(c.Option["ENABLE_ANONYMOUS"], "true")
-		c.EnableDocumentHistory = strings.EqualFold(c.Option["ENABLE_DOCUMENT_HISTORY"], "true")
+	c.Option = loadOptions()
+	for k, v := range c.Option {
+		c.Data[k] = v
 	}
+	c.EnableAnonymous = strings.EqualFold(c.Option["ENABLE_ANONYMOUS"], "true")
+	c.EnableDocumentHistory = strings.EqualFold(c.Option["ENABLE_DOCUMENT_HISTORY"], "true")
 	c.Data["HighlightStyle"] = web.AppConfig.DefaultString("highlight_style", "github")
 
 	if b, err := os.ReadFile(filepath.Join(web.BConfig.WebConfig.ViewsPath, "widgets", "scripts.tpl")); err == nil {

@@ -469,6 +469,7 @@ func (c *ManagerController) Setting() {
 			item.OptionValue = c.GetString(item.OptionName)
 			item.InsertOrUpdate()
 		}
+		InvalidateOptions()
 		c.JsonResult(0, "ok")
 	}
 
