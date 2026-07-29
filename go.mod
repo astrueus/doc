@@ -14,6 +14,8 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.44
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/russross/blackfriday/v2 v2.1.0
+	github.com/spf13/cobra v1.10.2
+	github.com/vmihailenco/msgpack/v5 v5.4.1
 )
 
 require (
@@ -41,10 +43,8 @@ require (
 	github.com/redis/go-redis/v9 v9.20.0 // indirect
 	github.com/shiena/ansicolor v0.0.0-20230509054315-a9deabde6e02 // indirect
 	github.com/smartystreets/goconvey v1.8.1 // indirect
-	github.com/spf13/cobra v1.10.2 // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/crypto v0.52.0 // indirect
