@@ -20,9 +20,9 @@ before_install:
 
 script:
   - go build -o doc_linux_amd64 -ldflags "-w"
-  - cp conf/app.conf.example conf/app.conf
+  - cp configs/app.conf.example configs/app.conf
   - ./doc_linux_amd64 version
-  - rm conf/app.conf
+  - rm configs/app.conf
 
 before_deploy:
   - go mod tidy -v && GOARCH=amd64 GOOS=linux go build -o doc_linux_amd64 -ldflags="-w -X 'git.itopcms.com/jackliu/doc/conf.VERSION=$TRAVIS_TAG' -X 'git.itopcms.com/jackliu/doc/conf.BUILD_TIME=`date`' -X 'git.itopcms.com/jackliu/doc/conf.GO_VERSION=`go version`'"
@@ -31,8 +31,8 @@ before_deploy:
   # remove dirs
   - rm -rf cache commands controllers converter .git .github graphics mail models routers utils
   - ls -alh
-  - cp conf/app.conf.example conf/app.conf
-  - zip -r doc_linux_amd64.zip conf static uploads views lib doc_linux_amd64 favicon.ico LICENSE.md
+  - cp configs/app.conf.example configs/app.conf
+  - zip -r doc_linux_amd64.zip configs static uploads views lib doc_linux_amd64 favicon.ico LICENSE.md
 
 deploy:
   provider: releases

@@ -27,15 +27,15 @@ ln -sfn "$REPO/runtime" "$WWW/runtime"
 # 设计：$REPO/app.conf 是权威配置，wwwroot 每次发布从 repo 强制覆盖，
 # 运维直接改 wwwroot 不生效；配置变更需修改 $REPO/app.conf 后通过 spug 重新发布。
 if [ ! -e "$REPO/app.conf" ]; then
-  if [ -e "$WWW/conf/app.conf.example" ]; then
+  if [ -e "$WWW/configs/app.conf.example" ]; then
     log "首次部署，使用 app.conf.example 初始化 app.conf"
-    cp "$WWW/conf/app.conf.example" "$REPO/app.conf"
+    cp "$WWW/configs/app.conf.example" "$REPO/app.conf"
   else
-    log "缺少 $WWW/conf/app.conf.example，无法初始化 app.conf"
+    log "缺少 $WWW/configs/app.conf.example，无法初始化 app.conf"
     exit 1
   fi
 fi
-cp -f "$REPO/app.conf" "$WWW/conf/app.conf"
+cp -f "$REPO/app.conf" "$WWW/configs/app.conf"
 
 # ===== 3. 同步 systemd unit 到 resource =====
 # 每次发布都覆盖，确保仓库里 doc.service 的改动能落到生效路径

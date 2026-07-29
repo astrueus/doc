@@ -103,11 +103,11 @@ mail_number="${MINDOC_MAIL_NUMBER||5}"
 #smtp服务用户名
 smtp_user_name="${MINDOC_SMTP_USER_NAME||admin@admincms.top}"
 #smtp服务器地址
-smtp_host="${MINDOC_SMTP_HOST||smtp.163.com}""
+smtp_host="${MINDOC_SMTP_HOST||smtp.163.com}"
 #smtp密码
 smtp_password="${MINDOC_SMTP_PASSWORD}"
 #端口号
-smtp_port="${MINDOC_SMTP_PORT||25}""
+smtp_port="${MINDOC_SMTP_PORT||25}"
 #发送邮件的显示名称
 form_user_name="${MINDOC_FORM_USERNAME||admin@iminho.me}"
 #邮件有效期30分钟

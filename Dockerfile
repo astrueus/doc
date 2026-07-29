@@ -16,7 +16,7 @@ COPY . .
 RUN go env
 RUN go mod tidy -v
 RUN go build -o doc_linux_amd64 -ldflags "-w -s -X 'git.itopcms.com/jackliu/doc/conf.VERSION=$TAG' -X 'git.itopcms.com/jackliu/doc/conf.BUILD_TIME=`date`' -X 'git.itopcms.com/jackliu/doc/conf.GO_VERSION=`go version`'"
-RUN cp conf/app.conf.example conf/app.conf
+RUN cp configs/app.conf.example configs/app.conf
 # 清理不需要的文件
 RUN rm appveyor.yml docker-compose.yml Dockerfile .travis.yml .gitattributes .gitignore go.mod go.sum main.go README.md simsun.ttc start.sh conf/*.go
 RUN rm -rf cache commands controllers converter .git .github graphics mail models routers utils

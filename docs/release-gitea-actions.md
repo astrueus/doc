@@ -160,9 +160,9 @@ jobs:
 
       - name: Verify binary
         run: |
-          cp conf/app.conf.example conf/app.conf
+          cp configs/app.conf.example configs/app.conf
           ./dist/doc_linux_amd64 version
-          rm conf/app.conf
+          rm configs/app.conf
 
       - name: Package zip
         run: |

@@ -72,7 +72,7 @@ var (
 )
 
 var (
-	ConfigurationFile = "./conf/app.conf"
+	ConfigurationFile = "./configs/app.conf"
 	WorkingDirectory  = "./"
 	LogFile           = "./runtime/logs"
 	BaseUrl           = ""
@@ -388,7 +388,7 @@ func WorkingDir(elem ...string) string {
 }
 
 func init() {
-	if p, err := filepath.Abs("./conf/app.conf"); err == nil {
+	if p, err := filepath.Abs("./configs/app.conf"); err == nil {
 		ConfigurationFile = p
 	}
 	if p, err := filepath.Abs("./"); err == nil {
