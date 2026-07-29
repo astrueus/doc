@@ -8,10 +8,10 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/mail"
 	"net/smtp"
+	"os"
 	"path"
 	"path/filepath"
 	"regexp"
@@ -397,7 +397,7 @@ func (m *Mail) AddAttachment(filePath string) error {
 
 // ReadAttachment reading attachment
 func (m *Mail) ReadAttachment(filePath string) (string, error) {
-	file, e := ioutil.ReadFile(filePath)
+	file, e := os.ReadFile(filePath)
 	if e != nil {
 		return "", e
 	}

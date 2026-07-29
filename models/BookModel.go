@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -706,7 +705,7 @@ func (book *Book) ImportBook(zipPath string, lang string) error {
 
 	for {
 		//如果当前目录下只有一个目录，则重置根目录
-		if entries, err := ioutil.ReadDir(tempPath); err == nil && len(entries) == 1 {
+		if entries, err := os.ReadDir(tempPath); err == nil && len(entries) == 1 {
 			dir := entries[0]
 			if dir.IsDir() && dir.Name() != "." && dir.Name() != ".." {
 				tempPath = filepath.Join(tempPath, dir.Name())

@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"io/ioutil"
 	"os"
 
 	"git.itopcms.com/jackliu/doc/conf"
@@ -738,7 +737,7 @@ func (c *ManagerController) Config() {
 		if content == "" {
 			c.JsonResult(500, "配置文件不能为空")
 		}
-		tf, err := ioutil.TempFile(os.TempDir(), "mindoc")
+		tf, err := os.CreateTemp(os.TempDir(), "mindoc")
 
 		if err != nil {
 			logs.Error("创建临时文件失败 ->", err)
@@ -762,7 +761,7 @@ func (c *ManagerController) Config() {
 		c.JsonResult(0, "保存成功")
 	}
 	c.Data["ConfigContent"] = ""
-	if b, err := ioutil.ReadFile(conf.ConfigurationFile); err == nil {
+	if b, err := os.ReadFile(conf.ConfigurationFile); err == nil {
 		c.Data["ConfigContent"] = string(b)
 	}
 }

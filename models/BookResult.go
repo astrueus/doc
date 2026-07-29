@@ -2,7 +2,7 @@ package models
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -419,9 +419,9 @@ func (m *BookResult) Converter(sessionId string) (ConvertBookResult, error) {
 
 							defer resp.Body.Close()
 
-							if body, err := ioutil.ReadAll(resp.Body); err == nil {
+							if body, err := io.ReadAll(resp.Body); err == nil {
 								//encodeString = base64.StdEncoding.EncodeToString(body)
-								if err := ioutil.WriteFile(filepath.Join(tempOutputPath, dstSrcString), body, 0755); err != nil {
+								if err := os.WriteFile(filepath.Join(tempOutputPath, dstSrcString), body, 0755); err != nil {
 									logs.Error("下载图片失败 -> ", err, src)
 									return
 								}
@@ -661,7 +661,7 @@ func exportMarkdown(p string, parentId int, bookId int, baseDir string, bookUrl 
 		} else {
 			markdown = "# " + doc.DocumentName + "\n"
 		}
-		if err := ioutil.WriteFile(docPath, []byte(markdown), 0644); err != nil {
+		if err := os.WriteFile(docPath, []byte(markdown), 0644); err != nil {
 			logs.Error("导出Markdown失败->", err)
 			return err
 		}
