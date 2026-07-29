@@ -171,7 +171,7 @@ do_linux() {
     (
         unset GOOS GOARCH CC
         export CGO_ENABLED=1
-        go build -ldflags "$LDFLAGS" -o "$OUT_LINUX" .
+        go build -ldflags "$LDFLAGS" -o "$OUT_LINUX" ./cmd/doc
     )
     if [[ $? -ne 0 ]]; then
         echo "[ERROR] Linux build failed"
@@ -190,11 +190,11 @@ do_windows() {
             return 0
         fi
         CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC=x86_64-w64-mingw32-gcc \
-            go build -ldflags "$LDFLAGS" -o "$OUT_WINDOWS" .
+            go build -ldflags "$LDFLAGS" -o "$OUT_WINDOWS" ./cmd/doc
     else
         echo "[BUILD] Windows amd64 -> $OUT_WINDOWS (Zig)"
         CGO_ENABLED=1 GOOS=windows GOARCH=amd64 CC="zig cc -target x86_64-windows-gnu" \
-            go build -ldflags "$LDFLAGS" -o "$OUT_WINDOWS" .
+            go build -ldflags "$LDFLAGS" -o "$OUT_WINDOWS" ./cmd/doc
     fi
 
     if [[ $? -ne 0 ]]; then
@@ -223,7 +223,7 @@ GO_VER="$(go version 2>/dev/null | awk '{print $3}')"
 
 BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%S 2>/dev/null || echo unknown)"
 
-LDFLAGS_COMMON="-X 'git.itopcms.com/jackliu/doc/conf.VERSION=${VERSION}' -X 'git.itopcms.com/jackliu/doc/conf.BUILD_TIME=${BUILD_TIME}' -X 'git.itopcms.com/jackliu/doc/conf.GO_VERSION=${GO_VER}'"
+LDFLAGS_COMMON="-X 'git.itopcms.com/jackliu/doc/internal/config.VERSION=${VERSION}' -X 'git.itopcms.com/jackliu/doc/internal/config.BUILD_TIME=${BUILD_TIME}' -X 'git.itopcms.com/jackliu/doc/internal/config.GO_VERSION=${GO_VER}'"
 
 if [[ "$MODE" == "release" ]]; then
     mkdir -p dist

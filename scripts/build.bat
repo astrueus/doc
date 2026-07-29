@@ -119,8 +119,26 @@ if /i not "!TOOLCHAIN!"=="zig" if /i not "!TOOLCHAIN!"=="mingw" (
     exit /b 1
 )
 
-set "ROOT=%~dp0.."
+REM Resolve repo root: prefer directory that contains go.mod + cmd\doc
+set "SCRIPT_DIR=%~dp0"
+set "ROOT="
+if exist "%SCRIPT_DIR%go.mod" if exist "%SCRIPT_DIR%cmd\doc" set "ROOT=%SCRIPT_DIR%"
+if not defined ROOT if exist "%SCRIPT_DIR%..\go.mod" if exist "%SCRIPT_DIR%..\cmd\doc" (
+    for %%I in ("%SCRIPT_DIR%..") do set "ROOT=%%~fI"
+)
+if not defined ROOT if exist "go.mod" if exist "cmd\doc" set "ROOT=%CD%"
+if not defined ROOT (
+    echo [ERROR] cannot locate repo root ^(need go.mod and cmd\doc^)
+    echo         script dir: %SCRIPT_DIR%
+    echo         cwd: %CD%
+    exit /b 1
+)
 pushd "%ROOT%"
+if not exist "go.mod" (
+    echo [ERROR] go.mod not found under: %ROOT%
+    popd
+    exit /b 1
+)
 
 call :resolve_version "%VERSION%"
 
@@ -131,7 +149,7 @@ for /f "tokens=2 delims==" %%I in ('wmic os get localdatetime /value 2^>nul ^| f
 if not defined DT set "DT=unknown"
 set "BUILD_TIME=!DT:~0,4!-!DT:~4,2!-!DT:~6,2!T!DT:~8,2!:!DT:~10,2!:!DT:~12,2!"
 
-set "LDFLAGS_COMMON=-X 'git.itopcms.com/jackliu/doc/conf.VERSION=!VERSION!' -X 'git.itopcms.com/jackliu/doc/conf.BUILD_TIME=!BUILD_TIME!' -X 'git.itopcms.com/jackliu/doc/conf.GO_VERSION=!GO_VER!'"
+set "LDFLAGS_COMMON=-X 'git.itopcms.com/jackliu/doc/internal/config.VERSION=!VERSION!' -X 'git.itopcms.com/jackliu/doc/internal/config.BUILD_TIME=!BUILD_TIME!' -X 'git.itopcms.com/jackliu/doc/internal/config.GO_VERSION=!GO_VER!'"
 
 if /i "%MODE%"=="release" (
     if not exist "dist" mkdir "dist"
@@ -227,7 +245,7 @@ set CGO_ENABLED=1
 set GOOS=linux
 set GOARCH=amd64
 set "CC=zig cc -target x86_64-linux-gnu"
-go build -ldflags "!LDFLAGS!" -o "!OUT_LINUX!" .
+go build -ldflags "!LDFLAGS!" -o "!OUT_LINUX!" ./cmd/doc
 if errorlevel 1 (
     echo [ERROR] Linux build failed
     set "BUILD_OK=0"
@@ -261,7 +279,7 @@ if /i "!TOOLCHAIN!"=="mingw" (
     set "CC=zig cc -target x86_64-windows-gnu"
 )
 
-go build -ldflags "!LDFLAGS!" -o "!OUT_WINDOWS!" .
+go build -ldflags "!LDFLAGS!" -o "!OUT_WINDOWS!" ./cmd/doc
 if errorlevel 1 (
     if /i "!TOOLCHAIN!"=="mingw" (
         echo [ERROR] Windows build failed. Check MinGW-w64 / gcc in PATH

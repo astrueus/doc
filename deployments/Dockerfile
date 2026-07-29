@@ -15,18 +15,18 @@ COPY . .
 # 编译
 RUN go env
 RUN go mod tidy -v
-RUN go build -o doc_linux_amd64 -ldflags "-w -s -X 'git.itopcms.com/jackliu/doc/conf.VERSION=$TAG' -X 'git.itopcms.com/jackliu/doc/conf.BUILD_TIME=`date`' -X 'git.itopcms.com/jackliu/doc/conf.GO_VERSION=`go version`'"
+RUN go build -o doc_linux_amd64 -ldflags "-w -s -X 'git.itopcms.com/jackliu/doc/internal/config.VERSION=$TAG' -X 'git.itopcms.com/jackliu/doc/internal/config.BUILD_TIME=`date`' -X 'git.itopcms.com/jackliu/doc/internal/config.GO_VERSION=`go version`'" ./cmd/doc
 RUN cp configs/app.conf.example configs/app.conf
-# 清理不需要的文件
-RUN rm appveyor.yml docker-compose.yml Dockerfile .travis.yml .gitattributes .gitignore go.mod go.sum main.go README.md simsun.ttc start.sh conf/*.go
-RUN rm -rf cache commands controllers converter .git .github graphics mail models routers utils
+# 清理不需要的文件（源码已不再需要进最终镜像层；路径对齐 Round 2 布局）
+RUN rm -f appveyor.yml .travis.yml .gitattributes .gitignore go.mod go.sum README.md
+RUN rm -rf cache cmd internal pkg converter .git .github graphics mail deployments scripts docs
 
 # 测试编译的 doc 是否 ok
 RUN ./doc_linux_amd64 version
 
 # 必要的文件复制
-ADD simsun.ttc /usr/share/fonts/win/
-ADD start.sh /app
+ADD web/static/fonts/simsun.ttc /usr/share/fonts/win/
+ADD deployments/start.sh /app
 
 
 # Ubuntu 20.04

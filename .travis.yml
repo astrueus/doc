@@ -19,20 +19,20 @@ before_install:
   - go env
 
 script:
-  - go build -o doc_linux_amd64 -ldflags "-w"
+  - go build -o doc_linux_amd64 -ldflags "-w" ./cmd/doc
   - cp configs/app.conf.example configs/app.conf
   - ./doc_linux_amd64 version
   - rm configs/app.conf
 
 before_deploy:
-  - go mod tidy -v && GOARCH=amd64 GOOS=linux go build -o doc_linux_amd64 -ldflags="-w -X 'git.itopcms.com/jackliu/doc/conf.VERSION=$TRAVIS_TAG' -X 'git.itopcms.com/jackliu/doc/conf.BUILD_TIME=`date`' -X 'git.itopcms.com/jackliu/doc/conf.GO_VERSION=`go version`'"
+  - go mod tidy -v && GOARCH=amd64 GOOS=linux go build -o doc_linux_amd64 -ldflags="-w -X 'git.itopcms.com/jackliu/doc/internal/config.VERSION=$TRAVIS_TAG' -X 'git.itopcms.com/jackliu/doc/internal/config.BUILD_TIME=`date`' -X 'git.itopcms.com/jackliu/doc/internal/config.GO_VERSION=`go version`'" ./cmd/doc
   # remove files
-  - rm appveyor.yml docker-compose.yml Dockerfile .travis.yml .gitattributes .gitignore go.mod go.sum main.go README.md simsun.ttc start.sh
+  - rm -f appveyor.yml .travis.yml .gitattributes .gitignore go.mod go.sum README.md
   # remove dirs
-  - rm -rf cache commands controllers converter .git .github graphics mail models routers utils
+  - rm -rf cache cmd internal pkg converter .git .github graphics mail deployments scripts docs
   - ls -alh
   - cp configs/app.conf.example configs/app.conf
-  - zip -r doc_linux_amd64.zip configs static uploads views lib doc_linux_amd64 favicon.ico LICENSE.md
+  - zip -r doc_linux_amd64.zip configs web uploads lib doc_linux_amd64 LICENSE.md
 
 deploy:
   provider: releases
