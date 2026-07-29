@@ -17,7 +17,7 @@ func TestSend(t *testing.T) {
 	c := NewSMTPClient(conf)
 	m := NewMail()
 	m.AddTo("brother <1556****@qq.com>")
-	m.AddFrom("hank <" + conf.Username + ">")
+	m.AddFrom("hank <" + config.Username + ">")
 	m.AddSubject("Testing")
 	m.AddText("Some text :)")
 	filepath, _ := os.Getwd()

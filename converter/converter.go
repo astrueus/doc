@@ -13,9 +13,9 @@ import (
 	"html"
 	"sync"
 
-	"git.itopcms.com/jackliu/doc/utils/cryptil"
-	"git.itopcms.com/jackliu/doc/utils/filetil"
-	"git.itopcms.com/jackliu/doc/utils/ziptil"
+	"git.itopcms.com/jackliu/doc/pkg/cryptil"
+	"git.itopcms.com/jackliu/doc/pkg/filetil"
+	"git.itopcms.com/jackliu/doc/pkg/ziptil"
 )
 
 type Converter struct {
