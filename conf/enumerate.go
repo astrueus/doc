@@ -397,4 +397,14 @@ func init() {
 	if p, err := filepath.Abs("./runtime/logs"); err == nil {
 		LogFile = p
 	}
+	// 提前加载 beego 配置：beego 默认从 ./conf/app.conf 读取，找不到就会保持 BConfig 的默认值
+	// （SessionOn=false）。而 routers 包在 init 阶段就通过 web.Router() 把当时的 SessionOn
+	// 固化到每条路由的 route.sessionOn，一旦为 false，请求进来时 ctx.Input.CruSession 不会
+	// 被赋值，Controller.GetSession() 就会 nil pointer panic。
+	if _, err := os.Stat(ConfigurationFile); err == nil {
+		_ = web.LoadAppConfig("ini", ConfigurationFile)
+	}
+	// 保底启用 session：若上面因 -dir 指定其他目录导致预加载失败，也不让路由级 sessionOn
+	// 被固化为 false（后续 ResolveCommand 会再次 LoadAppConfig 覆盖其余配置）。
+	web.BConfig.WebConfig.Session.SessionOn = true
 }
