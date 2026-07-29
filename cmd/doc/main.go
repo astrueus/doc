@@ -7,7 +7,6 @@ import (
 
 	"git.itopcms.com/jackliu/doc/internal/cli"
 	"git.itopcms.com/jackliu/doc/internal/cli/daemon"
-	_ "git.itopcms.com/jackliu/doc/internal/middleware"
 	_ "github.com/beego/beego/v2/server/web/session/memcache"
 	_ "github.com/beego/beego/v2/server/web/session/mysql"
 	_ "github.com/beego/beego/v2/server/web/session/redis"
