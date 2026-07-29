@@ -82,8 +82,8 @@ doc/
 │  │  └─ mcpdto/                               # 【空目录 · Round 3 写入】
 │  ├─ middleware/                              # 合并 middleware/filter.go + routers/filter.go
 │  ├─ router/                                  # 按域拆分（见 T6）
-│  │  ├─ router.go                             # 汇总入口
-│  │  ├─ account.go / manager.go / document.go / book.go / blog.go / api.go
+│  │  ├─ router.go                             # Init() 汇总入口
+│  │  ├─ page.go / account.go / manager.go / book.go / document.go / blog.go / api.go
 │  ├─ cache/                                   # 原 cache/（内部升级放 Round 4）
 │  ├─ converter/                               # 原根目录 converter/（电子书导出）
 │  ├─ errs/                                    # Round 1 已建好，import 路径不变（本轮 rename import）
@@ -609,16 +609,27 @@ func main() {
 
 ```
 internal/router/
-├─ router.go        # func Init() { registerAccount(); registerBook(); ...; registerAPI() }
-├─ account.go       # /login /logout /register /find_password /captcha ...
+├─ router.go        # func Init() { registerPage(); registerAccount(); ...; registerAPI() }
+├─ page.go          # /  /search /tag /tags /items
+├─ account.go       # /login /logout /register /find_password /captcha /setting*
 ├─ manager.go       # /manager/*
-├─ book.go          # /book/* /books/*
-├─ document.go      # /docs/* /docs/history/* /docs/attach/*
-├─ blog.go          # /blog/*
-└─ api.go           # /api/*（如现有 API 路由 + Round 3 的 /mcp/* 也可挂这里）
+├─ book.go          # /book/*（含从 /api 迁出的 edit/compare/template/list）
+├─ document.go      # /docs/* /history/* /export /comment* /attach_files /qrcode
+├─ blog.go          # /blog* /manage/blogs*
+└─ api.go           # /api/*（仅 JSON；不含页面渲染）
 ```
 
-`cmd/doc/main.go` 从 `_ "internal/router"` 触发 init 注册，或改成显式 `router.Init()` 调用（推荐显式，避免 init 副作用）。
+`internal/cli/daemon` 在 `web.Run()` 前显式调用 `router.Init()`（避免 `init` 副作用；`cmd/doc/main.go` 不再 blank import router）。
+
+**本轮一并完成的 URL 迁移（删除旧路径，不留兼容）：**
+
+| 旧路由 | 新路由 |
+| --- | --- |
+| `/api/:key/edit/?:id` | `/book/:key/edit/?:id` |
+| `/api/:key/compare/:id` | `/book/:key/compare/:id` |
+| `/api/template/list` | `/book/template/list` |
+
+硬编码同步：`web/views/book/index.tpl`；其余走 `urlfor` 的模板会随新注册自动更新。
 
 ---
 
@@ -725,12 +736,12 @@ Round 3 直接 `internal/mcp/server.go` 落地，零迁移。
 
 | #   | 任务                                | PR  | Commit | 状态  |
 | --- | --------------------------------- | --- | ------ | --- |
-| T1  | PR-1 目录搬迁 + import 改写             |     |        |     |
-| T2  | PR-2 硬编码 + 部署脚本                   |     |        |     |
-| T3  | `configs/app.conf` `[section]` 分组 |     |        |     |
-| T4  | 强类型 `config.Config` + Load()      |     |        |     |
-| T5  | `.env` 支持                         |     |        |     |
-| T6  | `internal/router/` 拆分             |     |        |     |
+| T1  | PR-1 目录搬迁 + import 改写             | —   | `784610b` 等 | ✅  |
+| T2  | PR-2 硬编码 + 部署脚本                   | —   | `92cea73`    | ✅  |
+| T3  | `configs/app.conf` `[section]` 分组 | —   | `17759f2`    | ✅  |
+| T4  | 强类型 `config.Config` + Load()      | —   | `17759f2`    | ✅  |
+| T5  | `.env` 支持                         | —   | `17759f2`    | ✅  |
+| T6  | `internal/router/` 拆分 + `/api` 页面路由迁出 | —   | 已完成        | ✅  |
 | T7  | `internal/middleware/` 合并         |     |        |     |
 | T8  | 预留 `internal/mcp/` + `mcpdto/`    |     |        |     |
 | T9  | 部署 note（清 session/cache）          |     |        |     |

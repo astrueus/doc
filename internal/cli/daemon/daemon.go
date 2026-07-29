@@ -8,6 +8,7 @@ import (
 	"git.itopcms.com/jackliu/doc/internal/app"
 	cfg "git.itopcms.com/jackliu/doc/internal/config"
 	"git.itopcms.com/jackliu/doc/internal/controller"
+	"git.itopcms.com/jackliu/doc/internal/router"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
 	"github.com/kardianos/service"
@@ -54,6 +55,8 @@ func (d *Daemon) Run() {
 	app.RegisterError()
 
 	web.ErrorController(&controller.ErrorController{})
+
+	router.Init()
 
 	f, err := filepath.Abs(os.Args[0])
 

@@ -72,7 +72,7 @@
                                         <ul class="dropdown-menu">
                                             <li><a :href="'{{urlfor "DocumentController.Index" ":key" ""}}' + item.identify" target="_blank">{{i18n $.Lang "blog.read"}}</a></li>
                                             <template v-if="item.role_id != 3">
-                                            <li><a :href="'{{.BaseUrl}}/api/' + item.identify + '/edit'" target="_blank">{{i18n $.Lang "blog.edit"}}</a></li>
+                                            <li><a :href="'{{.BaseUrl}}/book/' + item.identify + '/edit'" target="_blank">{{i18n $.Lang "blog.edit"}}</a></li>
                                             </template>
                                             <template v-if="item.role_id == 0">
                                             <li><a :href="'javascript:deleteBook(\''+item.identify+'\');'">{{i18n $.Lang "blog.delete"}}</a></li>
@@ -84,7 +84,7 @@
 
                                     {{/*<a :href="'{{urlfor "DocumentController.Index" ":key" ""}}' + item.identify" title="{{i18n $.Lang "blog.view"}}" data-toggle="tooltip" target="_blank"><i class="fa fa-eye"></i> {{i18n $.Lang "blog.view"}}</a>*/}}
                                     {{/*<template v-if="item.role_id != 3">*/}}
-                                        {{/*<a :href="'/api/' + item.identify + '/edit'" title="{{i18n $.Lang "blog.edit_doc"}}" data-toggle="tooltip" target="_blank"><i class="fa fa-edit" aria-hidden="true"></i> {{i18n $.Lang "blog.edit_doc"}}</a>*/}}
+                                        {{/*<a :href="'/book/' + item.identify + '/edit'" title="{{i18n $.Lang "blog.edit_doc"}}" data-toggle="tooltip" target="_blank"><i class="fa fa-edit" aria-hidden="true"></i> {{i18n $.Lang "blog.edit_doc"}}</a>*/}}
                                     {{/*</template>*/}}
                                 </div>
                                 <div class="clearfix"></div>
