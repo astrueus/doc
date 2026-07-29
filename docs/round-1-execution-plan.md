@@ -416,7 +416,7 @@ func (c *BaseController) JsonError(err error) {
 | T5 | `cache.Cache` + msgpack + context | （直接 commit） | `ba785eb` | 同上 |
 | T6 | `BaseController.Prepare` 缓存 | （直接 commit） | `e52564c` | 同上 |
 | T7 | `internal/errs/` + `BizError` + `JsonError` | （直接 commit） | `dd65d39` | 同上 |
-| T1-fix | 预加载 `configs/app.conf`，修复 session 未启用 | （直接 commit） | （见 §10.3.1 / 最近一次 fix） | 同上 |
+| T1-fix | 预加载 `configs/app.conf`，修复 session 未启用 | （直接 commit） | `4214e96` | 同上 |
 
 **实际合入顺序（与建议一致）：** T1 → T2 → T3 → T5 → T7 → T6 → T4 → **T1-fix**。
 
