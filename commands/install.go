@@ -6,11 +6,8 @@ import (
 	"os"
 	"time"
 
-	"flag"
-
 	"git.itopcms.com/jackliu/doc/conf"
 	"git.itopcms.com/jackliu/doc/models"
-	"git.itopcms.com/jackliu/doc/utils"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
@@ -30,67 +27,6 @@ func Install() {
 	}
 	fmt.Println("Install Successfully!")
 	os.Exit(0)
-
-}
-
-func Version() {
-	if len(os.Args) >= 2 && os.Args[1] == "version" {
-		fmt.Println(conf.VERSION)
-		os.Exit(0)
-	}
-}
-
-// ModifyPassword 修改用户密码
-func ModifyPassword() {
-	var account, password string
-
-	//账号和密码需要解析参数后才能获取
-	if len(os.Args) >= 2 && os.Args[1] == "password" {
-		flagSet := flag.NewFlagSet("Doc command: ", flag.ExitOnError)
-
-		flagSet.StringVar(&account, "account", "", "用户账号.")
-		flagSet.StringVar(&password, "password", "", "用户密码.")
-
-		if err := flagSet.Parse(os.Args[2:]); err != nil {
-			logs.Error("解析参数失败 -> ", err)
-			os.Exit(1)
-		}
-
-		if len(os.Args) < 2 {
-			fmt.Println("Parameter error.")
-			os.Exit(1)
-		}
-
-		if account == "" {
-			fmt.Println("Account cannot be empty.")
-			os.Exit(1)
-		}
-		if password == "" {
-			fmt.Println("Password cannot be empty.")
-			os.Exit(1)
-		}
-		member, err := models.NewMember().FindByAccount(account)
-
-		if err != nil {
-			fmt.Println("Failed to change password:", err)
-			os.Exit(1)
-		}
-		pwd, err := utils.PasswordHash(password)
-
-		if err != nil {
-			fmt.Println("Failed to change password:", err)
-			os.Exit(1)
-		}
-		member.Password = pwd
-
-		err = member.Update("password")
-		if err != nil {
-			fmt.Println("Failed to change password:", err)
-			os.Exit(1)
-		}
-		fmt.Println("Successfully modified.")
-		os.Exit(0)
-	}
 
 }
 

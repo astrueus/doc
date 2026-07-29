@@ -15,8 +15,6 @@
 package migrate
 
 import (
-	"os"
-
 	"container/list"
 	"fmt"
 	"log"
@@ -56,60 +54,59 @@ type migrationCache struct {
 }
 
 func RunMigration() {
+	if migrationList.items == nil {
+		log.Fatal("migration list is not initialized; call RegisterMigration first")
+	}
 
-	if len(os.Args) >= 2 && os.Args[1] == "migrate" {
+	migrate, err := models.NewMigration().FindFirst()
 
-		migrate, err := models.NewMigration().FindFirst()
+	if err != nil {
+		//log.Fatalf("migrations table %s", err)
+		migrate = models.NewMigration()
+	}
+	fmt.Println("Start migration databae... ")
 
-		if err != nil {
-			//log.Fatalf("migrations table %s", err)
-			migrate = models.NewMigration()
-		}
-		fmt.Println("Start migration databae... ")
+	for el := migrationList.items.Front(); el != nil; el = el.Next() {
 
-		for el := migrationList.items.Front(); el != nil; el = el.Next() {
-
-			//如果存在比当前版本大的版本，则依次升级
-			if item, ok := el.Value.(MigrationDatabase); ok && item.Version() > migrate.Version {
-				err := item.ValidUpdate(migrate.Version)
-				if err != nil {
-					log.Fatal(err)
-				}
-				err = item.ValidForBackupTableSchema()
-				if err != nil {
-					item.RollbackMigration()
-					log.Fatal(err)
-				}
-				err = item.ValidForUpdateTableSchema()
-				if err != nil {
-					item.RollbackMigration()
-					log.Fatal(err)
-				}
-				err = item.MigrationOldTableData()
-				if err != nil {
-					item.RollbackMigration()
-					log.Fatal(err)
-				}
-				err = item.MigrationNewTableData()
-				if err != nil {
-					item.RollbackMigration()
-					log.Fatal(err)
-				}
-				err = item.AddMigrationRecord(item.Version())
-				if err != nil {
-					item.RollbackMigration()
-					log.Fatal(err)
-				}
-				err = item.MigrationCleanup()
-				if err != nil {
-					item.RollbackMigration()
-					log.Fatal(err)
-				}
+		//如果存在比当前版本大的版本，则依次升级
+		if item, ok := el.Value.(MigrationDatabase); ok && item.Version() > migrate.Version {
+			err := item.ValidUpdate(migrate.Version)
+			if err != nil {
+				log.Fatal(err)
+			}
+			err = item.ValidForBackupTableSchema()
+			if err != nil {
+				item.RollbackMigration()
+				log.Fatal(err)
+			}
+			err = item.ValidForUpdateTableSchema()
+			if err != nil {
+				item.RollbackMigration()
+				log.Fatal(err)
+			}
+			err = item.MigrationOldTableData()
+			if err != nil {
+				item.RollbackMigration()
+				log.Fatal(err)
+			}
+			err = item.MigrationNewTableData()
+			if err != nil {
+				item.RollbackMigration()
+				log.Fatal(err)
+			}
+			err = item.AddMigrationRecord(item.Version())
+			if err != nil {
+				item.RollbackMigration()
+				log.Fatal(err)
+			}
+			err = item.MigrationCleanup()
+			if err != nil {
+				item.RollbackMigration()
+				log.Fatal(err)
 			}
 		}
-		fmt.Println("Migration successfull.")
-		os.Exit(0)
 	}
+	fmt.Println("Migration successfull.")
 }
 
 // 导出数据库的表结构

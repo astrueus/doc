@@ -187,17 +187,10 @@ func RegisterLogger(log string) {
 	logs.SetLogFuncCall(true)
 }
 
-// RunCommand 注册orm命令行工具
+// RegisterCommand is retained for compatibility; CLI entry is Execute().
+// Deprecated: use Execute().
 func RegisterCommand() {
-
-	if len(os.Args) >= 2 && os.Args[1] == "install" {
-		ResolveCommand(os.Args[2:])
-		Install()
-	} else if len(os.Args) >= 2 && os.Args[1] == "version" {
-		CheckUpdate()
-		os.Exit(0)
-	}
-
+	_ = Execute()
 }
 
 // 注册模板函数
@@ -357,8 +350,6 @@ func ResolveCommand(args []string) {
 	RegisterCache()
 	RegisterModel()
 	RegisterLogger(conf.LogFile)
-
-	ModifyPassword()
 
 }
 

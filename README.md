@@ -117,10 +117,15 @@ go env -w GONOSUMDB=git.itopcms.com
 ### 常用命令
 
 ```bash
-./doc              # 启动服务
-./doc install      # 初始化数据库
-./doc version      # 查看当前版本
-./doc service install   # 安装系统服务（服务名 docd）
+./doc                 # 启动 Web 服务（等价 ./doc web）
+./doc web             # 显式启动 Web 服务
+./doc install         # 初始化数据库
+./doc version         # 查看当前版本
+./doc password --account admin --password newpass   # 修改用户密码
+./doc migrate         # 执行数据库迁移
+./doc mcp             # MCP 服务（Round 3 实现，当前为占位）
+./doc service install # 安装系统服务（服务名 docd，绕过 cobra）
+./doc --help          # 查看全部子命令
 ```
 
 ### 邮件配置示例

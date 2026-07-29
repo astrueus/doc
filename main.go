@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	_ "time/tzdata"
 
@@ -16,29 +15,39 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func main() {
+func init() {
+	commands.StartWebServer = func(flagArgs []string) error {
+		d := daemon.NewDaemon()
+		d.Config().Arguments = flagArgs
+		s, err := service.New(d, d.Config())
+		if err != nil {
+			return fmt.Errorf("create service: %w", err)
+		}
+		if err := s.Run(); err != nil {
+			return fmt.Errorf("启动程序失败 -> %w", err)
+		}
+		return nil
+	}
+}
 
+func main() {
+	// System service management bypasses cobra to keep old scripts working:
+	//   doc service install|remove|restart
 	if len(os.Args) >= 3 && os.Args[1] == "service" {
-		if os.Args[2] == "install" {
+		switch os.Args[2] {
+		case "install":
 			daemon.Install()
-		} else if os.Args[2] == "remove" {
+		case "remove":
 			daemon.Uninstall()
-		} else if os.Args[2] == "restart" {
+		case "restart":
 			daemon.Restart()
+		default:
+			fmt.Fprintf(os.Stderr, "unknown service command: %s\n", os.Args[2])
+			os.Exit(1)
 		}
 	}
-	commands.RegisterCommand()
 
-	d := daemon.NewDaemon()
-
-	s, err := service.New(d, d.Config())
-
-	if err != nil {
-		fmt.Println("Create service error => ", err)
+	if err := commands.Execute(); err != nil {
 		os.Exit(1)
-	}
-
-	if err := s.Run(); err != nil {
-		log.Fatal("启动程序失败 ->", err)
 	}
 }
