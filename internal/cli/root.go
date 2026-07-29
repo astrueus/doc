@@ -1,6 +1,9 @@
 package cli
 
 import (
+	"fmt"
+	"os"
+
 	"git.itopcms.com/jackliu/doc/internal/app"
 	"github.com/spf13/cobra"
 )
@@ -15,7 +18,10 @@ var rootCmd = &cobra.Command{
 	Use:   "doc",
 	Short: "Doc — Documentation & knowledge base server",
 	Long:  "Doc is a documentation management server. Run without a subcommand to start the web service.",
-	RunE:  runWeb,
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		preflightCheck()
+	},
+	RunE: runWeb,
 }
 
 // Execute is the cobra entry point used by main.
@@ -47,4 +53,17 @@ func buildFlagArgs() []string {
 // bootstrapFromFlags initializes config/DB/cache using cobra persistent flags.
 func bootstrapFromFlags() {
 	app.ResolveCommand(buildFlagArgs())
+}
+
+// preflightCheck warns about Round 1/legacy layout leftovers. Does not abort.
+func preflightCheck() {
+	if _, err := os.Stat("./conf/app.conf"); err == nil {
+		fmt.Println("[warn] detected legacy ./conf/app.conf; please migrate to ./configs/app.conf (Round 2 layout)")
+	}
+	if _, err := os.Stat("./static"); err == nil {
+		fmt.Println("[warn] detected legacy ./static; please migrate to ./web/static")
+	}
+	if _, err := os.Stat("./views"); err == nil {
+		fmt.Println("[warn] detected legacy ./views; please migrate to ./web/views")
+	}
 }

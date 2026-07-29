@@ -15,18 +15,21 @@ COPY . .
 # 编译
 RUN go env
 RUN go mod tidy -v
-RUN go build -o doc_linux_amd64 -ldflags "-w -s -X 'git.itopcms.com/jackliu/doc/internal/config.VERSION=$TAG' -X 'git.itopcms.com/jackliu/doc/internal/config.BUILD_TIME=`date`' -X 'git.itopcms.com/jackliu/doc/internal/config.GO_VERSION=`go version`'" ./cmd/doc
+RUN go build -o doc -ldflags "-w -s -X 'git.itopcms.com/jackliu/doc/internal/config.VERSION=$TAG' -X 'git.itopcms.com/jackliu/doc/internal/config.BUILD_TIME=`date`' -X 'git.itopcms.com/jackliu/doc/internal/config.GO_VERSION=`go version`'" ./cmd/doc
 RUN cp configs/app.conf.example configs/app.conf
-# 清理不需要的文件（源码已不再需要进最终镜像层；路径对齐 Round 2 布局）
+# 清理源码与构建脚手架；保留运行所需：configs/ web/ uploads/ mail/ graphics/ doc start.sh sync_host.sh
 RUN rm -f appveyor.yml .travis.yml .gitattributes .gitignore go.mod go.sum README.md
-RUN rm -rf cache cmd internal pkg converter .git .github graphics mail deployments scripts docs
+RUN rm -rf cache cmd internal pkg converter .git .github scripts docs
+# 将部署脚本提升到镜像工作目录根，便于 ENTRYPOINT 与 sync 引用
+RUN cp deployments/start.sh /app/start.sh \
+ && cp deployments/sync_host.sh /app/sync_host.sh \
+ && rm -rf deployments
 
 # 测试编译的 doc 是否 ok
-RUN ./doc_linux_amd64 version
+RUN ./doc version
 
 # 必要的文件复制
 ADD web/static/fonts/simsun.ttc /usr/share/fonts/win/
-ADD deployments/start.sh /app
 
 
 # Ubuntu 20.04
@@ -119,15 +122,16 @@ VOLUME /doc-sync-host
 EXPOSE 8181/tcp
 
 # 如果配置文件不存在就复制
-RUN cp --no-clobber /doc/conf/app.conf.example /doc/conf/app.conf
+RUN cp --no-clobber /doc/configs/app.conf.example /doc/configs/app.conf
 
-RUN chmod +x /doc/start.sh
+RUN chmod +x /doc/start.sh /doc/sync_host.sh /doc/doc
 
 ENTRYPOINT ["/bin/bash", "/doc/start.sh"]
 
 # https://docs.docker.com/engine/reference/commandline/build/#options
-# docker build --progress plain --rm --build-arg TAG=0.0.1 --tag doc:latest .
+# docker build -f deployments/Dockerfile --progress plain --rm --build-arg TAG=0.0.1 --tag doc:latest .
 # https://docs.docker.com/engine/reference/commandline/run/#options
 # set DOC=//d/doc # windows
 # export DOC=/home/ubuntu/doc-docker # linux
-# docker run --rm -it -p 8181:8181 -v "%DOC%":"/doc-sync-host" --name doc -e MINDOC_ENABLE_EXPORT=true -d doc:latest
+# docker run --rm -it -p 8181:8181 -v "%DOC%":"/doc-sync-host" --name doc -d doc:latest
+# 或: docker compose -f deployments/docker-compose.yml up -d

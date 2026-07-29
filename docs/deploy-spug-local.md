@@ -17,7 +17,7 @@ flowchart LR
     A[开发者本机<br/>scripts/release.ps1] --> B[Gitea Release<br/>doc_linux_amd64.zip]
     B --> C[Spug 发布任务<br/>下载 + 解压]
     C --> D[Spug 前置脚本<br/>spug_pre.sh]
-    D --> E[Spug 后置脚本<br/>scripts/spug_run.sh]
+    D --> E[Spug 后置脚本<br/>deployments/spug/spug_run.sh]
     E --> F[doc.service<br/>systemd 重启]
     F --> G[健康检查<br/>http://:8181]
 ```
@@ -26,7 +26,7 @@ flowchart LR
 |------|--------|------|
 | 编译/发版 | 开发者本机 | `doc_linux_amd64.zip` 上传到 Gitea Release |
 | 拉取/部署 | Spug | 把 zip 解压到 `WWW` |
-| 软链/服务 | `scripts/spug_run.sh` | 持久化目录、`app.conf`、systemd |
+| 软链/服务 | `deployments/spug/spug_run.sh` | 持久化目录、`app.conf`、systemd |
 | 运行 | `doc.service` | 启动 `doc` |
 
 ---
@@ -38,10 +38,12 @@ flowchart LR
   doc                                  ← 可执行文件（必须叫 doc）
   configs/app.conf                        ← 每次从 REPO 覆盖
   configs/app.conf.example                ← 仓库自带
-  static/  views/                      ← 静态资源
+  web/static/  web/views/              ← 静态资源与模板（Round 2）
   uploads -> /data/repos/.../uploads   ← 软链
   runtime -> /data/repos/.../runtime   ← 软链
-  scripts/                             ← 含 spug_run.sh、doc.service
+  deployments/
+    spug/spug_run.sh                   ← Spug 后置脚本
+    systemd/doc.service                ← systemd unit 源文件
   dist/doc_linux_amd64                 ← 解压时存在；前置脚本会拷成 doc
 
 /data/repos/doc.itopcms.com/resource/  ← REPO：持久化数据，不随发布覆盖
@@ -49,7 +51,7 @@ flowchart LR
   uploads/                             ← 用户上传文件
   runtime/                             ← Beego 运行时（日志/缓存）
   scripts/
-    doc.service                        ← systemd unit（由 spug_run.sh 同步）
+    doc.service                        ← systemd unit（由 spug_run.sh 从 deployments/systemd 同步）
   backup/<TAG>/                        ← 二进制备份（用于回滚）
 ```
 
@@ -157,9 +159,9 @@ log "前置完成"
 
 ---
 
-## 五、Spug 后置脚本：`scripts/spug_run.sh`（已存在）
+## 五、Spug 后置脚本：`deployments/spug/spug_run.sh`（已存在）
 
-仓库已有完整 `scripts/spug_run.sh`，本节是增强建议（按需追加，不强制修改）。
+仓库已有完整 `deployments/spug/spug_run.sh`，本节是增强建议（按需追加，不强制修改）。
 
 ### 建议增强项
 
@@ -199,7 +201,7 @@ exit 1
 
 ## 六、`doc.service` 调整建议
 
-仓库 `scripts/doc.service` 默认 root 启动，且 `After=mysqld.service`。生产可调整：
+仓库 `deployments/systemd/doc.service` 默认 root 启动，且 `After=mysqld.service`。生产可调整：
 
 ```ini
 [Unit]
@@ -255,7 +257,7 @@ WantedBy=multi-user.target
 
 2. **后置（在目标主机执行）**
    ```bash
-   bash /data/wwwroot/doc.itopcms.com/scripts/spug_run.sh
+   bash /data/wwwroot/doc.itopcms.com/deployments/spug/spug_run.sh
    ```
 
 ### 推荐：直接在 Spug「自定义命令」里串成一条
@@ -279,7 +281,7 @@ unzip -oq /tmp/doc.zip -d "$WWW"
 chmod 755 "$WWW/doc"
 
 # 2) 后置（仓库自带）
-bash "$WWW/scripts/spug_run.sh"
+bash "$WWW/deployments/spug/spug_run.sh"
 ```
 
 ---

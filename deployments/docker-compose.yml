@@ -1,23 +1,35 @@
-MinDoc_New:
-  image: registry.cn-hangzhou.aliyuncs.com/mindoc/mindoc:v2.0-beta.2
-  privileged: false
-  restart: always
-  ports:
-    - 8181:8181
-  volumes:
-    - /var/www/mindoc/database:/mindoc/database
-    - /var/www/mindoc/uploads:/mindoc/uploads
-  environment:
-    - MINDOC_RUN_MODE=prod
-    - MINDOC_DB_ADAPTER=sqlite3
-    - MINDOC_DB_DATABASE=./database/mindoc.db
-    - MINDOC_CACHE=true
-    - MINDOC_CACHE_PROVIDER=file
-    - MINDOC_ENABLE_EXPORT=false
-    - MINDOC_BASE_URL=
-    - MINDOC_CDN_IMG_URL=
-    - MINDOC_CDN_CSS_URL=
-    - MINDOC_CDN_JS_URL=
-  dns:
-    - 223.5.5.5
-    - 223.6.6.6
+version: "3.8"
+
+services:
+  doc:
+    build:
+      context: ..
+      dockerfile: deployments/Dockerfile
+      args:
+        TAG: "dev"
+    image: doc:latest
+    container_name: doc
+    restart: always
+    ports:
+      - "8181:8181"
+    volumes:
+      # 配置与持久化数据（工作目录内相对路径）
+      - ../configs:/doc/configs
+      - ../web/static:/doc/web/static
+      - ../web/views:/doc/web/views
+      - ../uploads:/doc/uploads
+      - ../cache:/doc/cache
+      - ../runtime:/doc/runtime
+      # 可选：宿主机同步目录（供 start.sh / sync_host.sh 使用）
+      - doc-sync:/doc-sync-host
+    environment:
+      - DOC_HOME=/doc
+      # Beego / 业务环境变量按需覆盖 configs/app.conf 中的 ${VAR||default}
+      # - MINDOC_RUN_MODE=prod
+      # - MINDOC_DB_ADAPTER=sqlite3
+      # - MINDOC_DB_DATABASE=./database/mindoc.db
+    # 默认入口是 deployments/start.sh；需要仅跑 web 时可改为:
+    # command: ["/doc/doc", "web"]
+
+volumes:
+  doc-sync:
