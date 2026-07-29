@@ -58,7 +58,7 @@ func init() {
 	}
 
 	var StartRouter = func(ctx *context.Context) {
-		sessname, _ := web.AppConfig.String("sessionname")
+		sessname, _ := web.AppConfig.String("session::sessionname")
 		sessionId := ctx.Input.Cookie(sessname)
 		if sessionId != "" {
 			//sessionId必须是数字字母组成，且最小32个字符，最大1024字符

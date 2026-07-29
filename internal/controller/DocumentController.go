@@ -252,7 +252,7 @@ func (c *DocumentController) Edit() {
 		}
 	}
 
-	c.Data["BaiDuMapKey"] = web.AppConfig.DefaultString("baidumapkey", "")
+	c.Data["BaiDuMapKey"] = web.AppConfig.DefaultString("app::baidumapkey", "")
 
 	if config.GetUploadFileSize() > 0 {
 		c.Data["UploadFileSize"] = config.GetUploadFileSize()

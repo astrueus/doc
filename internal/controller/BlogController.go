@@ -469,7 +469,7 @@ func (c *BlogController) Upload() {
 		c.JsonResult(6003, i18n.Tr(c.Lang, "message.upload_file_type_error"))
 	}
 	//如果文件类型设置为 * 标识不限制文件类型
-	if web.AppConfig.DefaultString("upload_file_ext", "") != "*" {
+	if web.AppConfig.DefaultString("upload::upload_file_ext", "") != "*" {
 		if !config.IsAllowUploadFileExt(ext) {
 			c.JsonResult(6004, i18n.Tr(c.Lang, "message.upload_file_type_error"))
 		}

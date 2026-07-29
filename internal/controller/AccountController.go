@@ -37,14 +37,14 @@ func (c *AccountController) referer() string {
 
 func (c *AccountController) Prepare() {
 	c.BaseController.Prepare()
-	c.EnableXSRF = web.AppConfig.DefaultBool("enablexsrf", true)
+	c.EnableXSRF = web.AppConfig.DefaultBool("http::enablexsrf", true)
 
 	c.Data["xsrfdata"] = template.HTML(c.XSRFFormHTML())
-	c.Data["corpID"], _ = web.AppConfig.String("dingtalk_corpid")
-	if dtcorpid, _ := web.AppConfig.String("dingtalk_corpid"); dtcorpid != "" {
+	c.Data["corpID"], _ = web.AppConfig.String("dingtalk::dingtalk_corpid")
+	if dtcorpid, _ := web.AppConfig.String("dingtalk::dingtalk_corpid"); dtcorpid != "" {
 		c.Data["ENABLE_QR_DINGTALK"] = true
 	}
-	c.Data["dingtalk_qr_key"], _ = web.AppConfig.String("dingtalk_qr_key")
+	c.Data["dingtalk_qr_key"], _ = web.AppConfig.String("dingtalk::dingtalk_qr_key")
 
 	if !c.EnableXSRF {
 		return
@@ -157,9 +157,9 @@ func (c *AccountController) DingTalkLogin() {
 		c.JsonResult(500, i18n.Tr(c.Lang, "message.failed_obtain_user_info"), nil)
 	}
 
-	appKey, _ := web.AppConfig.String("dingtalk_app_key")
-	appSecret, _ := web.AppConfig.String("dingtalk_app_secret")
-	tmpReader, _ := web.AppConfig.String("dingtalk_tmp_reader")
+	appKey, _ := web.AppConfig.String("dingtalk::dingtalk_app_key")
+	appSecret, _ := web.AppConfig.String("dingtalk::dingtalk_app_secret")
+	tmpReader, _ := web.AppConfig.String("dingtalk::dingtalk_tmp_reader")
 
 	if appKey == "" || appSecret == "" || tmpReader == "" {
 		c.JsonResult(500, i18n.Tr(c.Lang, "message.dingtalk_auto_login_not_enable"), nil)
@@ -217,8 +217,8 @@ func (c *AccountController) QRLogin() {
 			c.Redirect(config.URLFor("AccountController.Login"), 302)
 			c.StopRun()
 		}
-		appKey, _ := web.AppConfig.String("dingtalk_qr_key")
-		appSecret, _ := web.AppConfig.String("dingtalk_qr_secret")
+		appKey, _ := web.AppConfig.String("dingtalk::dingtalk_qr_key")
+		appSecret, _ := web.AppConfig.String("dingtalk::dingtalk_qr_secret")
 
 		qrDingtalk := dingtalk.NewDingtalkQRLogin(appSecret, appKey)
 		unionID, err := qrDingtalk.GetUnionIDByCode(code)
@@ -228,9 +228,9 @@ func (c *AccountController) QRLogin() {
 			c.StopRun()
 		}
 
-		appKey, _ = web.AppConfig.String("dingtalk_app_key")
-		appSecret, _ = web.AppConfig.String("dingtalk_app_secret")
-		tmpReader, _ := web.AppConfig.String("dingtalk_tmp_reader")
+		appKey, _ = web.AppConfig.String("dingtalk::dingtalk_app_key")
+		appSecret, _ = web.AppConfig.String("dingtalk::dingtalk_app_secret")
+		tmpReader, _ := web.AppConfig.String("dingtalk::dingtalk_tmp_reader")
 
 		dingtalkAgent := dingtalk.NewDingTalkAgent(appSecret, appKey)
 		err = dingtalkAgent.GetAccesstoken()

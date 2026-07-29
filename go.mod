@@ -9,6 +9,7 @@ require (
 	github.com/boombuler/barcode v1.1.0
 	github.com/fsnotify/fsnotify v1.10.1
 	github.com/go-ldap/ldap/v3 v3.4.13
+	github.com/joho/godotenv v1.5.1
 	github.com/kardianos/service v1.2.4
 	github.com/lifei6671/gocaptcha v1.0.3
 	github.com/mattn/go-sqlite3 v1.14.44

@@ -72,7 +72,7 @@ func (c *BaseController) Prepare() {
 	}
 	c.EnableAnonymous = strings.EqualFold(c.Option["ENABLE_ANONYMOUS"], "true")
 	c.EnableDocumentHistory = strings.EqualFold(c.Option["ENABLE_DOCUMENT_HISTORY"], "true")
-	c.Data["HighlightStyle"] = web.AppConfig.DefaultString("highlight_style", "github")
+	c.Data["HighlightStyle"] = web.AppConfig.DefaultString("app::highlight_style", "github")
 
 	if b, err := os.ReadFile(filepath.Join(web.BConfig.WebConfig.ViewsPath, "widgets", "scripts.tpl")); err == nil {
 		c.Data["Scripts"] = template.HTML(string(b))
@@ -224,7 +224,7 @@ func (c *BaseController) SetLang() {
 	}
 	if len(lang) == 0 ||
 		!i18n.IsExist(lang) {
-		lang, _ = web.AppConfig.String("default_lang")
+		lang, _ = web.AppConfig.String("i18n::default_lang")
 	}
 	if !hasCookie {
 		c.Ctx.SetCookie("lang", lang, 1<<31-1, "/")

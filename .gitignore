@@ -29,6 +29,8 @@ database
 .junie
 /vendor/*
 /configs/app.conf
+.env
+.env.local
 /vendor
 /runtime
 /uploads/*

@@ -38,7 +38,7 @@ func initialization() {
 		panic(err.Error())
 	}
 
-	lang, _ := web.AppConfig.String("default_lang")
+	lang, _ := web.AppConfig.String("i18n::default_lang")
 	err = i18n.SetMessage(lang, "configs/lang/"+lang+".ini")
 	if err != nil {
 		panic(fmt.Errorf("initialize locale error: %s", err))

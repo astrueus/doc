@@ -118,7 +118,7 @@ func (p *Pagination) pageURL(page string) string {
 }
 
 func (p *Pagination) getLang() string {
-	lang, _ := web.AppConfig.String("default_lang")
+	lang, _ := web.AppConfig.String("i18n::default_lang")
 	ulang := p.Request.FormValue("lang")
 	if len(ulang) == 0 {
 		clang, err := p.Request.Cookie("lang")

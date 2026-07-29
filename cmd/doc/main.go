@@ -12,6 +12,7 @@ import (
 	_ "github.com/beego/beego/v2/server/web/session/memcache"
 	_ "github.com/beego/beego/v2/server/web/session/mysql"
 	_ "github.com/beego/beego/v2/server/web/session/redis"
+	"github.com/joho/godotenv"
 	"github.com/kardianos/service"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -32,6 +33,9 @@ func init() {
 }
 
 func main() {
+	// Optional local env overrides (ignored if files missing).
+	_ = godotenv.Load(".env", ".env.local")
+
 	// System service management bypasses cobra to keep old scripts working:
 	//   doc service install|remove|restart
 	if len(os.Args) >= 3 && os.Args[1] == "service" {

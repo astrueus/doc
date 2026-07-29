@@ -289,7 +289,7 @@ func (b *Blog) Processor() *Blog {
 			}
 		})
 		//设置图片为CDN地址
-		if cdnimg, _ := web.AppConfig.String("cdnimg"); cdnimg != "" {
+		if cdnimg, _ := web.AppConfig.String("cdn::cdnimg"); cdnimg != "" {
 			content.Find("img").Each(func(i int, contentSelection *goquery.Selection) {
 				if src, ok := contentSelection.Attr("src"); ok && strings.HasPrefix(src, "/uploads/") {
 					contentSelection.SetAttr("src", urlutil.JoinURI(cdnimg, src))

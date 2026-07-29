@@ -34,17 +34,18 @@ import (
 // RegisterDataBase 注册数据库
 func RegisterDataBase() {
 	logs.Info("正在初始化数据库配置.")
-	dbadapter, _ := web.AppConfig.String("db_adapter")
+	g := cfg.MustGlobal()
+	dbadapter := g.Database.Adapter
 	orm.DefaultTimeLoc = time.Local
 	orm.DefaultRowsLimit = -1
 
 	if strings.EqualFold(dbadapter, "mysql") {
-		host, _ := web.AppConfig.String("db_host")
-		database, _ := web.AppConfig.String("db_database")
-		username, _ := web.AppConfig.String("db_username")
-		password, _ := web.AppConfig.String("db_password")
+		host := g.Database.Host
+		database := g.Database.Database
+		username := g.Database.Username
+		password := g.Database.Password
 
-		timezone, _ := web.AppConfig.String("timezone")
+		timezone := g.Timezone
 		location, err := time.LoadLocation(timezone)
 		if err == nil {
 			orm.DefaultTimeLoc = location
@@ -52,7 +53,7 @@ func RegisterDataBase() {
 			logs.Error("加载时区配置失败 timezone=%s err=%v", timezone, err)
 		}
 
-		port, _ := web.AppConfig.String("db_port")
+		port := g.Database.Port
 
 		dataSource := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=true&loc=%s", username, password, host, port, database, url.QueryEscape(timezone))
 
@@ -63,7 +64,7 @@ func RegisterDataBase() {
 
 	} else if strings.EqualFold(dbadapter, "sqlite3") {
 
-		database, _ := web.AppConfig.String("db_database")
+		database := g.Database.Database
 		if strings.HasPrefix(database, "./") {
 			database = filepath.Join(cfg.WorkingDirectory, string(database[1:]))
 		}
@@ -115,16 +116,17 @@ func RegisterModel() {
 
 // RegisterLogger 注册日志
 func RegisterLogger(log string) {
+	g := cfg.MustGlobal()
 
 	logs.SetLogFuncCall(true)
 	_ = logs.SetLogger("console")
 	logs.EnableFuncCallDepth(true)
 
-	if web.AppConfig.DefaultBool("log_is_async", true) {
+	if g.Log.IsAsync {
 		logs.Async(1e3)
 	}
 	if log == "" {
-		logPath, err := filepath.Abs(web.AppConfig.DefaultString("log_path", cfg.WorkingDir("runtime", "logs")))
+		logPath, err := filepath.Abs(g.Log.Path)
 		if err == nil {
 			log = logPath
 		} else {
@@ -144,19 +146,21 @@ func RegisterLogger(log string) {
 	logConfig["perm"] = "0755"
 	logConfig["rotate"] = true
 
-	if maxLines := web.AppConfig.DefaultInt("log_maxlines", 1000000); maxLines > 0 {
+	if maxLines := g.Log.MaxLines; maxLines > 0 {
 		logConfig["maxLines"] = maxLines
 	}
-	if maxSize := web.AppConfig.DefaultInt("log_maxsize", 1<<28); maxSize > 0 {
+	if maxSize := g.Log.MaxSize; maxSize > 0 {
 		logConfig["maxsize"] = maxSize
+	} else if maxSize == 0 {
+		// keep default beego size when unset
 	}
-	if !web.AppConfig.DefaultBool("log_daily", true) {
+	if !g.Log.Daily {
 		logConfig["daily"] = false
 	}
-	if maxDays := web.AppConfig.DefaultInt("log_maxdays", 7); maxDays > 0 {
+	if maxDays := g.Log.MaxDays; maxDays > 0 {
 		logConfig["maxdays"] = maxDays
 	}
-	if level := web.AppConfig.DefaultString("log_level", "Trace"); level != "" {
+	if level := g.Log.Level; level != "" {
 		switch level {
 		case "Emergency":
 			logConfig["level"] = logs.LevelEmergency
@@ -202,13 +206,14 @@ func RegisterFunction() {
 		os.Exit(-1)
 	}
 	err = web.AddFuncMap("cdn", func(p string) string {
-		cdn := web.AppConfig.DefaultString("cdn", "")
+		g := cfg.MustGlobal()
+		cdn := g.CDN.URL
 		if strings.HasPrefix(p, "http://") || strings.HasPrefix(p, "https://") {
 			return p
 		}
 		//如果没有设置cdn，则使用baseURL拼接
 		if cdn == "" {
-			baseUrl := web.AppConfig.DefaultString("baseurl", "")
+			baseUrl := g.BaseURL
 
 			if strings.HasPrefix(p, "/") && strings.HasSuffix(baseUrl, "/") {
 				return baseUrl + p[1:]
@@ -307,9 +312,10 @@ func ResolveCommand(args []string) {
 		log.Fatal("读取字体文件时出错 -> ", err)
 	}
 
-	if err := web.LoadAppConfig("ini", cfg.ConfigurationFile); err != nil {
+	if _, err := cfg.Load(cfg.ConfigurationFile); err != nil {
 		log.Fatal("An error occurred:", err)
 	}
+	g := cfg.MustGlobal()
 
 	web.BConfig.MaxUploadSize = cfg.GetUploadMaxSize()
 	web.BConfig.MaxMemory = cfg.GetUploadMaxMemory()
@@ -319,7 +325,7 @@ func ResolveCommand(args []string) {
 	if logFile != "" {
 		cfg.LogFile = logFile
 	} else {
-		logPath, err := filepath.Abs(web.AppConfig.DefaultString("log_path", cfg.WorkingDir("runtime", "logs")))
+		logPath, err := filepath.Abs(g.Log.Path)
 		if err == nil {
 			cfg.LogFile = logPath
 		} else {
@@ -327,7 +333,7 @@ func ResolveCommand(args []string) {
 		}
 	}
 
-	cfg.AutoLoadDelay = web.AppConfig.DefaultInt("config_auto_delay", 0)
+	cfg.AutoLoadDelay = g.AutoLoadDelay
 	uploads := cfg.WorkingDir("uploads")
 
 	_ = os.MkdirAll(uploads, 0666)
@@ -355,15 +361,15 @@ func ResolveCommand(args []string) {
 
 // 注册缓存管道
 func RegisterCache() {
-	isOpenCache := web.AppConfig.DefaultBool("cache", false)
-	if !isOpenCache {
+	g := cfg.MustGlobal()
+	if !g.Cache.Enable {
 		cache.Init(&cache.NullCache{})
 		return
 	}
 	logs.Info("正常初始化缓存配置.")
-	cacheProvider, _ := web.AppConfig.String("cache_provider")
+	cacheProvider := g.Cache.Provider
 	if cacheProvider == "file" {
-		cacheFilePath := web.AppConfig.DefaultString("cache_file_path", "./runtime/cache/")
+		cacheFilePath := g.Cache.FilePath
 		if strings.HasPrefix(cacheFilePath, "./") {
 			cacheFilePath = filepath.Join(cfg.WorkingDirectory, string(cacheFilePath[1:]))
 		}
@@ -372,9 +378,9 @@ func RegisterCache() {
 		fileConfig := make(map[string]string, 0)
 
 		fileConfig["CachePath"] = cacheFilePath
-		fileConfig["DirectoryLevel"] = web.AppConfig.DefaultString("cache_file_dir_level", "2")
-		fileConfig["EmbedExpiry"] = web.AppConfig.DefaultString("cache_file_expiry", "120")
-		fileConfig["FileSuffix"] = web.AppConfig.DefaultString("cache_file_suffix", ".bin")
+		fileConfig["DirectoryLevel"] = g.Cache.FileDirLevel
+		fileConfig["EmbedExpiry"] = g.Cache.FileExpiry
+		fileConfig["FileSuffix"] = g.Cache.FileSuffix
 
 		bc, err := json.Marshal(&fileConfig)
 		if err != nil {
@@ -387,7 +393,7 @@ func RegisterCache() {
 		cache.Init(fileCache)
 
 	} else if cacheProvider == "memory" {
-		cacheInterval := web.AppConfig.DefaultInt("cache_memory_interval", 60)
+		cacheInterval := g.Cache.MemoryInterval
 		memory := beegoCache.NewMemoryCache()
 		beegoCache.DefaultEvery = cacheInterval
 		cache.Init(memory)
@@ -399,14 +405,14 @@ func RegisterCache() {
 			Key      string `json:"key"`
 		}
 		redisConfig.DbNum = "0"
-		redisConfig.Conn = web.AppConfig.DefaultString("cache_redis_host", "")
-		if key := web.AppConfig.DefaultString("cache_redis_prefix", ""); key != "" {
+		redisConfig.Conn = g.Cache.RedisHost
+		if key := g.Cache.RedisPrefix; key != "" {
 			redisConfig.Key = key
 		}
-		if pwd := web.AppConfig.DefaultString("cache_redis_password", ""); pwd != "" {
+		if pwd := g.Cache.RedisPassword; pwd != "" {
 			redisConfig.Password = pwd
 		}
-		if dbNum := web.AppConfig.DefaultInt("cache_redis_db", 0); dbNum > 0 {
+		if dbNum := g.Cache.RedisDB; dbNum > 0 {
 			redisConfig.DbNum = strconv.Itoa(dbNum)
 		}
 
@@ -428,7 +434,7 @@ func RegisterCache() {
 		var memcacheConfig struct {
 			Conn string `json:"conn"`
 		}
-		memcacheConfig.Conn = web.AppConfig.DefaultString("cache_memcache_host", "")
+		memcacheConfig.Conn = g.Cache.MemcacheHost
 
 		bc, err := json.Marshal(&memcacheConfig)
 		if err != nil {
@@ -470,7 +476,7 @@ func RegisterAutoLoadConfig() {
 					}
 					//如果是修改了配置文件
 					if ev.Op&fsnotify.Write == fsnotify.Write || ev.Op&fsnotify.Create == fsnotify.Create {
-						if err := web.LoadAppConfig("ini", cfg.ConfigurationFile); err != nil {
+						if err := cfg.Reload(); err != nil {
 							logs.Error("An error occurred ->", err)
 							continue
 						}

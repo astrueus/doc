@@ -1,4 +1,4 @@
-// Package conf 为配置相关.
+// Package comment: configuration constants, getters (shim over Global), and URL helpers.
 package config
 
 import (
@@ -81,32 +81,31 @@ var (
 
 // app_key
 func GetAppKey() string {
-	return web.AppConfig.DefaultString("app_key", "mindoc")
+	return MustGlobal().App.Key
 }
 
 func GetDatabasePrefix() string {
-	return web.AppConfig.DefaultString("db_prefix", "md_")
+	return MustGlobal().Database.Prefix
 }
 
 // 获取默认头像
 func GetDefaultAvatar() string {
-	return URLForWithCdnImage(web.AppConfig.DefaultString("avatar", "/static/images/headimgurl.jpg"))
+	return URLForWithCdnImage(MustGlobal().App.Avatar)
 }
 
 // 获取阅读令牌长度.
 func GetTokenSize() int {
-	return web.AppConfig.DefaultInt("token_size", 12)
+	return MustGlobal().App.TokenSize
 }
 
 // 获取默认文档封面.
 func GetDefaultCover() string {
-
-	return URLForWithCdnImage(web.AppConfig.DefaultString("cover", "/static/images/book.jpg"))
+	return URLForWithCdnImage(MustGlobal().App.Cover)
 }
 
 // 获取允许的商城文件的类型.
 func GetUploadFileExt() []string {
-	ext := web.AppConfig.DefaultString("upload_file_ext", "png|jpg|jpeg|gif|txt|doc|docx|pdf")
+	ext := MustGlobal().Upload.FileExt
 
 	temp := strings.Split(ext, "|")
 
@@ -156,12 +155,12 @@ func ParseDataSize(size string) int64 {
 
 // 获取上传文件允许的最大值（业务层单文件限制）
 func GetUploadFileSize() int64 {
-	return ParseDataSize(web.AppConfig.DefaultString("upload_file_size", "0"))
+	return ParseDataSize(MustGlobal().Upload.FileSize)
 }
 
 // GetUploadMaxSize 框架层 HTTP 请求体上限，对应 Beego MaxUploadSize；默认 1GB。
 func GetUploadMaxSize() int64 {
-	if n := ParseDataSize(web.AppConfig.DefaultString("upload_max_size", "1GB")); n > 0 {
+	if n := ParseDataSize(MustGlobal().Upload.MaxSize); n > 0 {
 		return n
 	}
 	return 1 << 30
@@ -169,7 +168,7 @@ func GetUploadMaxSize() int64 {
 
 // GetUploadMaxMemory multipart 解析内存阈值，对应 Beego MaxMemory；默认 64MB。
 func GetUploadMaxMemory() int64 {
-	if n := ParseDataSize(web.AppConfig.DefaultString("upload_max_memory", "64MB")); n > 0 {
+	if n := ParseDataSize(MustGlobal().Upload.MaxMemory); n > 0 {
 		return n
 	}
 	return 1 << 26
@@ -192,12 +191,12 @@ func ResolveWorkingDirectory(dirFlag string) (string, error) {
 
 // 是否启用导出
 func GetEnableExport() bool {
-	return web.AppConfig.DefaultBool("enable_export", true)
+	return MustGlobal().Export.Enable
 }
 
 // 同一项目导出线程的并发数
 func GetExportProcessNum() int {
-	exportProcessNum := web.AppConfig.DefaultInt("export_process_num", 1)
+	exportProcessNum := MustGlobal().Export.ProcessNum
 
 	if exportProcessNum <= 0 || exportProcessNum > 4 {
 		exportProcessNum = 1
@@ -207,7 +206,7 @@ func GetExportProcessNum() int {
 
 // 导出项目队列的并发数量
 func GetExportLimitNum() int {
-	exportLimitNum := web.AppConfig.DefaultInt("export_limit_num", 1)
+	exportLimitNum := MustGlobal().Export.LimitNum
 
 	if exportLimitNum < 0 {
 		exportLimitNum = 1
@@ -217,7 +216,7 @@ func GetExportLimitNum() int {
 
 // 等待导出队列的长度
 func GetExportQueueLimitNum() int {
-	exportQueueLimitNum := web.AppConfig.DefaultInt("export_queue_limit_num", 10)
+	exportQueueLimitNum := MustGlobal().Export.QueueLimitNum
 
 	if exportQueueLimitNum <= 0 {
 		exportQueueLimitNum = 100
@@ -227,9 +226,11 @@ func GetExportQueueLimitNum() int {
 
 // 默认导出项目的缓存目录
 func GetExportOutputPath() string {
-	exportOutputPath := filepath.Join(web.AppConfig.DefaultString("export_output_path", filepath.Join(WorkingDirectory, "cache")), "books")
-
-	return exportOutputPath
+	out := MustGlobal().Export.OutputPath
+	if out == "" {
+		out = filepath.Join(WorkingDirectory, "cache")
+	}
+	return filepath.Join(out, "books")
 }
 
 // 判断是否是允许商城的文件类型.
@@ -253,7 +254,7 @@ func IsAllowUploadFileExt(ext string) bool {
 
 // 重写生成URL的方法，加上完整的域名
 func URLFor(endpoint string, values ...any) string {
-	baseUrl := web.AppConfig.DefaultString("baseurl", "")
+	baseUrl := MustGlobal().BaseURL
 	pathUrl := web.URLFor(endpoint, values...)
 
 	if baseUrl == "" {
@@ -272,7 +273,7 @@ func URLFor(endpoint string, values ...any) string {
 }
 
 func URLForNotHost(endpoint string, values ...any) string {
-	baseUrl := web.AppConfig.DefaultString("baseurl", "")
+	baseUrl := MustGlobal().BaseURL
 	pathUrl := web.URLFor(endpoint, values...)
 
 	if baseUrl == "" {
@@ -294,10 +295,13 @@ func URLForWithCdnImage(p string) string {
 	if strings.HasPrefix(p, "http://") || strings.HasPrefix(p, "https://") {
 		return p
 	}
-	cdn := web.AppConfig.DefaultString("cdnimg", "")
+	cdn := MustGlobal().CDN.Img
 	//如果没有设置cdn，则使用baseURL拼接
 	if cdn == "" {
-		baseUrl := web.AppConfig.DefaultString("baseurl", "/")
+		baseUrl := MustGlobal().BaseURL
+		if baseUrl == "" {
+			baseUrl = "/"
+		}
 
 		if strings.HasPrefix(p, "/") && strings.HasSuffix(baseUrl, "/") {
 			return baseUrl + p[1:]
@@ -317,7 +321,7 @@ func URLForWithCdnImage(p string) string {
 }
 
 func URLForWithCdnCss(p string, v ...string) string {
-	cdn := web.AppConfig.DefaultString("cdncss", "")
+	cdn := MustGlobal().CDN.CSS
 	if strings.HasPrefix(p, "http://") || strings.HasPrefix(p, "https://") {
 		return p
 	}
@@ -328,7 +332,10 @@ func URLForWithCdnCss(p string, v ...string) string {
 	}
 	//如果没有设置cdn，则使用baseURL拼接
 	if cdn == "" {
-		baseUrl := web.AppConfig.DefaultString("baseurl", "/")
+		baseUrl := MustGlobal().BaseURL
+		if baseUrl == "" {
+			baseUrl = "/"
+		}
 
 		if strings.HasPrefix(p, "/") && strings.HasSuffix(baseUrl, "/") {
 			return baseUrl + p[1:]
@@ -348,7 +355,7 @@ func URLForWithCdnCss(p string, v ...string) string {
 }
 
 func URLForWithCdnJs(p string, v ...string) string {
-	cdn := web.AppConfig.DefaultString("cdnjs", "")
+	cdn := MustGlobal().CDN.JS
 	if strings.HasPrefix(p, "http://") || strings.HasPrefix(p, "https://") {
 		return p
 	}
@@ -361,7 +368,10 @@ func URLForWithCdnJs(p string, v ...string) string {
 
 	//如果没有设置cdn，则使用baseURL拼接
 	if cdn == "" {
-		baseUrl := web.AppConfig.DefaultString("baseurl", "/")
+		baseUrl := MustGlobal().BaseURL
+		if baseUrl == "" {
+			baseUrl = "/"
+		}
 
 		if strings.HasPrefix(p, "/") && strings.HasSuffix(baseUrl, "/") {
 			return baseUrl + p[1:]
@@ -397,14 +407,14 @@ func init() {
 	if p, err := filepath.Abs("./runtime/logs"); err == nil {
 		LogFile = p
 	}
-	// 提前加载 beego 配置：beego 默认从 ./conf/app.conf 读取，找不到就会保持 BConfig 的默认值
-	// （SessionOn=false）。而 routers 包在 init 阶段就通过 web.Router() 把当时的 SessionOn
-	// 固化到每条路由的 route.sessionOn，一旦为 false，请求进来时 ctx.Input.CruSession 不会
-	// 被赋值，Controller.GetSession() 就会 nil pointer panic。
+	// 提前加载 + typed Config + BConfig 回填：beego 默认从 ./conf/app.conf 读根键；
+	// Round 2 后 session 在 [session]，必须 ApplyToBeego，否则 routers.init 会把 SessionOn=false 固化进路由。
 	if _, err := os.Stat(ConfigurationFile); err == nil {
-		_ = web.LoadAppConfig("ini", ConfigurationFile)
+		if _, err := Load(ConfigurationFile); err != nil {
+			// 预加载失败仍保底 SessionOn，ResolveCommand 会再 Load
+			web.BConfig.WebConfig.Session.SessionOn = true
+		}
+	} else {
+		web.BConfig.WebConfig.Session.SessionOn = true
 	}
-	// 保底启用 session：若上面因 -dir 指定其他目录导致预加载失败，也不让路由级 sessionOn
-	// 被固化为 false（后续 ResolveCommand 会再次 LoadAppConfig 覆盖其余配置）。
-	web.BConfig.WebConfig.Session.SessionOn = true
 }
