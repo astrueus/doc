@@ -228,7 +228,7 @@ func GetExportQueueLimitNum() int {
 func GetExportOutputPath() string {
 	out := MustGlobal().Export.OutputPath
 	if out == "" {
-		out = filepath.Join(WorkingDirectory, "cache")
+		out = filepath.Join(WorkingDirectory, "runtime", "cache")
 	}
 	return filepath.Join(out, "books")
 }

@@ -18,7 +18,6 @@ services:
       - ../web/static:/doc/web/static
       - ../web/views:/doc/web/views
       - ../uploads:/doc/uploads
-      - ../cache:/doc/cache
       - ../runtime:/doc/runtime
       # 可选：宿主机同步目录（供 start.sh / sync_host.sh 使用）
       - doc-sync:/doc-sync-host

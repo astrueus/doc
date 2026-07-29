@@ -107,7 +107,7 @@ doc/
 ├─ docs/                                       # 保留
 ├─ mail/                                       # 邮件模板（保留）
 ├─ graphics/                                   # 验证码素材（保留在根，与 uploads/ 一起）
-├─ runtime/  uploads/  cache/                  # 运行时数据（保留在根，URL 路径不变）
+├─ runtime/  uploads/                           # 运行时数据（文件缓存/导出在 runtime/cache/）
 ├─ go.mod / go.sum / README.md / LICENSE.md
 └─ favicon.ico / simsun.ttc                    # 迁到 web/static/ 或保留根（评估中，见 T2）
 ```
@@ -151,8 +151,8 @@ doc/
 | `Dockerfile` / `docker-compose.yml` / `start.sh` / `sync_host.sh`                                                | `deployments/`                                                                                               | PR-2                                                                      |
 | `favicon.ico`                                                                                                    | `web/static/favicon.ico`                                                                                     | beego 配置 favicon 路径                                                       |
 | `simsun.ttc`                                                                                                     | `web/static/fonts/simsun.ttc`                                                                                | 若 `gocaptcha.SetFontPath` 引用                                              |
-| `cache/` (根目录运行时)                                                                                                | 保留（运行时数据）                                                                                                    | 与 `internal/cache/` 区分：`cache/` = 数据目录，`internal/cache/` = 代码             |
-| `runtime/` / `uploads/` / `graphics/`                                                                            | 保留在根                                                                                                         | 运行时数据                                                                     |
+| `cache/` (根目录运行时)                                                                                                | **删除**（已并入 `runtime/cache/`）                                                                                 | 配置默认 `./runtime/cache/`；代码在 `internal/cache/`                             |
+| `runtime/` / `uploads/` / `graphics/`                                                                            | 保留在根                                                                                                         | 运行时数据；文件缓存/导出落盘走 `runtime/cache/`                                             |
 
 
 ---
@@ -404,7 +404,6 @@ volumes:
 + - ./web/static:/app/web/static
 + - ./web/views:/app/web/views
 - ./uploads:/app/uploads
-- ./cache:/app/cache
 - ./runtime:/app/runtime
 ```
 
