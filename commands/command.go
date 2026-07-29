@@ -110,9 +110,6 @@ func RegisterModel() {
 		new(models.TeamRelationship),
 		new(models.Itemsets),
 	)
-	gob.Register(models.Blog{})
-	gob.Register(models.Document{})
-	gob.Register(models.Template{})
 	//migrate.RegisterMigration()
 }
 

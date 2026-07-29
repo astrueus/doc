@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"time"
 
 	"github.com/beego/i18n"
@@ -189,11 +190,11 @@ func (item *Document) PutToCache() {
 
 		if m.Identify == "" {
 
-			if err := cache.Put("Document.Id."+strconv.Itoa(m.DocumentId), m, time.Second*3600); err != nil {
+			if err := cache.Put(context.Background(), "Document.Id."+strconv.Itoa(m.DocumentId), m, time.Second*3600); err != nil {
 				logs.Info("文档缓存失败:", m.DocumentId)
 			}
 		} else {
-			if err := cache.Put(fmt.Sprintf("Document.BookId.%d.Identify.%s", m.BookId, m.Identify), m, time.Second*3600); err != nil {
+			if err := cache.Put(context.Background(), fmt.Sprintf("Document.BookId.%d.Identify.%s", m.BookId, m.Identify), m, time.Second*3600); err != nil {
 				logs.Info("文档缓存失败:", m.DocumentId)
 			}
 		}
@@ -204,10 +205,10 @@ func (item *Document) PutToCache() {
 // 清除缓存
 func (item *Document) RemoveCache() {
 	go func(m Document) {
-		cache.Put("Document.Id."+strconv.Itoa(m.DocumentId), m, time.Second*3600)
+		cache.Put(context.Background(), "Document.Id."+strconv.Itoa(m.DocumentId), m, time.Second*3600)
 
 		if m.Identify != "" {
-			cache.Put(fmt.Sprintf("Document.BookId.%d.Identify.%s", m.BookId, m.Identify), m, time.Second*3600)
+			cache.Put(context.Background(), fmt.Sprintf("Document.BookId.%d.Identify.%s", m.BookId, m.Identify), m, time.Second*3600)
 		}
 	}(*item)
 }
@@ -215,7 +216,7 @@ func (item *Document) RemoveCache() {
 // 从缓存获取
 func (item *Document) FromCacheById(id int) (*Document, error) {
 
-	if err := cache.Get("Document.Id."+strconv.Itoa(id), &item); err == nil && item.DocumentId > 0 {
+	if err := cache.Get(context.Background(), "Document.Id."+strconv.Itoa(id), &item); err == nil && item.DocumentId > 0 {
 		logs.Info("从缓存中获取文档信息成功 ->", item.DocumentId)
 		return item.localizeTimes(), nil
 	}
@@ -236,7 +237,7 @@ func (item *Document) FromCacheByIdentify(identify string, bookId int) (*Documen
 
 	key := fmt.Sprintf("Document.BookId.%d.Identify.%s", bookId, identify)
 
-	if err := cache.Get(key, item); err == nil && item.DocumentId > 0 {
+	if err := cache.Get(context.Background(), key, item); err == nil && item.DocumentId > 0 {
 		logs.Info("从缓存中获取文档信息成功 ->", key)
 		return item.localizeTimes(), nil
 	}

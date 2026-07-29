@@ -2,6 +2,7 @@ package models
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -120,7 +121,7 @@ func (b *Blog) Find(blogId int) (*Blog, error) {
 func (b *Blog) FindFromCache(blogId int) (blog *Blog, err error) {
 	key := fmt.Sprintf("blog-id-%d", blogId)
 	var temp Blog
-	err = cache.Get(key, &temp)
+	err = cache.Get(context.Background(), key, &temp)
 	if err == nil {
 		b = &temp
 		b.Link()
@@ -133,7 +134,7 @@ func (b *Blog) FindFromCache(blogId int) (blog *Blog, err error) {
 	blog, err = b.Find(blogId)
 	if err == nil {
 		//默认一个小时
-		if err := cache.Put(key, blog, time.Hour*1); err != nil {
+		if err := cache.Put(context.Background(), key, blog, time.Hour*1); err != nil {
 			logs.Error("将文章存入缓存失败 ->", err)
 		}
 	}
@@ -253,7 +254,7 @@ func (b *Blog) Save(cols ...string) error {
 		b.Modified = time.Now()
 		_, err = o.Update(b, cols...)
 		key := fmt.Sprintf("blog-id-%d", b.BlogId)
-		cache.Delete(key)
+		cache.Delete(context.Background(), key)
 
 	} else {
 

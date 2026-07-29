@@ -1,94 +1,53 @@
 package cache
 
 import (
-	"bytes"
 	"context"
-	"encoding/gob"
-	"errors"
 	"time"
 
-	"github.com/beego/beego/v2/client/cache"
-	"github.com/beego/beego/v2/core/logs"
+	beegocache "github.com/beego/beego/v2/client/cache"
 )
 
-var bm cache.Cache
-
-var nilctx = context.TODO()
-
-func Get(key string, e any) error {
-
-	val, err := bm.Get(nilctx, key)
-
-	if err != nil {
-		return errors.New("get cache error:" + err.Error())
-	}
-
-	if val == nil {
-		return errors.New("cache does not exist")
-	}
-	if b, ok := val.([]byte); ok {
-		buf := bytes.NewBuffer(b)
-
-		decoder := gob.NewDecoder(buf)
-
-		err := decoder.Decode(e)
-
-		if err != nil {
-			logs.Error("反序列化对象失败 ->", err)
-		}
-		return err
-	} else if s, ok := val.(string); ok && s != "" {
-
-		buf := bytes.NewBufferString(s)
-
-		decoder := gob.NewDecoder(buf)
-
-		err := decoder.Decode(e)
-
-		if err != nil {
-			logs.Error("反序列化对象失败 ->", err)
-		}
-		return err
-	}
-	return errors.New("value is not []byte or string")
+// Init wires a Beego cache backend as the process-wide Default Cache.
+func Init(c beegocache.Cache) {
+	Default = newAdapter(c)
 }
 
-func Put(key string, val any, timeout time.Duration) error {
-
-	var buf bytes.Buffer
-
-	encoder := gob.NewEncoder(&buf)
-
-	err := encoder.Encode(val)
-	if err != nil {
-		logs.Error("序列化对象失败 ->", err)
-		return err
-	}
-
-	return bm.Put(nilctx, key, buf.String(), timeout)
+// Get loads key into dst (msgpack). Prefer passing a real request ctx when available.
+func Get(ctx context.Context, key string, dst any) error {
+	return Default.Get(ctx, key, dst)
 }
 
-func Delete(key string) error {
-	return bm.Delete(nilctx, key)
-}
-func Incr(key string) error {
-	return bm.Incr(nilctx, key)
-}
-func Decr(key string) error {
-	return bm.Decr(nilctx, key)
-}
-func IsExist(key string) (bool, error) {
-	return bm.IsExist(nilctx, key)
-}
-func ClearAll() error {
-	return bm.ClearAll(nilctx)
+// Put stores val under key for ttl (msgpack). Alias of Set for existing callers.
+func Put(ctx context.Context, key string, val any, ttl time.Duration) error {
+	return Default.Set(ctx, key, val, ttl)
 }
 
-func StartAndGC(config string) error {
-	return bm.StartAndGC(config)
+// Set stores val under key for ttl (msgpack).
+func Set(ctx context.Context, key string, val any, ttl time.Duration) error {
+	return Default.Set(ctx, key, val, ttl)
 }
 
-//Init will initialize cache
-func Init(c cache.Cache) {
-	bm = c
+// Delete removes one or more keys.
+func Delete(ctx context.Context, keys ...string) error {
+	return Default.Delete(ctx, keys...)
+}
+
+// Incr increments an integer key.
+func Incr(ctx context.Context, key string) error {
+	return Default.Incr(ctx, key)
+}
+
+// Decr decrements an integer key.
+func Decr(ctx context.Context, key string) error {
+	return Default.Decr(ctx, key)
+}
+
+// IsExist reports whether key exists.
+func IsExist(ctx context.Context, key string) (bool, error) {
+	return Default.IsExist(ctx, key)
+}
+
+// ClearAll clears the whole cache store.
+func ClearAll(ctx context.Context) error {
+	return Default.Clear(ctx)
 }
