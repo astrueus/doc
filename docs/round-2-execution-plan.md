@@ -472,7 +472,7 @@ func preflightCheck() {
   - `sessionprovider=redis` → `redis-cli -h <host> FLUSHDB`（**谨慎**：如果 Redis 有其他业务共用，只删对应 prefix 的 key）
   - `sessionprovider=mysql` → `TRUNCATE TABLE mindoc_session`
 4. **清 gob 缓存**：
-  - `cache_provider=file` → `rm -rf cache/*`
+  - `cache_provider=file` → `rm -rf runtime/cache/*`（若仍有根目录 `cache/` 一并清）
   - `cache_provider=redis` → 同上按 prefix 清
   - `cache_provider=memory` → 重启后自然清
 5. 部署新版本（Round 2 的 `deployments/`）
@@ -483,9 +483,10 @@ func preflightCheck() {
 
 ### T9 · 部署 note 写在哪
 
-- `README.md` 加"Round 2 升级须知"章节
-- `docs/round-2-execution-plan.md`（本文）§七 作为权威文档
-- `CHANGELOG.md` 版本节里显眼位置写"⚠️ Breaking：需清 session + 清 cache/，用户需重新登录"
+- `README.md` 「Round 2 升级须知」章节（链到下文）
+- `docs/upgrade-round-2.md`（操作说明）
+- `docs/round-2-execution-plan.md`（本文）§七 作为权威背景
+- `CHANGELOG.md` 版本节显眼位置："⚠️ Breaking：需清 session + 清 runtime/cache/，用户需重新登录"
 
 
 
@@ -637,18 +638,18 @@ internal/router/
 
 ## 十、T7 · `internal/middleware/` 合并（0.5 天）
 
-`middleware/filter.go` (1KB) 和 `routers/filter.go` (2.8KB) 里都是 beego filter；合并后按职责分：
+原 `middleware/filter.go` + `routers/filter.go` 已合并去重；现网无独立 CSRF/访问日志/Recover 实现，本轮按「少文件、可扩展」落地：
 
 ```
 internal/middleware/
-├─ auth.go         # 登录校验（原 routers/filter.go 主体）
-├─ csrf.go         # CSRF（若有）
-├─ logger.go       # 访问日志
-├─ recover.go      # panic 恢复
-└─ ratelimit.go    # 【占位 · Round 3 MCP 用】
+├─ register.go     # Register()：session → headers → auth → ratelimit(占位)
+├─ session.go      # StartRouter：校验 session cookie 形态
+├─ headers.go      # FinishRouter：响应头
+├─ auth.go         # FilterUser（未登录带 ?url= 回跳）+ 路径挂载
+└─ ratelimit.go    # 【占位 · Round 3 MCP】
 ```
 
-`internal/app/bootstrap.go` 里显式注册顺序：`Recover → Logger → CSRF → Auth`。
+`internal/cli/daemon` 在 `router.Init()` 前显式调用 `middleware.Register()`（`cmd/doc/main.go` 不再 blank import middleware）。
 
 ---
 
@@ -742,9 +743,9 @@ Round 3 直接 `internal/mcp/server.go` 落地，零迁移。
 | T4  | 强类型 `config.Config` + Load()      | —   | `17759f2`    | ✅  |
 | T5  | `.env` 支持                         | —   | `17759f2`    | ✅  |
 | T6  | `internal/router/` 拆分 + `/api` 页面路由迁出 | —   | 已完成        | ✅  |
-| T7  | `internal/middleware/` 合并         |     |        |     |
-| T8  | 预留 `internal/mcp/` + `mcpdto/`    |     |        |     |
-| T9  | 部署 note（清 session/cache）          |     |        |     |
+| T7  | `internal/middleware/` 合并         | —   | 已完成        | ✅  |
+| T8  | 预留 `internal/mcp/` + `mcpdto/`    | —   | 已完成        | ✅  |
+| T9  | 部署 note（清 session/cache）          | —   | 已完成        | ✅  |
 
 
 ---

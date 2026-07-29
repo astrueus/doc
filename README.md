@@ -18,6 +18,17 @@ MinDoc 的前身是 [SmartWiki](https://github.com/lifei6671/SmartWiki) 文档�
 
 ---
 
+# Round 2 升级须知（现网必看）
+
+从旧布局 / Round 1 升到本仓库 Round 2 结构时，**必须清 session 与 gob 文件缓存**，否则登录态反序列化会失败。完整步骤见：
+
+- [docs/upgrade-round-2.md](docs/upgrade-round-2.md)
+- [CHANGELOG.md](CHANGELOG.md)
+
+摘要：停服 → 清 `runtime/session/*`（或 Redis/MySQL session）→ 清 `runtime/cache/*` → 部署启动 → 用户重新登录。
+
+---
+
 # 安装与使用
 
 时区数据已通过 `import _ "time/tzdata"` 内嵌进二进制，部署时无需额外时区文件。
