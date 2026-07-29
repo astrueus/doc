@@ -54,7 +54,7 @@ func (d *DingTalkAgent) GetUserIDByCode(code string) (string, error) {
 	}
 
 	// 解析钉钉返回数据
-	var rdata map[string]interface{}
+	var rdata map[string]any
 	err = json.Unmarshal(body, &rdata)
 	if err != nil {
 		return "", err
@@ -92,7 +92,7 @@ func (d *DingTalkAgent) GetUserNameAndAvatarByUserID(userid string) (string, str
 	}
 
 	// 解析钉钉返回数据
-	var rdata map[string]interface{}
+	var rdata map[string]any
 	err = json.Unmarshal(body, &rdata)
 	if err != nil {
 		return "", "", err
@@ -103,7 +103,7 @@ func (d *DingTalkAgent) GetUserNameAndAvatarByUserID(userid string) (string, str
 		return "", "", errors.New(fmt.Sprintf("登录错误: %.0f, %s", errcode, rdata["errmsg"].(string)))
 	}
 
-	userinfo := rdata["result"].(map[string]interface{})
+	userinfo := rdata["result"].(map[string]any)
 	username := userinfo["name"].(string)
 	avatar := userinfo["avatar"].(string)
 	return username, avatar, nil
@@ -130,7 +130,7 @@ func (d *DingTalkAgent) GetUserIDByUnionID(unionid string) (string, error) {
 		return "", err
 	}
 	// 解析钉钉返回数据
-	var rdata map[string]interface{}
+	var rdata map[string]any
 	err = json.Unmarshal(body, &rdata)
 	if err != nil {
 		return "", err
@@ -141,7 +141,7 @@ func (d *DingTalkAgent) GetUserIDByUnionID(unionid string) (string, error) {
 		return "", errors.New(fmt.Sprintf("登录错误: %.0f, %s", errcode, rdata["errmsg"].(string)))
 	}
 
-	result := rdata["result"].(map[string]interface{})
+	result := rdata["result"].(map[string]any)
 	if result["contact_type"].(float64) != 0 {
 		return "", errors.New("该用户不属于企业内部员工，无法登录。")
 	}
@@ -162,7 +162,7 @@ func (d *DingTalkAgent) GetAccesstoken() (err error) {
 		return err
 	}
 
-	var i map[string]interface{}
+	var i map[string]any
 	err = json.Unmarshal(body, &i)
 	if err != nil {
 		return err
@@ -217,7 +217,7 @@ func (d *DingtalkQRLogin) GetUnionIDByCode(code string) (userid string, err erro
 	}
 
 	// 解析钉钉返回数据
-	var rdata map[string]interface{}
+	var rdata map[string]any
 	err = json.Unmarshal(body, &rdata)
 	if err != nil {
 		return "", err
@@ -226,7 +226,7 @@ func (d *DingtalkQRLogin) GetUnionIDByCode(code string) (userid string, err erro
 	if errcode != 0 {
 		return "", errors.New(fmt.Sprintf("登录错误: %.0f, %s", errcode, rdata["errmsg"].(string)))
 	}
-	unionid := rdata["user_info"].(map[string]interface{})["unionid"].(string)
+	unionid := rdata["user_info"].(map[string]any)["unionid"].(string)
 	return unionid, nil
 }
 

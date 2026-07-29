@@ -792,7 +792,7 @@ func (c *BookController) SaveSort() {
 
 	content := c.Ctx.Input.RequestBody
 
-	var docs []map[string]interface{}
+	var docs []map[string]any
 
 	err := json.Unmarshal(content, &docs)
 

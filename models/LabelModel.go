@@ -32,7 +32,7 @@ func NewLabel() *Label {
 	return &Label{}
 }
 
-func (m *Label) FindFirst(field string, value interface{}) (*Label, error) {
+func (m *Label) FindFirst(field string, value any) (*Label, error) {
 	o := orm.NewOrm()
 
 	err := o.QueryTable(m.TableNameWithPrefix()).Filter(field, value).One(m)

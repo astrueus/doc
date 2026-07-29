@@ -495,7 +495,7 @@ func (c *DocumentController) Upload() {
 		}
 	}
 
-	result := map[string]interface{}{
+	result := map[string]any{
 		"errcode":   0,
 		"success":   1,
 		"message":   "ok",

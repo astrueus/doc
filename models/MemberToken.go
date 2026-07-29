@@ -47,7 +47,7 @@ func (m *MemberToken) InsertOrUpdate() (*MemberToken, error) {
 	return m, err
 }
 
-func (m *MemberToken) FindByFieldFirst(field string, value interface{}) (*MemberToken, error) {
+func (m *MemberToken) FindByFieldFirst(field string, value any) (*MemberToken, error) {
 	o := orm.NewOrm()
 
 	err := o.QueryTable(m.TableNameWithPrefix()).Filter(field, value).OrderBy("-token_id").One(m)

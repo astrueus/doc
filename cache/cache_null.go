@@ -10,15 +10,15 @@ type NullCache struct {
 }
 
 
-func (bm *NullCache) Get(ctx context.Context, key string) (interface{}, error) {
+func (bm *NullCache) Get(ctx context.Context, key string) (any, error) {
 	return nil, nil
 }
 
-func (bm *NullCache)GetMulti(ctx context.Context, keys []string) ([]interface{}, error) {
+func (bm *NullCache)GetMulti(ctx context.Context, keys []string) ([]any, error) {
 	return nil, nil
 }
 
-func (bm *NullCache)Put(ctx context.Context,key string, val interface{}, timeout time.Duration) error {
+func (bm *NullCache)Put(ctx context.Context,key string, val any, timeout time.Duration) error {
 	return nil
 }
 func (bm *NullCache)Delete(ctx context.Context,key string) error {

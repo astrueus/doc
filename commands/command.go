@@ -141,7 +141,7 @@ func RegisterLogger(log string) {
 		_ = os.MkdirAll(log, 0755)
 	}
 
-	config := make(map[string]interface{}, 1)
+	config := make(map[string]any, 1)
 
 	config["filename"] = logPath
 	config["perm"] = "0755"
@@ -516,7 +516,7 @@ func RegisterError() {
 	web.ErrorHandler("404", func(writer http.ResponseWriter, request *http.Request) {
 		var buf bytes.Buffer
 
-		data := make(map[string]interface{})
+		data := make(map[string]any)
 		data["ErrorCode"] = 404
 		data["ErrorMessage"] = "页面未找到或已删除"
 
@@ -529,7 +529,7 @@ func RegisterError() {
 	web.ErrorHandler("401", func(writer http.ResponseWriter, request *http.Request) {
 		var buf bytes.Buffer
 
-		data := make(map[string]interface{})
+		data := make(map[string]any)
 		data["ErrorCode"] = 401
 		data["ErrorMessage"] = "请与 Web 服务器的管理员联系，以确认您是否具有访问所请求资源的权限。"
 

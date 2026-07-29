@@ -6,7 +6,7 @@ import (
 )
 
 //解码
-func Decode(value string, r interface{}) error {
+func Decode(value string, r any) error {
 
 	network := bytes.NewBuffer([]byte(value))
 
@@ -16,7 +16,7 @@ func Decode(value string, r interface{}) error {
 }
 
 //编码
-func Encode(value interface{}) (string, error) {
+func Encode(value any) (string, error) {
 	network := bytes.NewBuffer(nil)
 
 	enc := gob.NewEncoder(network)

@@ -274,7 +274,7 @@ func (c *AccountController) QRLogin() {
 }
 
 // 登录成功后的操作，如重定向到原始请求页面
-func (c *AccountController) LoggedIn(isPost bool) interface{} {
+func (c *AccountController) LoggedIn(isPost bool) any {
 
 	turl := c.referer()
 
@@ -407,7 +407,7 @@ func (c *AccountController) FindPassword() {
 			c.JsonResult(6009, i18n.Tr(c.Lang, "message.failed_send_mail"))
 		}
 
-		data := map[string]interface{}{
+		data := map[string]any{
 			"SITE_NAME": c.Option["SITE_NAME"],
 			"url":       conf.URLFor("AccountController.FindPassword", "token", memberToken.Token, "mail", email),
 			"BaseUrl":   c.BaseUrl(),

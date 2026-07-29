@@ -333,7 +333,7 @@ func recursiveInsertDocument(docs []*Document, o orm.TxOrmer, bookId int, parent
 }
 
 // 根据指定字段查询结果集.
-func (book *Book) FindByField(field string, value interface{}, cols ...string) ([]*Book, error) {
+func (book *Book) FindByField(field string, value any, cols ...string) ([]*Book, error) {
 	o := orm.NewOrm()
 
 	var books []*Book
@@ -343,7 +343,7 @@ func (book *Book) FindByField(field string, value interface{}, cols ...string) (
 }
 
 // 根据指定字段查询一个结果.
-func (book *Book) FindByFieldFirst(field string, value interface{}) (*Book, error) {
+func (book *Book) FindByFieldFirst(field string, value any) (*Book, error) {
 	o := orm.NewOrm()
 
 	err := o.QueryTable(book.TableNameWithPrefix()).Filter(field, value).One(book)

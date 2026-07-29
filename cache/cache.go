@@ -15,7 +15,7 @@ var bm cache.Cache
 
 var nilctx = context.TODO()
 
-func Get(key string, e interface{}) error {
+func Get(key string, e any) error {
 
 	val, err := bm.Get(nilctx, key)
 
@@ -53,7 +53,7 @@ func Get(key string, e interface{}) error {
 	return errors.New("value is not []byte or string")
 }
 
-func Put(key string, val interface{}, timeout time.Duration) error {
+func Put(key string, val any, timeout time.Duration) error {
 
 	var buf bytes.Buffer
 

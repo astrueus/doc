@@ -383,7 +383,7 @@ func newTocOptions() tocOptions {
 	}
 }
 
-func optsToArgs(opts interface{}) []string {
+func optsToArgs(opts any) []string {
 	args := []string{}
 	rv := reflect.Indirect(reflect.ValueOf(opts))
 	if rv.Kind() != reflect.Struct {

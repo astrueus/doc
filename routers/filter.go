@@ -29,7 +29,7 @@ func init() {
 
 		if !ok {
 			if ctx.Input.IsAjax() {
-				jsonData := make(map[string]interface{}, 3)
+				jsonData := make(map[string]any, 3)
 
 				jsonData["errcode"] = 403
 				jsonData["message"] = "请登录后再操作"

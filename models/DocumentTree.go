@@ -13,12 +13,12 @@ import (
 type DocumentTree struct {
 	DocumentId   int                    `json:"id"`
 	DocumentName string                 `json:"text"`
-	ParentId     interface{}            `json:"parent"`
+	ParentId     any            `json:"parent"`
 	Identify     string                 `json:"identify"`
 	BookIdentify string                 `json:"-"`
 	Version      int64                  `json:"version"`
 	State        *DocumentSelected      `json:"-"`
-	AAttrs       map[string]interface{} `json:"a_attr"`
+	AAttrs       map[string]any `json:"a_attr"`
 }
 type DocumentSelected struct {
 	Selected bool `json:"selected"`
@@ -48,18 +48,18 @@ func (item *Document) FindDocumentTree(bookId int) ([]*DocumentTree, error) {
 
 	for index, item := range docs {
 		tree := &DocumentTree{
-			AAttrs: map[string]interface{}{"is_open": false, "opened": 0},
+			AAttrs: map[string]any{"is_open": false, "opened": 0},
 		}
 		if index == 0 {
 			tree.State = &DocumentSelected{Selected: true, Opened: true}
-			tree.AAttrs = map[string]interface{}{"is_open": true, "opened": 1}
+			tree.AAttrs = map[string]any{"is_open": true, "opened": 1}
 		} else if item.IsOpen == 1 {
 			tree.State = &DocumentSelected{Selected: false, Opened: true}
-			tree.AAttrs = map[string]interface{}{"is_open": true, "opened": 1}
+			tree.AAttrs = map[string]any{"is_open": true, "opened": 1}
 		}
 		if item.IsOpen == 2 {
 			tree.State = &DocumentSelected{Selected: false, Opened: false, Disabled: true}
-			tree.AAttrs = map[string]interface{}{"disabled": true, "opened": 2}
+			tree.AAttrs = map[string]any{"disabled": true, "opened": 2}
 		}
 		tree.DocumentId = item.DocumentId
 		tree.Identify = item.Identify

@@ -53,7 +53,7 @@ func Decrypt(value, secret string) (decrypt string) {
 // @param			str			需要加密的字符串
 // @param			salt		盐值
 // @return			CryptStr	加密后返回的字符串
-func Md5Crypt(str string, salt ...interface{}) (CryptStr string) {
+func Md5Crypt(str string, salt ...any) (CryptStr string) {
 	if l := len(salt); l > 0 {
 		slice := make([]string, l+1)
 		str = fmt.Sprintf(str+strings.Join(slice, "%v"), salt...)
@@ -65,7 +65,7 @@ func Md5Crypt(str string, salt ...interface{}) (CryptStr string) {
 // @param			str			需要加密的字符串
 // @param			salt		盐值
 // @return			CryptStr	加密后返回的字符串
-func Sha1Crypt(str string, salt ...interface{}) (CryptStr string) {
+func Sha1Crypt(str string, salt ...any) (CryptStr string) {
 	if l := len(salt); l > 0 {
 		slice := make([]string, l+1)
 		str = fmt.Sprintf(str+strings.Join(slice, "%v"), salt...)

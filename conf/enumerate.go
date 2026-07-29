@@ -252,7 +252,7 @@ func IsAllowUploadFileExt(ext string) bool {
 }
 
 // 重写生成URL的方法，加上完整的域名
-func URLFor(endpoint string, values ...interface{}) string {
+func URLFor(endpoint string, values ...any) string {
 	baseUrl := web.AppConfig.DefaultString("baseurl", "")
 	pathUrl := web.URLFor(endpoint, values...)
 
@@ -271,7 +271,7 @@ func URLFor(endpoint string, values ...interface{}) string {
 	return baseUrl + web.URLFor(endpoint, values...)
 }
 
-func URLForNotHost(endpoint string, values ...interface{}) string {
+func URLForNotHost(endpoint string, values ...any) string {
 	baseUrl := web.AppConfig.DefaultString("baseurl", "")
 	pathUrl := web.URLFor(endpoint, values...)
 

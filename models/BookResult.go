@@ -380,7 +380,7 @@ func (m *BookResult) Converter(sessionId string) (ConvertBookResult, error) {
 		}
 		var buf bytes.Buffer
 
-		if err := web.ExecuteViewPathTemplate(&buf, "document/export.tpl", viewPath, map[string]interface{}{"Model": m, "Lists": item, "BaseUrl": conf.BaseUrl}); err != nil {
+		if err := web.ExecuteViewPathTemplate(&buf, "document/export.tpl", viewPath, map[string]any{"Model": m, "Lists": item, "BaseUrl": conf.BaseUrl}); err != nil {
 			return convertBookResult, err
 		}
 		html := buf.String()

@@ -215,7 +215,7 @@ func (m *Member) httpLogin(account, password string) (*Member, error) {
 	}
 	logs.Info("HTTP 登录接口返回数据 ->", string(body))
 
-	var result map[string]interface{}
+	var result map[string]any
 
 	if err := json.Unmarshal(body, &result); err != nil {
 		logs.Error("解析接口返回值失败 -> ", urlStr, account, string(body))
@@ -402,7 +402,7 @@ func (m *Member) IsAdministrator() bool {
 }
 
 // 根据指定字段查找用户.
-func (m *Member) FindByFieldFirst(field string, value interface{}) (*Member, error) {
+func (m *Member) FindByFieldFirst(field string, value any) (*Member, error) {
 	o := orm.NewOrm()
 
 	err := o.QueryTable(m.TableNameWithPrefix()).Filter(field, value).OrderBy("-member_id").One(m)

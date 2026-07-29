@@ -102,8 +102,8 @@ func (c *BaseController) SetMember(member models.Member) {
 }
 
 // JsonResult 响应 json 结果
-func (c *BaseController) JsonResult(errCode int, errMsg string, data ...interface{}) {
-	jsonData := make(map[string]interface{}, 3)
+func (c *BaseController) JsonResult(errCode int, errMsg string, data ...any) {
+	jsonData := make(map[string]any, 3)
 
 	jsonData["errcode"] = errCode
 	jsonData["message"] = errMsg
@@ -133,7 +133,7 @@ func (c *BaseController) CheckJsonError(code int, err error) {
 	if err == nil {
 		return
 	}
-	jsonData := make(map[string]interface{}, 3)
+	jsonData := make(map[string]any, 3)
 
 	jsonData["errcode"] = code
 	jsonData["message"] = err.Error()
@@ -154,7 +154,7 @@ func (c *BaseController) CheckJsonError(code int, err error) {
 }
 
 // ExecuteViewPathTemplate 执行指定的模板并返回执行结果.
-func (c *BaseController) ExecuteViewPathTemplate(tplName string, data interface{}) (string, error) {
+func (c *BaseController) ExecuteViewPathTemplate(tplName string, data any) (string, error) {
 	var buf bytes.Buffer
 
 	viewPath := c.ViewPath
@@ -191,7 +191,7 @@ func (c *BaseController) ShowErrorPage(errCode int, errMsg string) {
 
 	var buf bytes.Buffer
 
-	if err := web.ExecuteViewPathTemplate(&buf, "errors/error.tpl", web.BConfig.WebConfig.ViewsPath, map[string]interface{}{"ErrorMessage": errMsg, "ErrorCode": errCode, "BaseUrl": conf.BaseUrl}); err != nil {
+	if err := web.ExecuteViewPathTemplate(&buf, "errors/error.tpl", web.BConfig.WebConfig.ViewsPath, map[string]any{"ErrorMessage": errMsg, "ErrorCode": errCode, "BaseUrl": conf.BaseUrl}); err != nil {
 		c.Abort("500")
 	}
 	if errCode >= 200 && errCode <= 510 {

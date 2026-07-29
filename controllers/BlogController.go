@@ -512,7 +512,7 @@ func (c *BlogController) Upload() {
 	}
 
 	var httpPath string
-	result := make(map[string]interface{})
+	result := make(map[string]any)
 	//如果是图片，则当做内置图片处理，否则当做附件处理
 	if strings.EqualFold(ext, ".jpg") || strings.EqualFold(ext, ".jpeg") || strings.EqualFold(ext, ".png") || strings.EqualFold(ext, ".gif") {
 		httpPath = "/" + strings.Replace(strings.TrimPrefix(filePath, conf.WorkingDirectory), "\\", "/", -1)
