@@ -160,4 +160,5 @@ func RegisterMigration() {
 	migrationList.items = list.New()
 
 	migrationList.items.PushBack(NewMigrationVersion03())
+	migrationList.items.PushBack(NewMigrationRound3MemberAPIToken())
 }

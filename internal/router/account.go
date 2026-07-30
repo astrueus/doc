@@ -18,4 +18,8 @@ func registerAccount() {
 	web.Router("/setting", &controller.SettingController{}, "*:Index")
 	web.Router("/setting/password", &controller.SettingController{}, "*:Password")
 	web.Router("/setting/upload", &controller.SettingController{}, "*:Upload")
+
+	web.Router("/member/api-tokens", &controller.MemberApiTokenController{}, "get:Index")
+	web.Router("/member/api-tokens/create", &controller.MemberApiTokenController{}, "post:Create")
+	web.Router("/member/api-tokens/:id/revoke", &controller.MemberApiTokenController{}, "post:Revoke")
 }

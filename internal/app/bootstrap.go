@@ -101,6 +101,7 @@ func RegisterModel() {
 		new(model.Attachment),
 		new(model.Logger),
 		new(model.MemberToken),
+		new(model.MemberApiToken),
 		new(model.DocumentHistory),
 		new(model.Migration),
 		new(model.Label),

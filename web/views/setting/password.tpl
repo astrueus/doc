@@ -28,6 +28,7 @@
                 <ul class="menu">
                     <li><a href="{{urlfor "SettingController.Index"}}" class="item"><i class="fa fa-sitemap" aria-hidden="true"></i> {{i18n .Lang "uc.base_info"}}</a> </li>
                     <li class="active"><a href="{{urlfor "SettingController.Password"}}" class="item"><i class="fa fa-user" aria-hidden="true"></i> {{i18n .Lang "uc.change_pwd"}}</a> </li>
+                    <li><a href="{{urlfor "MemberApiTokenController.Index"}}" class="item"><i class="fa fa-key" aria-hidden="true"></i> API Token</a> </li>
                 </ul>
             </div>
             <div class="page-right">

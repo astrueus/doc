@@ -32,6 +32,7 @@
                     {{if ne .Member.AuthMethod "ldap"}}
                     <li><a href="{{urlfor "SettingController.Password"}}" class="item"><i class="fa fa-user" aria-hidden="true"></i> {{i18n .Lang "uc.change_pwd"}}</a> </li>
                     {{end}}
+                    <li><a href="{{urlfor "MemberApiTokenController.Index"}}" class="item"><i class="fa fa-key" aria-hidden="true"></i> API Token</a> </li>
                 </ul>
             </div>
             <div class="page-right">

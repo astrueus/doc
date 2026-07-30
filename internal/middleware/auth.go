@@ -35,6 +35,8 @@ func registerAuth() {
 	web.InsertFilter("/manager/*", web.BeforeRouter, FilterUser)
 	web.InsertFilter("/setting", web.BeforeRouter, FilterUser)
 	web.InsertFilter("/setting/*", web.BeforeRouter, FilterUser)
+	web.InsertFilter("/member/api-tokens", web.BeforeRouter, FilterUser)
+	web.InsertFilter("/member/api-tokens/*", web.BeforeRouter, FilterUser)
 	web.InsertFilter("/book", web.BeforeRouter, FilterUser)
 	web.InsertFilter("/book/*", web.BeforeRouter, FilterUser)
 	web.InsertFilter("/api/*", web.BeforeRouter, FilterUser)

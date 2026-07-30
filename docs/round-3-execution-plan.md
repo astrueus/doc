@@ -4,7 +4,7 @@
 > 目标：让 AI 助手（Claude Desktop / Cursor / 其他 MCP 客户端）通过 MCP 协议对 doc 项目做**读 + 写**操作，含创建/更新/删除文档。**采用官方 `modelcontextprotocol/go-sdk` v1.x**（非社区 `mark3labs/mcp-go`，见 [§八 决策 2026-07-23](./refactor-roadmap.md#八决策记录decision-log)）。
 > **代码直接落在 Round 2 完成的 `internal/mcp/`** — 零重复搬迁。
 >
-> **进度标记（2026-07-30）：** T1（搜索 FULLTEXT/FTS5）**暂缓**；**T2/T3**（MCP stdio · 10 工具）已落地。下一优先 **T4**（MemberApiToken）。`search_document` 过渡期使用 `LIKE`（见 §六）。
+> **进度标记（2026-07-30）：** T1 ⏸ 暂缓；T2/T3 ✅；**T4**（MemberApiToken）✅。下一优先 **T5**（HTTP MCP + Bearer + 限流）。`search_document` 过渡期使用 `LIKE`。
 
 ---
 
@@ -490,7 +490,7 @@ _ = orm.NewOrm().Insert(&h)
 ### 数据库
 
 - `internal/model/MemberApiToken.go`（本文 §4.1）
-- `internal/migrate/round3_member_api_tokens.up.sql`（本文 §4.1 DDL）
+- 迁移：`internal/migrate/migrate_round3_member_api_token.go`（版本 `202607301700`），执行 `doc migrate`（与现有 Go Migration 一致；非独立 `*.up.sql`）
 
 ### 后端 controller
 
@@ -768,7 +768,7 @@ T1 评估完成后再插回（可与 MCP 并行或作为独立 PR）。
 | T2 | MCP stdio · 4 读工具 | | | ✅ 已实现 |
 | T3 | MCP stdio · 6 写工具（乐观锁 + confirm） | | | ✅ 已实现 |
 | T3 | MCP stdio · 6 写工具（乐观锁 + confirm） | | | |
-| T4 | `MemberApiToken` + 后台管理页 | | | |
+| T4 | `MemberApiToken` + 后台管理页 | | | ✅ 已实现 |
 | T5 | MCP HTTP + Bearer + 限流 | | | |
 | T6 | `internal/dto/mcpdto/`（随 T2/T3） | | | |
 | T7 | `docs/mcp-integration.md` | | | |
