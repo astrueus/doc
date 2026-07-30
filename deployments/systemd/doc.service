@@ -14,7 +14,7 @@ After=mysqld.service
 Type=simple
 User=root
 Group=root
-# WorkingDirectory 须含 configs/、web/、runtime/（Round 2 布局）
+# WorkingDirectory 须含 conf/、web/、runtime/（Round 2 收尾后布局）
 WorkingDirectory=/data/wwwroot/doc.itopcms.com
 # 无子命令时默认启动 web；也可写成 .../doc web
 ExecStart=/data/wwwroot/doc.itopcms.com/doc

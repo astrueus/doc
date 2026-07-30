@@ -14,7 +14,7 @@ services:
       - "8181:8181"
     volumes:
       # 配置与持久化数据（工作目录内相对路径）
-      - ../configs:/doc/configs
+      - ../conf:/doc/conf
       - ../web/static:/doc/web/static
       - ../web/views:/doc/web/views
       - ../uploads:/doc/uploads
@@ -23,7 +23,7 @@ services:
       - doc-sync:/doc-sync-host
     environment:
       - DOC_HOME=/doc
-      # Beego / 业务环境变量按需覆盖 configs/app.conf 中的 ${VAR||default}
+      # Beego / 业务环境变量按需覆盖 conf/app.conf 中的 ${VAR||default}
       # - MINDOC_RUN_MODE=prod
       # - MINDOC_DB_ADAPTER=sqlite3
       # - MINDOC_DB_DATABASE=./database/mindoc.db

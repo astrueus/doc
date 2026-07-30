@@ -57,8 +57,8 @@ func bootstrapFromFlags() {
 
 // preflightCheck warns about Round 1/legacy layout leftovers. Does not abort.
 func preflightCheck() {
-	if _, err := os.Stat("./conf/app.conf"); err == nil {
-		fmt.Println("[warn] detected legacy ./conf/app.conf; please migrate to ./configs/app.conf (Round 2 layout)")
+	if _, err := os.Stat("./configs"); err == nil {
+		fmt.Println("[warn] detected legacy ./configs; please migrate to ./conf (Beego default path)")
 	}
 	if _, err := os.Stat("./static"); err == nil {
 		fmt.Println("[warn] detected legacy ./static; please migrate to ./web/static")

@@ -34,10 +34,10 @@ build_script:
     go mod tidy
     go build -ldflags "-w" -o doc_build_probe.exe ./cmd/doc
     go build -v -o "doc_windows_%GOARCH%.exe" -ldflags="-w -X git.itopcms.com/jackliu/doc/internal/config.VERSION=%APPVEYOR_REPO_TAG_NAME% -X 'git.itopcms.com/jackliu/doc/internal/config.BUILD_TIME=%date% %time%' -X 'git.itopcms.com/jackliu/doc/internal/config.GO_VERSION=%GO_VERSION%'" ./cmd/doc
-    7z a -t7z -r doc_windows_%GOARCH%.7z configs/*.conf* configs/lang/* web/* doc_windows_%GOARCH%.exe uploads/*
+    7z a -t7z -r doc_windows_%GOARCH%.7z conf/*.conf* conf/lang/* web/* doc_windows_%GOARCH%.exe uploads/*
 test_script:
 - cmd: >-
     cd c:\gopath\src\git.itopcms.com\jackliu\doc
-    xcopy configs\app.conf.example configs\app.conf /F /Y
+    xcopy conf\app.conf.example conf\app.conf /F /Y
     doc_windows_%GOARCH%.exe version
 deploy: off

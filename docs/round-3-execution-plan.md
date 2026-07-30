@@ -38,7 +38,7 @@
 - ✅ `internal/mcp/` 空目录（Round 2 T8 已建）
 - ✅ `internal/dto/mcpdto/` 空目录（同上）
 - ✅ `internal/config/config.go` 有 `MCPConfig` 字段（Round 2 T4）
-- ✅ `configs/app.conf` 有 `[mcp]` section（Round 2 T3）
+- ✅ `conf/app.conf` 有 `[mcp]` section（Round 2 T3 / 收尾 A 后路径为 `conf/`）
 - ✅ `internal/router/api.go`（或 `router.go`）可挂 `/mcp/*` handler（Round 2 T6）
 - ✅ `internal/middleware/ratelimit.go` 占位存在（Round 2 T7）
 - ✅ `internal/errs/` 已存在（Round 1 T7）
@@ -167,7 +167,7 @@ type DeleteDocumentIn struct {
 
 其余 8 个工具 In/Out 见 T2/T3 章节末。
 
-### 4.3 `configs/app.conf` `[mcp]` section（Round 2 已加）
+### 4.3 `conf/app.conf` `[mcp]` section（Round 2 已加）
 
 ```ini
 [mcp]

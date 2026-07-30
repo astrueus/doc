@@ -7,8 +7,9 @@
 
 ### Changed
 
-- 项目布局改为 `cmd/` + `internal/` + `pkg/` + `web/` + `deployments/`
-- `configs/app.conf` 按 `[section]` 分组；增加强类型 `config.Config` 与可选 `.env`
+- 项目布局改为 `cmd/` + `internal/` + `pkg/` + `web/` + `conf/` + `deployments/`
+- `conf/app.conf` 按 `[section]` 分组；增加强类型 `config.Config` 与可选 `.env`
+- 配置目录由短暂使用的 `configs/` **改回 `conf/`**，对齐 Beego 默认路径，消除启动期 `open conf/app.conf` 噪音
 - 路由按域拆分；文档编辑 / 对比 / 模板列表从 `/api/*` 迁到 `/book/*`
 - 中间件去重并显式 `middleware.Register()`
 - 根目录 `converter/` / `graphics/` / `mail/` 收入 `internal/` 或 `pkg/`；运行时缓存统一 `runtime/cache/`

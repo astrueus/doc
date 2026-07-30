@@ -28,7 +28,7 @@ database
 .vscode
 .junie
 /vendor/*
-/configs/app.conf
+/conf/app.conf
 .env
 .env.local
 /vendor

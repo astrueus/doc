@@ -36,8 +36,8 @@ flowchart LR
 ```text
 /data/wwwroot/doc.itopcms.com/         ← WWW：每次发布覆盖
   doc                                  ← 可执行文件（必须叫 doc）
-  configs/app.conf                        ← 每次从 REPO 覆盖
-  configs/app.conf.example                ← 仓库自带
+  conf/app.conf                        ← 每次从 REPO 覆盖
+  conf/app.conf.example                ← 仓库自带
   web/static/  web/views/              ← 静态资源与模板（Round 2）
   uploads -> /data/repos/.../uploads   ← 软链
   runtime -> /data/repos/.../runtime   ← 软链
@@ -177,7 +177,7 @@ mkdir -p "$REPO/backup/$TAG"
 cp -f "$WWW/doc" "$REPO/backup/$TAG/doc" || true
 
 # 健康检查：等待 systemd 拉起后端口可访问
-PORT=$(grep -E '^httpport' "$WWW/configs/app.conf" | head -1 | sed -E 's/.*= *"?([0-9]+)"?.*/\1/')
+PORT=$(grep -E '^httpport' "$WWW/conf/app.conf" | head -1 | sed -E 's/.*= *"?([0-9]+)"?.*/\1/')
 PORT="${PORT:-8181}"
 
 for i in 1 2 3 4 5 6 7 8 9 10; do
@@ -397,7 +397,7 @@ ls -1dt "$BAK_ROOT"/*/ 2>/dev/null | tail -n +11 | xargs -r rm -rf
 - 检查 `WWW/uploads` 是软链还是真实目录：`ls -l "$WWW/uploads"`
 
 ### Q5：app.conf 改了不生效
-- 改的应该是 `$REPO/app.conf`（权威配置），不是 `$WWW/configs/app.conf`
+- 改的应该是 `$REPO/app.conf`（权威配置），不是 `$WWW/conf/app.conf`
 - 改后需要再 spug 发布一次或手工 `cp -f` 再 `systemctl restart`
 
 ### Q6：私有仓库下载 401

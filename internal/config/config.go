@@ -217,8 +217,8 @@ func readFromAppConfig() *Config {
 			EnableHTTPS:     secBool("http", "EnableHTTPS", false),
 			HTTPSAddr:       secString("http", "HTTPSAddr", ""),
 			HTTPSPort:       secInt("http", "HTTPSPort", 10443),
-			HTTPSCertFile:   secString("http", "HTTPSCertFile", "configs/ssl.crt"),
-			HTTPSKeyFile:    secString("http", "HTTPSKeyFile", "configs/ssl.key"),
+			HTTPSCertFile:   secString("http", "HTTPSCertFile", "conf/ssl.crt"),
+			HTTPSKeyFile:    secString("http", "HTTPSKeyFile", "conf/ssl.key"),
 		},
 		Session: SessionSection{
 			On:             secBool("session", "sessionon", true),

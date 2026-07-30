@@ -20,9 +20,9 @@ before_install:
 
 script:
   - go build -o doc_linux_amd64 -ldflags "-w" ./cmd/doc
-  - cp configs/app.conf.example configs/app.conf
+  - cp conf/app.conf.example conf/app.conf
   - ./doc_linux_amd64 version
-  - rm configs/app.conf
+  - rm conf/app.conf
 
 before_deploy:
   - go mod tidy -v && GOARCH=amd64 GOOS=linux go build -o doc_linux_amd64 -ldflags="-w -X 'git.itopcms.com/jackliu/doc/internal/config.VERSION=$TRAVIS_TAG' -X 'git.itopcms.com/jackliu/doc/internal/config.BUILD_TIME=`date`' -X 'git.itopcms.com/jackliu/doc/internal/config.GO_VERSION=`go version`'" ./cmd/doc
@@ -30,8 +30,8 @@ before_deploy:
   - rm -f appveyor.yml .travis.yml .gitattributes .gitignore go.mod go.sum README.md
   - rm -rf cache cmd internal pkg .git .github scripts docs
   - ls -alh
-  - cp configs/app.conf.example configs/app.conf
-  - zip -r doc_linux_amd64.zip configs web uploads lib deployments doc_linux_amd64 LICENSE.md
+  - cp conf/app.conf.example conf/app.conf
+  - zip -r doc_linux_amd64.zip conf web uploads lib deployments doc_linux_amd64 LICENSE.md
 
 deploy:
   provider: releases

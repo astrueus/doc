@@ -1,5 +1,5 @@
 # Copy to .env (gitignored) for local overrides.
-# Values expand via ${VAR||default} syntax in configs/app.conf.
+# Values expand via ${VAR||default} syntax in conf/app.conf.
 
 # DOC_HTTP_PORT=8181
 # MINDOC_DB_HOST=127.0.0.1

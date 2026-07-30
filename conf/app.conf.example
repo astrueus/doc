@@ -37,8 +37,8 @@ enablexsrf = "${MINDOC_ENABLE_XSRF||false}"
 EnableHTTPS = false
 HTTPSAddr = ""
 HTTPSPort = 10443
-HTTPSCertFile = "configs/ssl.crt"
-HTTPSKeyFile = "configs/ssl.key"
+HTTPSCertFile = "conf/ssl.crt"
+HTTPSKeyFile = "conf/ssl.key"
 
 ########Session储存方式##############
 [session]

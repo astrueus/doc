@@ -18,12 +18,12 @@ SERVICE_LINK="/etc/systemd/system/$SERVICE_NAME"
 log() { echo "[spug] $*"; }
 
 # ===== 0. Round 2 目录形态预检 =====
-if [ ! -d "$WWW/configs" ] || [ ! -d "$WWW/web/static" ] || [ ! -d "$WWW/web/views" ]; then
-  log "错误：WWW 缺少 Round 2 目录（需要 configs/、web/static/、web/views/）。请检查发布包结构。"
+if [ ! -d "$WWW/conf" ] || [ ! -d "$WWW/web/static" ] || [ ! -d "$WWW/web/views" ]; then
+  log "错误：WWW 缺少 Round 2 目录（需要 conf/、web/static/、web/views/）。请检查发布包结构。"
   exit 1
 fi
-if [ -e "$WWW/conf/app.conf" ]; then
-  log "警告：检测到遗留 $WWW/conf/app.conf，请迁移到 configs/app.conf"
+if [ -d "$WWW/configs" ]; then
+  log "警告：检测到遗留 $WWW/configs/，请迁移到 conf/（Beego 默认路径）"
 fi
 if [ -d "$WWW/static" ] && [ ! -L "$WWW/static" ]; then
   log "警告：检测到遗留目录 $WWW/static，请迁移到 web/static/"
@@ -40,15 +40,15 @@ ln -sfn "$REPO/runtime" "$WWW/runtime"
 
 # ===== 2. 应用配置 app.conf =====
 if [ ! -e "$REPO/app.conf" ]; then
-  if [ -e "$WWW/configs/app.conf.example" ]; then
+  if [ -e "$WWW/conf/app.conf.example" ]; then
     log "首次部署，使用 app.conf.example 初始化 app.conf"
-    cp "$WWW/configs/app.conf.example" "$REPO/app.conf"
+    cp "$WWW/conf/app.conf.example" "$REPO/app.conf"
   else
-    log "缺少 $WWW/configs/app.conf.example，无法初始化 app.conf"
+    log "缺少 $WWW/conf/app.conf.example，无法初始化 app.conf"
     exit 1
   fi
 fi
-cp -f "$REPO/app.conf" "$WWW/configs/app.conf"
+cp -f "$REPO/app.conf" "$WWW/conf/app.conf"
 
 # ===== 3. 同步 systemd unit 到 resource =====
 mkdir -p "$REPO/scripts"

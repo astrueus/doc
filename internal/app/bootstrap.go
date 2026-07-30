@@ -272,7 +272,7 @@ func RegisterFunction() {
 	}
 	langs := strings.Split("en-us|zh-cn", "|")
 	for _, lang := range langs {
-		msgFile := cfg.WorkingDir("configs", "lang", lang+".ini")
+		msgFile := cfg.WorkingDir("conf", "lang", lang+".ini")
 		if err := i18n.SetMessage(lang, msgFile); err != nil {
 			logs.Error("Fail to set message file: " + err.Error())
 			return
@@ -302,8 +302,8 @@ func ResolveCommand(args []string) {
 	if configFile != "" {
 		cfg.ConfigurationFile = configFile
 	} else {
-		cfg.ConfigurationFile = cfg.WorkingDir("configs", "app.conf")
-		exampleConfig := cfg.WorkingDir("configs", "app.conf.example")
+		cfg.ConfigurationFile = cfg.WorkingDir("conf", "app.conf")
+		exampleConfig := cfg.WorkingDir("conf", "app.conf.example")
 		if !filetil.FileExists(cfg.ConfigurationFile) && filetil.FileExists(exampleConfig) {
 			_ = filetil.CopyFile(cfg.ConfigurationFile, exampleConfig)
 		}

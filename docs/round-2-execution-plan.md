@@ -26,6 +26,7 @@
 | T7  | `internal/middleware/` 合并                                         | 原 `middleware/filter.go` + `routers/filter.go`                        | 无                             |
 | T8  | 预留 `internal/mcp/` + `internal/dto/mcpdto/` 空目录                   | 空 `.gitkeep` + `doc.go`                                               | 无                             |
 | T9  | Session/gob 缓存清理写入部署 note                                         | `README.md` + CHANGELOG                                               | 现网升级需**清 session + 清 cache/** |
+| T10 | 收尾（见 [§十五](#十五收尾工作round-2-宣布收工前)）                                      | `configs/`→`conf/`、计划缺口、验收、文档                                        | A 完成后配置目录回到 Beego 默认 `conf/` |
 
 
 
@@ -93,7 +94,7 @@ doc/
 │  ├─ graphics/                                # 原根目录 graphics/（图片裁剪/缩放）
 │  ├─ mail/                                    # 原根目录 mail/（SMTP；模板仍在 web/views）
 │  └─ (原 utils/ 里通用部分)
-├─ configs/                                    # Round 1 已建好；本轮新增 [section] 分组
+├─ conf/                                       # Beego 默认路径；[section] 分组（收尾 A：由 configs/ 改回）
 │  ├─ app.conf / app.conf.example / app.conf.dev.example / app.conf.prod.example
 │  └─ lang/  (zh-cn.ini / en-us.ini)
 ├─ web/                                        # 前端资源
@@ -153,10 +154,12 @@ doc/
 | `favicon.ico`                                                                                                    | `web/static/favicon.ico`                                                                                     | beego 配置 favicon 路径                                                       |
 | `simsun.ttc`                                                                                                     | `web/static/fonts/simsun.ttc`                                                                                | 若 `gocaptcha.SetFontPath` 引用                                              |
 | `cache/` (根目录运行时)                                                                                                | **删除**（已并入 `runtime/cache/`）                                                                                 | 配置默认 `./runtime/cache/`；代码在 `internal/cache/`                             |
-| `converter/`                                                                                                     | `internal/converter/`                                                                                        | 电子书导出；偏业务，放 `internal/`                                                  |
+| `converter/`                                                                                                     | `internal/converter/`                                                                                        | 电子书导出；偏业务，放 `internal/`                                                   |
 | `graphics/`                                                                                                      | `pkg/graphics/`                                                                                              | 通用图片裁剪/缩放（非「验证码素材」目录）                                                     |
-| `mail/`                                                                                                          | `pkg/mail/`                                                                                                  | SMTP 客户端；邮件 HTML 模板仍在 `web/views/`                                       |
-| `runtime/` / `uploads/`                                                                                          | 保留在根                                                                                                         | 运行时数据；文件缓存/导出落盘走 `runtime/cache/`                                             |
+| `mail/`                                                                                                          | `pkg/mail/`                                                                                                  | SMTP 客户端；邮件 HTML 模板仍在 `web/views/`                                        |
+| `runtime/` / `uploads/`                                                                                          | 保留在根                                                                                                         | 运行时数据；文件缓存/导出落盘走 `runtime/cache/`                                         |
+
+
 
 
 ---
@@ -446,9 +449,9 @@ func preflightCheck() {
 ### PR-2 验收
 
 - [ ] Docker 镜像构建 + `docker compose up` 能起（`docker exec -it doc ls /app` 看到 `configs/ web/ uploads/`）
-- [ ] 首页 CSS/JS 200（浏览器 DevTools Network 面板确认 `/static/css/main.css` 未 404）
-- [ ] 验证码图片正常
-- [ ] i18n 中英切换生效
+- [x] 首页 CSS/JS 200（浏览器 DevTools Network 面板确认 `/static/css/main.css` 未 404）
+- [x] 验证码图片正常
+- [x] i18n 中英切换生效
 - [ ] 导出 book 到 zip / pdf 能成功（`BookResult.go` 里的 `filetil.CopyFile` 全部走新路径）
 - [ ] spug 部署到 staging 走一遍
 
@@ -624,11 +627,13 @@ internal/router/
 
 **本轮一并完成的 URL 迁移（删除旧路径，不留兼容）：**
 
-| 旧路由 | 新路由 |
-| --- | --- |
-| `/api/:key/edit/?:id` | `/book/:key/edit/?:id` |
+
+| 旧路由                     | 新路由                      |
+| ----------------------- | ------------------------ |
+| `/api/:key/edit/?:id`   | `/book/:key/edit/?:id`   |
 | `/api/:key/compare/:id` | `/book/:key/compare/:id` |
-| `/api/template/list` | `/book/template/list` |
+| `/api/template/list`    | `/book/template/list`    |
+
 
 硬编码同步：`web/views/book/index.tpl`；其余走 `urlfor` 的模板会随新注册自动更新。
 
@@ -713,7 +718,7 @@ Round 3 直接 `internal/mcp/server.go` 落地，零迁移。
 - [ ] docker-compose volume 挂载全对
 - [ ] systemd `WorkingDirectory` 指向新结构
 - [ ] spug 部署脚本更新
-- [ ] `--workDir` 参数（若使用）指向的目录含 `configs/`、`web/`、`runtime/`
+- [ ] `--workDir` 参数（若使用）指向的目录含 `conf/`、`web/`、`runtime/`
 
 
 
@@ -735,33 +740,103 @@ Round 3 直接 `internal/mcp/server.go` 落地，零迁移。
 ## 十四、追踪表
 
 
-| #   | 任务                                | PR  | Commit | 状态  |
-| --- | --------------------------------- | --- | ------ | --- |
-| T1  | PR-1 目录搬迁 + import 改写             | —   | `784610b` 等 | ✅  |
-| T2  | PR-2 硬编码 + 部署脚本                   | —   | `92cea73`    | ✅  |
-| T3  | `configs/app.conf` `[section]` 分组 | —   | `17759f2`    | ✅  |
-| T4  | 强类型 `config.Config` + Load()      | —   | `17759f2`    | ✅  |
-| T5  | `.env` 支持                         | —   | `17759f2`    | ✅  |
-| T6  | `internal/router/` 拆分 + `/api` 页面路由迁出 | —   | 已完成        | ✅  |
-| T7  | `internal/middleware/` 合并         | —   | 已完成        | ✅  |
-| T8  | 预留 `internal/mcp/` + `mcpdto/`    | —   | 已完成        | ✅  |
-| T9  | 部署 note（清 session/cache）          | —   | 已完成        | ✅  |
+| #   | 任务                                    | PR  | Commit      | 状态  |
+| --- | ------------------------------------- | --- | ----------- | --- |
+| T1  | PR-1 目录搬迁 + import 改写                 | —   | `784610b` 等 | ✅   |
+| T2  | PR-2 硬编码 + 部署脚本                       | —   | `92cea73`   | ✅   |
+| T3  | `configs/app.conf` `[section]` 分组     | —   | `17759f2`   | ✅   |
+| T4  | 强类型 `config.Config` + Load()          | —   | `17759f2`   | ✅   |
+| T5  | `.env` 支持                             | —   | `17759f2`   | ✅   |
+| T6  | `internal/router/` 拆分 + `/api` 页面路由迁出 | —   | 已完成         | ✅   |
+| T7  | `internal/middleware/` 合并             | —   | 已完成         | ✅   |
+| T8  | 预留 `internal/mcp/` + `mcpdto/`        | —   | 已完成         | ✅   |
+| T9  | 部署 note（清 session/cache）              | —   | 已完成         | ✅   |
+| T10 | 收尾：A（`configs/`→`conf/`）已完成；B/C/D 见 §十五 | —   | —           | 🔄 A✅ |
 
 
 ---
 
 
 
-## 十五、Round 3 前置产物核对
+## 十五、收尾工作（Round 2 宣布收工前）
+
+> 核对日期：2026-07-30。T1–T9 主干已完成；以下为收工前待办。  
+> **宣布可进 Round 3 的最低标准：** A 全部完成 + D 文档对齐 + B1 二选一落地 + 核心冒烟（C1 / C2 / 登录）。B2–B4、C4–C5 可不挡 Round 3。  
+> **进度：** §十五 **A 已全部完成**（2026-07-30）；B / C / D1 仍待处理（D2 已随 A6 完成）。
+
+### A. 新增：`configs/` → `conf/`（消除 Beego 启动噪音）
+
+> **背景：** Beego `core/config` / `server/web` 的包 `init` 硬找 `./conf/app.conf`；Round 1 把配置迁到 `configs/` 后启动 stderr 会出现 `open conf/app.conf`。当时根目录 `conf/` 仍是 Go 包，禁止对调。Round 2 后 Go 包已在 `internal/config/`，根下无 `conf/`，**现可安全改回 `conf/`**。
+
+| # | 项 | 状态 | 说明 |
+| --- | --- | --- | --- |
+| A1 | `git mv configs conf` | ✅ | 含 `app.conf*`、`lang/` |
+| A2 | 改 Go 路径 | ✅ | `ConfigurationFile`、`WorkingDir("conf", …)`、`i18n` 的 `conf/lang/` |
+| A3 | 改部署脚本 | ✅ | Dockerfile / compose / start.sh / sync_host.sh / spug / systemd |
+| A4 | 改工具链与 ignore | ✅ | `.gitignore`、`.travis.yml`、`appveyor.yml` |
+| A5 | 改 preflight | ✅ | 发现 `./configs` 则 warn 迁到 `./conf` |
+| A6 | 文档路径同步 | ✅ | README、CHANGELOG、`upgrade-round-2.md`、本文目标树；运维文档路径已对齐 |
+| A7 | 现网/本地 `app.conf` | ✅ | 本地未入库 `app.conf` 已随目录迁到 `conf/app.conf` |
+
+**A 验收：** 启动 stderr 不再出现 `open conf/app.conf`；服务能正常读配置。
+
+**目标目录（A 完成后取代 §三中的 `configs/`）：**
+
+```
+├─ conf/                                       # Beego 默认路径；[section] 分组保留
+│  ├─ app.conf / app.conf.example / app.conf.dev.example / app.conf.prod.example
+│  └─ lang/  (zh-cn.ini / en-us.ini)
+```
+
+### B. 计划内未完 / 建议补齐
+
+| # | 项 | 优先级 | 状态 | 说明 |
+| --- | --- | --- | --- | --- |
+| B1 | `*Result` → `internal/dto/` | 中 / 可决策跳过 | ⬜ | 7 个 Result 仍在 `internal/model/`；`dto/` 仅有 `mcpdto/`。若本轮不做，须在决策 log 写明：「Round 2 因循环依赖暂留 model，Round 4 再搬」 |
+| B2 | `internal/app/` 拆成 `app.go` + `bootstrap.go` + `web.go` | 低 | ⬜ | 现仅整份 `bootstrap.go`；功能可用，属结构债 |
+| B3 | `enumerate_legacy.go` → `working_dir.go` + `enum.go` | 低 | ⬜ | typed `config.go` 已就位；拆文件可选 |
+| B4 | 收敛剩余 `web.AppConfig` 直读 | 低 | ⬜ | Account（钉钉）、Member（LDAP/OAuth）、BaseController `baseurl` 等 → `config.Global` / Getter |
+
+### C. 验收未勾（建议实测后勾掉）
+
+| # | 项 | 状态 |
+| --- | --- | --- |
+| C1 | `./doc install` 走通 | ⬜ |
+| C2 | Docker 构建 + `docker compose up`（目录含 `conf/`、`web/`、`uploads/`） | ⬜ |
+| C3 | i18n 中英切换 | ⬜ |
+| C4 | 导出 zip / pdf（本机需 Calibre / `ebook-convert`） | ⬜ |
+| C5 | spug staging 走一遍（若有） | ⬜ |
+
+### D. 文档收口
+
+| # | 项 | 状态 |
+| --- | --- | --- |
+| D1 | 更新本文：目标树 `configs/` → `conf/`；追踪表 T10；B1–B4 标「跳过+原因」或「待办」 | ⬜ |
+| D2 | `upgrade-round-2.md` / CHANGELOG：写清「配置目录从 `configs` 改回 `conf`」的升级步骤 | ✅ | 已随 A6 完成 |
+
+### 建议执行顺序
+
+1. **先做 A**（`configs` → `conf`）— 改动面集中、立刻消噪音  
+2. **再定 B1**：搬 dto **或** 写入决策「本轮不做」  
+3. **B2–B4** 可放后续小 PR / Round 4  
+4. **跑 C**，勾验收  
+5. **用 D** 把计划与升级说明对齐  
+
+---
+
+
+
+## 十六、Round 3 前置产物核对
 
 - ✅ `internal/mcp/` 空目录存在
 - ✅ `internal/dto/mcpdto/` 空目录存在
 - ✅ `internal/config/config.go` 已有 `MCPConfig` 字段
-- ✅ `configs/app.conf` 有 `[mcp]` section（本 PR 一起加，Round 3 用现成的）
+- ✅ `conf/app.conf` 有 `[mcp]` section（Round 3 用现成的）
 - ✅ `internal/router/api.go`（或 `router.go`）可挂 `/mcp/*` handler
 - ✅ `internal/middleware/ratelimit.go` 占位存在
 - ✅ `cache.Cache` 接口（Round 1）可用作 MCP HTTP token 缓存
 - ✅ `internal/errs/` 可用作 MCP 工具错误返回（`VERSION_CONFLICT` / `CONFIRM_REQUIRED` 等错误码）
+- ✅ 收尾 §十五 A（`configs/` → `conf/`）已完成
 
 以上任一未满足，Round 3 起手会踩坑，回补。
 
@@ -769,7 +844,7 @@ Round 3 直接 `internal/mcp/server.go` 落地，零迁移。
 
 
 
-## 十六、参考
+## 十七、参考
 
 - [refactor-roadmap.md §2.2](./refactor-roadmap.md#22-目标二前后端目录结构调整规范化) — 目标目录结构决策
 - [refactor-roadmap.md §六 关键风险](./refactor-roadmap.md#六关键风险清单) — 尤其 12/13/14 三条 Round 2 专属风险

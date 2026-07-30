@@ -197,9 +197,20 @@ func (c *BaseController) ShowErrorPage(errCode int, errMsg string) {
 	c.Data["ErrorMessage"] = errMsg
 	c.Data["ErrorCode"] = errCode
 
+	lang := c.Lang
+	if lang == "" {
+		lang, _ = web.AppConfig.String("i18n::default_lang")
+	}
+
 	var buf bytes.Buffer
 
-	if err := web.ExecuteViewPathTemplate(&buf, "errors/error.tpl", web.BConfig.WebConfig.ViewsPath, map[string]any{"ErrorMessage": errMsg, "ErrorCode": errCode, "BaseUrl": config.BaseUrl}); err != nil {
+	if err := web.ExecuteViewPathTemplate(&buf, "errors/error.tpl", web.BConfig.WebConfig.ViewsPath, map[string]any{
+		"ErrorMessage":      errMsg,
+		"ErrorCode":         errCode,
+		"BaseUrl":           config.BaseUrl,
+		"Lang":              lang,
+		"site_title_suffix": c.Data["site_title_suffix"],
+	}); err != nil {
 		c.Abort("500")
 	}
 	if errCode >= 200 && errCode <= 510 {

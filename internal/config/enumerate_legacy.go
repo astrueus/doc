@@ -72,7 +72,7 @@ var (
 )
 
 var (
-	ConfigurationFile = "./configs/app.conf"
+	ConfigurationFile = "./conf/app.conf"
 	WorkingDirectory  = "./"
 	LogFile           = "./runtime/logs"
 	BaseUrl           = ""
@@ -398,7 +398,7 @@ func WorkingDir(elem ...string) string {
 }
 
 func init() {
-	if p, err := filepath.Abs("./configs/app.conf"); err == nil {
+	if p, err := filepath.Abs("./conf/app.conf"); err == nil {
 		ConfigurationFile = p
 	}
 	if p, err := filepath.Abs("./"); err == nil {
@@ -408,7 +408,7 @@ func init() {
 		LogFile = p
 	}
 	// 提前加载 + typed Config + BConfig 回填：beego 默认从 ./conf/app.conf 读根键；
-	// Round 2 后 session 在 [session]，必须 ApplyToBeego，否则 routers.init 会把 SessionOn=false 固化进路由。
+	// session 在 [session]，必须 ApplyToBeego，否则路由注册会把 SessionOn=false 固化进路由。
 	if _, err := os.Stat(ConfigurationFile); err == nil {
 		if _, err := Load(ConfigurationFile); err != nil {
 			// 预加载失败仍保底 SessionOn，ResolveCommand 会再 Load

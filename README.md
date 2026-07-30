@@ -93,7 +93,7 @@ go mod tidy
 # 编译（SQLite 需要 CGO 支持）
 go build -ldflags "-w" -o doc
 
-# 数据库初始化（执行前需配置 configs/app.conf）
+# 数据库初始化（执行前需配置 conf/app.conf）
 ./doc install
 
 # 启动
@@ -117,11 +117,11 @@ go env -w GONOSUMDB=git.itopcms.com
 
 ### 数据库配置
 
-如果使用 **MySQL** 存储数据，编码必须是 `utf8mb4_general_ci`。请在安装前，把数据库配置填充到项目目录下的 `configs/app.conf` 中。
+如果使用 **MySQL** 存储数据，编码必须是 `utf8mb4_general_ci`。请在安装前，把数据库配置填充到项目目录下的 `conf/app.conf` 中。
 
 如果使用 **SQLite** 数据库，则直接在配置文件中配置数据库路径即可。
 
-如果 `configs` 目录下不存在 `app.conf`，请将 `app.conf.example` 重命名为 `app.conf`。
+如果 `conf` 目录下不存在 `app.conf`，请将 `app.conf.example` 重命名为 `app.conf`。
 
 **默认程序会自动初始化一个超级管理员用户：`admin`，密码：`123456`。请登录后重新设置密码。**
 
@@ -184,7 +184,7 @@ set DOC=//d/doc
 docker run -it --name=doc --restart=always -v "%DOC%":"/doc-sync-host" -p 8181:8181 -e MINDOC_ENABLE_EXPORT=true -d doc:latest
 ```
 
-启动镜像时常用的环境变量（全部支持的环境变量请参考 [`configs/app.conf.example`](configs/app.conf.example)）：
+启动镜像时常用的环境变量（全部支持的环境变量请参考 [`conf/app.conf.example`](conf/app.conf.example)）：
 
 ```ini
 DB_ADAPTER                  指定 DB 类型（默认为 sqlite）
