@@ -1,7 +1,8 @@
 # Round 2 · 执行文档（`cmd/` + `internal/` 一步到位 + 强类型 Config）
 
 > 本文是 [refactor-roadmap.md §五 Round 2](./refactor-roadmap.md#🥈-round-2目录结构调整一步到位激进--配置强类型2~4-周) 的**可执行分解**。
-> 目标：**一次性**把项目搬到 `cmd/` + `internal/` 最终形态（不再走 `server/`+`web/`+`deploy/` 过渡）；同时把 `configs/app.conf` 做 `[section]` 分组 + 上强类型 `config.Config`。为 Round 3 MCP 的 `internal/mcp/` 提供最终目录与配置基础。
+> 目标：**一次性**把项目搬到 `cmd/` + `internal/` 最终形态（不再走 `server/`+`web/`+`deploy/` 过渡）；同时把 `conf/app.conf` 做 `[section]` 分组 + 上强类型 `config.Config`。为 Round 3 MCP 的 `internal/mcp/` 提供最终目录与配置基础。
+> **配置目录定型：** Round 1/2 中期曾用 `configs/`；收尾 A 已改回 Beego 默认 **`conf/`**（见 [§十五](#十五收尾工作round-2-宣布收工前)）。下文历史步骤里出现的 `configs/` 表示当时路径，**当前以 `conf/` 为准**。
 > **相关文档：** [frontend-backend-split-migration-plan.md](./frontend-backend-split-migration-plan.md)（附录 A/B 的硬编码定位表**仍适用**，只是目标目录换到本文的 `web/` + `internal/`）；[router-split-migration-plan.md](./router-split-migration-plan.md)（`internal/router/` 拆分）。
 
 ---
@@ -19,7 +20,7 @@
 | --- | ----------------------------------------------------------------- | --------------------------------------------------------------------- | ----------------------------- |
 | T1  | 目录搬迁 · `cmd/doc/` + `internal/**` + `web/` + `deployments/`（PR-1） | 几乎每个 Go 文件（import 改写）                                                 | 需清 session + 清 gob 缓存（见 §七）   |
 | T2  | 路径硬编码 + 部署脚本（PR-2）                                                | `commands/`、`controllers/`、`models/BookResult.go`、Docker/spug/systemd | 部署脚本必须同步                      |
-| T3  | `configs/app.conf` 内部 `[section]` 分组                              | `configs/app.conf` + `.example`                                       | 无（beego `section::key` 兼容）    |
+| T3  | `conf/app.conf` 内部 `[section]` 分组（中期路径曾为 `configs/`）       | `conf/app.conf` + `.example`                                          | 无（beego `section::key` 兼容）    |
 | T4  | 强类型 `config.Config` struct + `Load()`                             | 新增 `internal/config/config.go`；30+ 调用位改写                              | 无                             |
 | T5  | `.env` 支持（`joho/godotenv`）                                        | 新增依赖；`cmd/doc/main.go` 启动时 load                                       | 无（可选）                         |
 | T6  | `internal/router/` 按域拆分                                           | 原 `routers/router.go` → 5~6 个域文件                                      | 无                             |
@@ -37,7 +38,7 @@
 - ❌ **不换 ORM/迁移器**：`beego/orm` 保留；Repository/Service 层不落地（Round 4）。
 - ❌ **不换日志**：`beego/logs` 保留（Round 4 换 zap）。
 - ❌ **不上 MCP**：只**预留** `internal/mcp/` 空目录，代码 Round 3 写。
-- ❌ **不拆** `configs/` **为多文件**：只做单文件 `[section]` 分组（见 [refactor-roadmap.md §八 决策 2026-07-29](./refactor-roadmap.md#八决策记录decision-log)）。
+- ❌ **不拆** `conf/` **为多文件**：只做单文件 `[section]` 分组（见 [refactor-roadmap.md §八 决策 2026-07-29](./refactor-roadmap.md#八决策记录decision-log)；目录名以收尾 A 的 `conf/` 为准）。
 
 ---
 
@@ -65,22 +66,20 @@ doc/
 │  └─ doc/
 │     └─ main.go                              # 只做 cobra 入口，body ≤ 20 行
 ├─ internal/                                  # Go 私有包
-│  ├─ app/                                    # 装配层（原 commands/ 的初始化部分）
-│  │  ├─ app.go                               # ResolveCommand（当前 commands.RegisterCommand 的核心）
-│  │  ├─ bootstrap.go                         # 初始化顺序：config → db → cache → i18n → orm
-│  │  └─ web.go                               # 启动 beego web
+│  ├─ app/                                    # 装配层（原 commands/）
+│  │  └─ bootstrap.go                         # ResolveCommand + 初始化 + 启 web（B2 跳过：未拆 app.go/web.go）
 │  ├─ cli/                                    # cobra 子命令（原 commands/root.go/web.go/install.go/version.go 移入）
 │  ├─ config/                                  # 【关键】强类型 Config，原 conf/enumerate.go+mail.go 的 Go 部分
 │  │  ├─ config.go                             # Config struct + Load/Reload
 │  │  ├─ working_dir.go                        # 工作目录 / ConfigurationFile / init 预加载
 │  │  ├─ enum.go                               # 常量与角色类型
-│  │  └─ getters.go                            # Get* / URLFor* shim（读 MustGlobal）
+│  │  ├─ getters.go                            # Get* / URLFor* shim（读 MustGlobal）
+│  │  └─ mail.go                               # 邮件相关配置辅助
 │  ├─ controller/                              # ★ Round 2 只搬进来，**不按域再拆子目录**（Round 4 做）
 │  │  └─ (所有原 controllers/*.go 平搬)
-│  ├─ model/                                   # ★ 同上，只搬不拆
-│  │  └─ (所有原 models/*.go 平搬)
-│  ├─ dto/                                     # 原 *Result.go 挪进来（同一 PR 内 rename import）
-│  │  ├─ book_result.go / member_result.go / document_search_result.go / ...
+│  ├─ model/                                   # ★ 同上，只搬不拆；*Result 仍留此包（B1 跳过 → Round 4）
+│  │  └─ (所有原 models/*.go 平搬，含 *Result.go)
+│  ├─ dto/                                     # 本轮仅预留 mcpdto/（业务 *Result 未迁入）
 │  │  └─ mcpdto/                               # 【空目录 · Round 3 写入】
 │  ├─ middleware/                              # 合并 middleware/filter.go + routers/filter.go
 │  ├─ router/                                  # 按域拆分（见 T6）
@@ -95,7 +94,7 @@ doc/
 │  ├─ graphics/                                # 原根目录 graphics/（图片裁剪/缩放）
 │  ├─ mail/                                    # 原根目录 mail/（SMTP；模板仍在 web/views）
 │  └─ (原 utils/ 里通用部分)
-├─ conf/                                       # Beego 默认路径；[section] 分组（收尾 A：由 configs/ 改回）
+├─ conf/                                       # ★ 正式配置目录（Beego 默认；收尾 A 由 configs/ 改回）
 │  ├─ app.conf / app.conf.example / app.conf.dev.example / app.conf.prod.example
 │  └─ lang/  (zh-cn.ini / en-us.ini)
 ├─ web/                                        # 前端资源
@@ -121,6 +120,7 @@ doc/
 2. `pkg/` 只放**没有业务耦合**的工具；如 `utils/gopool/` 被 model 用了但没耦合业务，也放 `pkg/`；`utils/dingtalk/` 是业务集成，放 `internal/thirdparty/dingtalk/`。
 3. `internal/` 天然阻止外部 module 误引，符合 Go 官方 layout 建议。
 4. 模块路径**保持** `git.itopcms.com/jackliu/doc`，只改子包 import。
+5. **收尾定型（2026-07-30）：** 配置目录 = `conf/`；`*Result` 仍在 `model/`（B1⏭）；`app/bootstrap.go` 未拆（B2⏭）；`config` 包已拆 `enum`/`working_dir`/`getters`（B3✅）；业务侧不再直读 `web.AppConfig`（B4✅）。
 
 ---
 
@@ -136,13 +136,13 @@ doc/
 | `commands/command.go`                                                                                            | 拆到 `internal/app/bootstrap.go` + `internal/app/web.go`                                                       | 也是本轮最大最脏的一个文件                                                             |
 | `commands/daemon/`                                                                                               | `internal/cli/daemon/`（或保留 `cmd/doc/service.go`）                                                             | 与 `service install/remove` 兼容                                             |
 | `commands/migrate/`                                                                                              | `internal/migrate/`                                                                                          | Round 4 或换 golang-migrate 时再改                                             |
-| `commands/install.go`（`i18n.SetMessage` 硬编码 `conf/lang/`）                                                        | 改到 `internal/cli/install.go` + 路径改 `configs/lang/`                                                           | Round 1 T1 已改路径，本轮再改 import                                               |
-| `conf/enumerate.go`                                                                                              | 拆到 `internal/config/config.go` + `internal/config/working_dir.go` + `internal/config/enum.go`                | Go 源码搬                                                                    |
+| `commands/install.go`（`i18n.SetMessage` 硬编码 `conf/lang/`）                                                        | 改到 `internal/cli/install.go`；路径经 `configs/lang/` 中期形态，**收尾 A 定型为 `conf/lang/`**                           | Round 1 T1 改路径；本轮改 import；A 改回 `conf/`                                  |
+| `conf/enumerate.go`                                                                                              | 拆到 `internal/config/config.go` + `working_dir.go` + `enum.go`（另有 `getters.go`，B3）                              | Go 源码搬                                                                    |
 | `conf/mail.go`                                                                                                   | `internal/config/mail.go`                                                                                    | 同上                                                                        |
-| `conf/app.conf` / `.example` / `lang/`                                                                           | 已在 Round 1 T1 迁到 `configs/`，本轮**不动**                                                                         | —                                                                         |
+| `conf/app.conf` / `.example` / `lang/`                                                                           | Round 1 曾迁 `configs/`；**收尾 A 改回 `conf/`**（正式布局）                                                              | 勿再写回 `configs/`                                                            |
 | `controllers/*.go`                                                                                               | `internal/controller/*.go`                                                                                   | 只搬不拆域                                                                     |
 | `models/*.go`                                                                                                    | `internal/model/*.go`                                                                                        | 只搬不拆域                                                                     |
-| `models/*Result.go` (Book/Member/Attachment/Comment/DocumentSearch/ConvertBook/Blog)                             | `internal/dto/*_result.go`                                                                                   | 顺便 rename 为 snake_case                                                    |
+| `models/*Result.go` (Book/Member/Attachment/Comment/DocumentSearch/ConvertBook/Blog)                             | **本轮仍留 `internal/model/`**（B1 跳过）；Round 4 再评估迁 `internal/dto/`                                           | 计划曾写迁 dto；因循环依赖风险本轮不做                                                      |
 | `middleware/filter.go` + `routers/filter.go`                                                                     | `internal/middleware/` 合并                                                                                    | 见 T7                                                                      |
 | `routers/router.go` (148 行)                                                                                      | `internal/router/router.go` + `account.go` / `manager.go` / `book.go` / `document.go` / `blog.go` / `api.go` | 见 T6 与 [router-split-migration-plan.md](./router-split-migration-plan.md) |
 | `cache/cache.go` / `cache_null.go` / `iface.go` / `beego_adapter.go` / `null.go`                                 | `internal/cache/`                                                                                            | Round 1 T5 新增文件一起迁                                                        |
@@ -367,9 +367,9 @@ go mod tidy
 | 4   | 同上（原 `:337, 342`）                                                    | 二次验证码字体路径                                              | 同上                                                    |
 | 5   | 同上（原 `:345-347`）                                                     | `ViewsPath = WorkingDir("views")`                      | `WorkingDir("web", "views")`                          |
 | 6   | 同上（原 `:355`）                                                         | `gocaptcha.SetFontPath(WorkingDir("static", "fonts"))` | `WorkingDir("web", "static", "fonts")`                |
-| 7   | `internal/dto/book_result.go`（原 `models/BookResult.go:455~472`）      | `filetil.CopyFile(WorkingDir, "static", ...)` × 6 处    | `WorkingDir, "web", "static", ...`                    |
-| 8   | `internal/config/enumerate_legacy.go`（原 `conf/enumerate.go:75, 391`） | `"./conf/app.conf"`                                    | `"./configs/app.conf"`（Round 1 T1 已改，此处 double check） |
-| 9   | `internal/cli/install.go`（原 `commands/install.go:106`）               | `i18n.SetMessage(lang, "conf/lang/"+lang+".ini")`      | `"configs/lang/"+lang+".ini"`（Round 1 T1 已改）          |
+| 7   | `internal/model/BookResult.go`（原 `models/BookResult.go:455~472`；B1 未迁 dto） | `filetil.CopyFile(WorkingDir, "static", ...)` × 6 处    | `WorkingDir, "web", "static", ...`                    |
+| 8   | `internal/config/`（原 `conf/enumerate.go:75, 391`）               | `"./conf/app.conf"` → 中期 `"./configs/app.conf"`         | **收尾 A 定型 `"./conf/app.conf"`**                      |
+| 9   | `internal/cli/install.go`（原 `commands/install.go:106`）               | `i18n.SetMessage(..., "conf/lang/"+...)` → 中期 `configs/lang/` | **定型 `conf/lang/`**                                |
 | 10  | `internal/app/bootstrap.go`（原 `commands/command.go:280`）             | 同上 i18n                                                | 同上                                                    |
 | 11  | `internal/controller/BaseController.go:79`                           | `ioutil.ReadFile(WebConfig.ViewsPath, ...)`            | 无需改（ViewsPath 已在 #5 里指向新路径）                           |
 
@@ -392,12 +392,14 @@ go mod tidy
 
 `deployments/Dockerfile`**：**
 
+> 历史 PR-2 曾短暂写成 `configs/`；**收尾 A 后 COPY/挂载均用 `conf/`**。下列 diff 保留「从旧根目录迁出」的意图，**落地路径请以当前仓库 `deployments/` 为准**。
+
 ```diff
 - COPY conf   /app/conf
 - COPY static /app/static
 - COPY views  /app/views
 - COPY main   /app/doc
-+ COPY configs      /app/configs
++ COPY conf         /app/conf
 + COPY web/static   /app/web/static
 + COPY web/views    /app/web/views
 + COPY doc          /app/doc
@@ -416,31 +418,34 @@ volumes:
 - - ./conf:/app/conf
 - - ./static:/app/static
 - - ./views:/app/views
-+ - ./configs:/app/configs
-+ - ./web/static:/app/web/static
-+ - ./web/views:/app/web/views
++ - ./conf:/doc/conf
++ - ./web/static:/doc/web/static
++ - ./web/views:/doc/web/views
 - ./uploads:/app/uploads
 - ./runtime:/app/runtime
 ```
 
-`deployments/start.sh`**、**`deployments/sync_host.sh`**：** 所有 `./static`、`./views`、`./conf` 全改；参考现有内容逐行 review。
+`deployments/start.sh`**、**`deployments/sync_host.sh`**：** 所有 `./static`、`./views` 改到 `web/`；配置目录为 **`./conf`**。
 
-`deployments/systemd/doc.service`**：** 若 `WorkingDirectory=` 指向的目录必须包含 `configs/`、`web/`、`runtime/`；`ExecStart=` 用 `/opt/doc/doc web` 或 `/opt/doc/doc`。
+`deployments/systemd/doc.service`**：** `WorkingDirectory=` 指向的目录必须包含 **`conf/`**、`web/`、`runtime/`；`ExecStart=` 用 `/opt/doc/doc web` 或 `/opt/doc/doc`。
 
 **spug 部署脚本** ([docs/deploy-spug-*.md](./deploy-spug-local.md))：升级步骤加入"新目录结构 pre-check"章节。
 
 ### T2 兼容 pre-check
 
-在 `internal/cli/root.go` 里加个启动前自检：
+在 `internal/cli/root.go` 里加个启动前自检（落地实现已对齐收尾 A）：
 
 ```go
 // internal/cli/root.go —— 检测老部署残留
 func preflightCheck() {
-    if _, err := os.Stat("./conf/app.conf"); err == nil {
-        fmt.Println("[warn] detected legacy ./conf/app.conf; please migrate to ./configs/app.conf (Round 2 layout)")
+    if _, err := os.Stat("./configs"); err == nil {
+        fmt.Println("[warn] detected legacy ./configs; please migrate to ./conf (Beego default path)")
     }
     if _, err := os.Stat("./static"); err == nil {
         fmt.Println("[warn] detected legacy ./static; please migrate to ./web/static")
+    }
+    if _, err := os.Stat("./views"); err == nil {
+        fmt.Println("[warn] detected legacy ./views; please migrate to ./web/views")
     }
 }
 ```
@@ -513,16 +518,18 @@ func preflightCheck() {
 
 
 
-### T3 · `configs/app.conf` `[section]` 分组（0.5~1 天）
+### T3 · `conf/app.conf` `[section]` 分组（0.5~1 天）
+
+> 执行当时目录可能是 `configs/`；**收尾后文件在 `conf/`**。步骤等价，只换目录名。
 
 **目标：** 253 行平铺 → 按 [refactor-roadmap.md §2.3 Step 2](./refactor-roadmap.md#23-目标三配置模块优化) 骨架分 12 个 section。
 
 **做法：**
 
-1. 直接编辑 `configs/app.conf`：加 section 头（如 `[database]`），把原对应键搬到 section 下
-2. 同步改 `configs/app.conf.example`
+1. 直接编辑 `conf/app.conf`：加 section 头（如 `[database]`），把原对应键搬到 section 下
+2. 同步改 `conf/app.conf.example`
 3. **所有调用方**：`web.AppConfig.DefaultString("db_host", ...)` → `web.AppConfig.DefaultString("database::db_host", ...)`
-  - 30+ 处，主要集中在 `internal/config/enumerate_legacy.go`（原 `conf/enumerate.go`）
+  - 30+ 处，主要集中在 `internal/config/`（原 `conf/enumerate.go` / 中期 `enumerate_legacy.go`；现已拆为 `config.go` / `getters.go` 等）
   - **本轮只在**从 `AppConfig` 直接读的地方改；T4 上强类型 Config 后统一收敛，AppConfig 的手动调用会消失
 
 **验收：** 启动后所有配置项行为不变（登录、上传、mail、export 都试一遍）。
@@ -602,7 +609,7 @@ func main() {
 
 `.gitignore` 加 `.env` 与 `.env.local`。
 
-**验收：** 本地放 `DOC_DB_HOST=127.0.0.1` 到 `.env`，启动能读到（配合 `configs/app.conf` 里 `${DOC_DB_HOST||...}` 语法）。
+**验收：** 本地放 `DOC_DB_HOST=127.0.0.1` 到 `.env`，启动能读到（配合 `conf/app.conf` 里 `${DOC_DB_HOST||...}` 语法）。
 
 ---
 
@@ -745,14 +752,14 @@ Round 3 直接 `internal/mcp/server.go` 落地，零迁移。
 | --- | ------------------------------------- | --- | ----------- | --- |
 | T1  | PR-1 目录搬迁 + import 改写                 | —   | `784610b` 等 | ✅   |
 | T2  | PR-2 硬编码 + 部署脚本                       | —   | `92cea73`   | ✅   |
-| T3  | `configs/app.conf` `[section]` 分组     | —   | `17759f2`   | ✅   |
+| T3  | `conf/app.conf` `[section]` 分组        | —   | `17759f2`   | ✅   |
 | T4  | 强类型 `config.Config` + Load()          | —   | `17759f2`   | ✅   |
 | T5  | `.env` 支持                             | —   | `17759f2`   | ✅   |
 | T6  | `internal/router/` 拆分 + `/api` 页面路由迁出 | —   | 已完成         | ✅   |
 | T7  | `internal/middleware/` 合并             | —   | 已完成         | ✅   |
 | T8  | 预留 `internal/mcp/` + `mcpdto/`        | —   | 已完成         | ✅   |
 | T9  | 部署 note（清 session/cache）              | —   | 已完成         | ✅   |
-| T10 | 收尾：A✅ B3✅ B4✅ C1–C5✅；B1/B2⏭；D1 见 §十五 | —   | —           | 🔄 |
+| T10 | 收尾 A✅ B3✅ B4✅ C1–C5✅ D1✅ D2✅；B1/B2⏭ | —   | `c883eab`/`fc494f5`/`c5dff46` 等 | ✅   |
 
 
 ---
@@ -761,9 +768,9 @@ Round 3 直接 `internal/mcp/server.go` 落地，零迁移。
 
 ## 十五、收尾工作（Round 2 宣布收工前）
 
-> 核对日期：2026-07-30。T1–T9 主干已完成；以下为收工前待办。  
+> 核对日期：2026-07-30。T1–T10 已完成（B1/B2 决策跳过计入收口）。  
 > **宣布可进 Round 3 的最低标准：** A 全部完成 + D 文档对齐 + B1 二选一落地 + 核心冒烟（C1 / C2 / 登录）。B2–B4、C4–C5 可不挡 Round 3。  
-> **进度：** §十五 **A 已全部完成**（2026-07-30）；**B3/B4 已完成**；B1/B2 已决策跳过；**C1–C5 已验证**（C4：容器 Calibre 7.26.0）；D1 仍待收口（D2 已随 A6 完成）。
+> **进度：** §十五 **A/B3/B4/C1–C5/D1/D2 已完成**；B1/B2 已决策跳过（见下表与 [refactor-roadmap.md §八](./refactor-roadmap.md#八决策记录decision-log)）。Round 2 收尾可宣布收工。
 
 ### A. 新增：`configs/` → `conf/`（消除 Beego 启动噪音）
 
@@ -781,13 +788,7 @@ Round 3 直接 `internal/mcp/server.go` 落地，零迁移。
 
 **A 验收：** 启动 stderr 不再出现 `open conf/app.conf`；服务能正常读配置。
 
-**目标目录（A 完成后取代 §三中的 `configs/`）：**
-
-```
-├─ conf/                                       # Beego 默认路径；[section] 分组保留
-│  ├─ app.conf / app.conf.example / app.conf.dev.example / app.conf.prod.example
-│  └─ lang/  (zh-cn.ini / en-us.ini)
-```
+> 目标树见 [§三](#三目标目录形态最终版)（已含 `conf/` 与 B1/B2 实态说明）。下表「目标目录」块已并入 §三，此处不再重复。
 
 ### B. 计划内未完 / 建议补齐
 
@@ -798,7 +799,7 @@ Round 3 直接 `internal/mcp/server.go` 落地，零迁移。
 | B3 | `enumerate_legacy.go` → `enum.go` + `working_dir.go` + `getters.go` | 低 | ✅ | 方案 A：纯文件拆分，API 不变；已删除 `enumerate_legacy.go` |
 | B4 | 收敛剩余 `web.AppConfig` 直读 | 低 | ✅ | 业务调用方改走 `MustGlobal()` / Getter；`config.go` 内 loader 保留 AppConfig 读取。 |
 
-### C. 验收未勾（建议实测后勾掉）
+### C. 验收
 
 | # | 项 | 状态 |
 | --- | --- | --- |
@@ -812,16 +813,16 @@ Round 3 直接 `internal/mcp/server.go` 落地，零迁移。
 
 | # | 项 | 状态 |
 | --- | --- | --- |
-| D1 | 更新本文：目标树 `configs/` → `conf/`；追踪表 T10；B1–B4 标「跳过+原因」或「待办」 | ⬜ |
+| D1 | 更新本文：目标树 `configs/` → `conf/`；追踪表 T10；B1–B4 标「跳过+原因」或完成态 | ✅ | 2026-07-30：§三/映射/硬编码/部署说明已对齐；T10 ✅；B1/B2 ⏭、B3/B4 ✅ |
 | D2 | `upgrade-round-2.md` / CHANGELOG：写清「配置目录从 `configs` 改回 `conf`」的升级步骤 | ✅ | 已随 A6 完成 |
 
-### 建议执行顺序
+### 建议执行顺序（已完成）
 
-1. **先做 A**（`configs` → `conf`）— 改动面集中、立刻消噪音  
-2. **再定 B1**：搬 dto **或** 写入决策「本轮不做」  
-3. **B2–B4** 可放后续小 PR / Round 4  
-4. **跑 C**，勾验收  
-5. **用 D** 把计划与升级说明对齐  
+1. ✅ **A**（`configs` → `conf`）  
+2. ✅ **B1** 决策：本轮不做（Round 4）  
+3. ✅ **B3/B4** 完成；**B2** 跳过  
+4. ✅ **C1–C5** 验收  
+5. ✅ **D1/D2** 文档对齐  
 
 ---
 
@@ -838,6 +839,7 @@ Round 3 直接 `internal/mcp/server.go` 落地，零迁移。
 - ✅ `cache.Cache` 接口（Round 1）可用作 MCP HTTP token 缓存
 - ✅ `internal/errs/` 可用作 MCP 工具错误返回（`VERSION_CONFLICT` / `CONFIRM_REQUIRED` 等错误码）
 - ✅ 收尾 §十五 A（`configs/` → `conf/`）已完成
+- ✅ 收尾 §十五 D1（本文目标树 / T10 / B1–B4 状态）已对齐
 
 以上任一未满足，Round 3 起手会踩坑，回补。
 
