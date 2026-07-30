@@ -3,6 +3,8 @@
 > 本文是 [refactor-roadmap.md §五 Round 3](./refactor-roadmap.md#🥉-round-3mcp--搜索基础2~3-周) 与 [§2.1 目标一](./refactor-roadmap.md#21-目标一mcp-serverai-接入) 的**可执行分解**。
 > 目标：让 AI 助手（Claude Desktop / Cursor / 其他 MCP 客户端）通过 MCP 协议对 doc 项目做**读 + 写**操作，含创建/更新/删除文档。**采用官方 `modelcontextprotocol/go-sdk` v1.x**（非社区 `mark3labs/mcp-go`，见 [§八 决策 2026-07-23](./refactor-roadmap.md#八决策记录decision-log)）。
 > **代码直接落在 Round 2 完成的 `internal/mcp/`** — 零重复搬迁。
+>
+> **进度标记（2026-07-30）：** T1（搜索 FULLTEXT/FTS5）**暂缓**，实现方案待后续再评估；本轮优先推进 **T2+**。`search_document` 过渡期可继续用现有 `LIKE`（见 §六）。
 
 ---
 
@@ -12,7 +14,7 @@
 
 | 序号 | 任务 | 工作量 | 上线感知 |
 |---|---|---|---|
-| T1 | 搜索最小方案（MySQL FULLTEXT / SQLite FTS5 + 标题加权） | 2~3 天 | 搜索结果质量提升；DDL 需要执行 |
+| T1 | 搜索最小方案（MySQL FULLTEXT / SQLite FTS5 + 标题加权） | 2~3 天 | ⏸ **暂缓**（2026-07-30：方案待再评估；不挡 T2+） |
 | T2 | MCP MVP · stdio · 4 个读工具 | 2 天 | 新增 CLI `doc mcp` |
 | T3 | MCP MVP · stdio · 6 个写工具（含乐观锁 + 确认参数） | 2~3 天 | 同上 |
 | T4 | `internal/model/MemberApiToken` 新表 + 后台管理页 | 2 天 | 新增管理页 `/member/api-tokens` |
@@ -215,6 +217,10 @@ web/views/member/
 ---
 
 ## 六、T1 · 搜索最小方案（2~3 天）
+
+> **状态（2026-07-30）：⏸ 暂缓 / 方案待再评估。**  
+> 曾尝试按本节落地后已还原，不纳入当前 Round 3 合入范围。待评估点包括：索引列 `markdown` vs 现网 `release`、迁移形态（Go `Migration` vs `*.up.sql`）、锁表风险、是否与 MCP 解耦等。  
+> **过渡：** T2 `search_document` 可先基于现有 `DocumentSearchResult` / `LIKE`；本节方案保留作后续评估底稿，勿删。
 
 ### 现状
 
@@ -706,15 +712,16 @@ func AllowByToken(tokenID int, toolKind string) bool {
 
 | # | PR | 内容 | 大小 |
 |---|---|---|---|
-| 1 | `feat(round3): search fulltext index + provider abstraction` | T1 | 中 |
-| 2 | `feat(round3): MCP stdio server with 4 read tools` | T2（含 T6 部分） | 中 |
+| 1 | `feat(round3): search fulltext index + provider abstraction` | T1（⏸ 暂缓） | 中 |
+| 2 | `feat(round3): MCP stdio server with 4 read tools` | T2（含 T6 部分）← **当前优先** | 中 |
 | 3 | `feat(round3): MCP write tools (6) with optimistic locking` | T3（含 T6 剩余） | 中大 |
 | 4 | `feat(round3): MemberApiToken table + management page` | T4 | 中 |
 | 5 | `feat(round3): MCP Streamable HTTP with Bearer & rate limit` | T5 | 中 |
 | 6 | `docs(round3): MCP integration guide` | T7 | 小 |
 
-**合入顺序：** 1 → 2 → 3 → 4 → 5 → 6。
-理由：T2 stdio 是最小可用产品，可以独立价值发布；T4 是 T5 的前置；T5 需要 T4 提供 token。
+**合入顺序：** ~~1 →~~ **2 → 3 → 4 → 5 → 6**（T1 / PR-1 暂缓，见 §六）。  
+理由：T2 stdio 是最小可用产品，可以独立价值发布；T1 不挡 MCP；T4 是 T5 的前置；T5 需要 T4 提供 token。  
+T1 评估完成后再插回（可与 MCP 并行或作为独立 PR）。
 
 ---
 
@@ -757,8 +764,8 @@ func AllowByToken(tokenID int, toolKind string) bool {
 
 | # | 任务 | PR | Commit | 状态 |
 |---|---|---|---|---|
-| T1 | 搜索 FULLTEXT/FTS5 + Provider | | | |
-| T2 | MCP stdio · 4 读工具 | | | |
+| T1 | 搜索 FULLTEXT/FTS5 + Provider | | | ⏸ 暂缓（2026-07-30：方案待再评估；代码已还原） |
+| T2 | MCP stdio · 4 读工具 | | | 下一优先 |
 | T3 | MCP stdio · 6 写工具（乐观锁 + confirm） | | | |
 | T4 | `MemberApiToken` + 后台管理页 | | | |
 | T5 | MCP HTTP + Bearer + 限流 | | | |

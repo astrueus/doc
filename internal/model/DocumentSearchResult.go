@@ -28,7 +28,7 @@ func NewDocumentSearchResult() *DocumentSearchResult {
 	return &DocumentSearchResult{}
 }
 
-//分页全局搜索.
+// 分页全局搜索.
 func (m *DocumentSearchResult) FindToPager(keyword string, pageIndex, pageSize, memberId int) (searchResult []*DocumentSearchResult, totalCount int, err error) {
 	o := orm.NewOrm()
 
@@ -270,7 +270,7 @@ WHERE (book.privately_owned = 0 OR rel1.relationship_id > 0 or team.team_member_
 	return
 }
 
-//项目内搜索.
+// 项目内搜索.
 func (m *DocumentSearchResult) SearchDocument(keyword string, bookId int) (docs []*DocumentSearchResult, err error) {
 	o := orm.NewOrm()
 
