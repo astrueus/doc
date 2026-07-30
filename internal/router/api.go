@@ -1,7 +1,10 @@
 package router
 
 import (
+	"git.itopcms.com/jackliu/doc/internal/config"
 	"git.itopcms.com/jackliu/doc/internal/controller"
+	"git.itopcms.com/jackliu/doc/internal/mcp"
+	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
 )
 
@@ -16,4 +19,9 @@ func registerAPI() {
 	web.Router("/api/:key/delete", &controller.DocumentController{}, "post:Delete")
 	web.Router("/api/:key/content/?:id", &controller.DocumentController{}, "*:Content")
 	web.Router("/api/search/user/:key", &controller.SearchController{}, "*:User")
+
+	if config.MustGlobal().MCP.Enable {
+		web.Handler("/mcp", mcp.NewHTTPHandler(), true)
+		logs.Info("MCP HTTP handler mounted at /mcp (enable=true)")
+	}
 }

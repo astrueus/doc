@@ -134,10 +134,13 @@ go env -w GONOSUMDB=git.itopcms.com
 ./doc version         # 查看当前版本
 ./doc password --account admin --password newpass   # 修改用户密码
 ./doc migrate         # 执行数据库迁移
-./doc mcp             # MCP 服务（Round 3 实现，当前为占位）
+./doc mcp             # MCP stdio（默认；身份见 mcp_stdio_member）
+./doc mcp --http      # MCP Streamable HTTP（监听 mcp_listen，需 Bearer doc_…）
 ./doc service install # 安装系统服务（服务名 docd，绕过 cobra）
 ./doc --help          # 查看全部子命令
 ```
+
+Web 主进程在 `mcp_enable=true` 时也会挂载 `/mcp`（与主站同端口）。HTTP MCP **必须走 HTTPS**（反代）；`0.0.0.0` 监听会打印告警。Token 在登录后 `/member/api-tokens` 生成。
 
 ### 邮件配置示例
 

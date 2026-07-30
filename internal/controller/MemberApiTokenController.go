@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"git.itopcms.com/jackliu/doc/internal/mcp"
 	"git.itopcms.com/jackliu/doc/internal/model"
 	"github.com/beego/i18n"
 )
@@ -103,6 +104,7 @@ func (c *MemberApiTokenController) Revoke() {
 		c.JsonResult(6006, err.Error())
 		return
 	}
+	mcp.InvalidateAPITokenCache(c.Ctx.Request.Context(), token.TokenHash)
 	c.JsonResult(0, "ok")
 }
 

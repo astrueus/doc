@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"fmt"
 
 	"git.itopcms.com/jackliu/doc/internal/config"
 	"git.itopcms.com/jackliu/doc/internal/mcp"
@@ -16,10 +17,14 @@ var mcpCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		bootstrapFromFlags()
 		ctx := context.Background()
+		cfg := &config.MustGlobal().MCP
 		if httpMode {
-			return mcp.RunHTTP(ctx, &config.MustGlobal().MCP)
+			if !cfg.Enable {
+				fmt.Println("[warn] mcp_enable=false but --http was requested; starting HTTP MCP anyway")
+			}
+			return mcp.RunHTTP(ctx, cfg)
 		}
-		return mcp.RunStdio(ctx, &config.MustGlobal().MCP)
+		return mcp.RunStdio(ctx, cfg)
 	},
 }
 

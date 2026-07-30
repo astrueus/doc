@@ -4,7 +4,7 @@
 > 目标：让 AI 助手（Claude Desktop / Cursor / 其他 MCP 客户端）通过 MCP 协议对 doc 项目做**读 + 写**操作，含创建/更新/删除文档。**采用官方 `modelcontextprotocol/go-sdk` v1.x**（非社区 `mark3labs/mcp-go`，见 [§八 决策 2026-07-23](./refactor-roadmap.md#八决策记录decision-log)）。
 > **代码直接落在 Round 2 完成的 `internal/mcp/`** — 零重复搬迁。
 >
-> **进度标记（2026-07-30）：** T1 ⏸ 暂缓；T2/T3 ✅；**T4**（MemberApiToken）✅。下一优先 **T5**（HTTP MCP + Bearer + 限流）。`search_document` 过渡期使用 `LIKE`。
+> **进度标记（2026-07-30）：** T1 ⏸ 暂缓；T2–T5 ✅。下一优先 **T7**（`docs/mcp-integration.md`）。`search_document` 过渡期使用 `LIKE`。
 
 ---
 
@@ -713,14 +713,14 @@ func AllowByToken(tokenID int, toolKind string) bool {
 | # | PR | 内容 | 大小 |
 |---|---|---|---|
 | 1 | `feat(round3): search fulltext index + provider abstraction` | T1（⏸ 暂缓） | 中 |
-| 2 | `feat(round3): MCP stdio server with 4 read tools` | T2（含 T6 部分）← **当前优先** | 中 |
-| 3 | `feat(round3): MCP write tools (6) with optimistic locking` | T3（含 T6 剩余） | 中大 |
-| 4 | `feat(round3): MemberApiToken table + management page` | T4 | 中 |
-| 5 | `feat(round3): MCP Streamable HTTP with Bearer & rate limit` | T5 | 中 |
-| 6 | `docs(round3): MCP integration guide` | T7 | 小 |
+| 2 | `feat(round3): MCP stdio server with 10 read/write tools` | T2+T3+T6（已合入 `5b6ca51`） | 中大 |
+| 3 | `feat(round3): MemberApiToken table + management page` | T4（已合入 `4c4f346`） | 中 |
+| 4 | `feat(round3): MCP Streamable HTTP with Bearer & rate limit` | T5（代码已落地，待 commit） | 中 |
+| 5 | `docs(round3): MCP integration guide` | T7（⏳ 下一优先） | 小 |
 
-**合入顺序：** ~~1 →~~ **2 → 3 → 4 → 5 → 6**（T1 / PR-1 暂缓，见 §六）。  
-理由：T2 stdio 是最小可用产品，可以独立价值发布；T1 不挡 MCP；T4 是 T5 的前置；T5 需要 T4 提供 token。  
+**合入顺序：** ~~1 →~~ **2 → 3 → 4 → 5**（T1 / PR-1 暂缓，见 §六）。  
+原计划「读/写拆两个 PR」已在实现时合并为一次 stdio 落地（见 §十四）。  
+理由：T2 stdio 是最小可用产品；T1 不挡 MCP；T4 是 T5 的前置；T5 需要 T4 提供 token。  
 T1 评估完成后再插回（可与 MCP 并行或作为独立 PR）。
 
 ---
@@ -762,16 +762,19 @@ T1 评估完成后再插回（可与 MCP 并行或作为独立 PR）。
 
 ## 十四、追踪表
 
-| # | 任务 | PR | Commit | 状态 |
+> 更新日期：2026-07-30。分支：`feature/round-3-mcp`。T2/T3/T6 合并在同一 commit（stdio 一次注册 10 工具）。
+
+| # | 任务 | Commit | 状态 | 备注 |
 |---|---|---|---|---|
-| T1 | 搜索 FULLTEXT/FTS5 + Provider | | | ⏸ 暂缓（2026-07-30：方案待再评估） |
-| T2 | MCP stdio · 4 读工具 | | | ✅ 已实现 |
-| T3 | MCP stdio · 6 写工具（乐观锁 + confirm） | | | ✅ 已实现 |
-| T3 | MCP stdio · 6 写工具（乐观锁 + confirm） | | | |
-| T4 | `MemberApiToken` + 后台管理页 | | | ✅ 已实现 |
-| T5 | MCP HTTP + Bearer + 限流 | | | |
-| T6 | `internal/dto/mcpdto/`（随 T2/T3） | | | |
-| T7 | `docs/mcp-integration.md` | | | |
+| T1 | 搜索 FULLTEXT/FTS5 + Provider | — | ⏸ 暂缓 | 2026-07-30 方案待再评估；不挡 MCP；过渡期 `search_document` 用 LIKE |
+| T2 | MCP stdio · 4 读工具 | `5b6ca51` | ✅ | 与 T3/T6 同 commit |
+| T3 | MCP stdio · 6 写工具（乐观锁 + confirm） | `5b6ca51` | ✅ | 与 T2/T6 同 commit |
+| T4 | `MemberApiToken` + 后台管理页 | `4c4f346` | ✅ | 迁移 `202607301700`；页面 `/member/api-tokens` |
+| T5 | MCP HTTP + Bearer + 限流 | （工作区未提交） | ✅ 代码已落地 | `doc mcp --http` + `mcp_enable` 时挂 `/mcp`；待单独 commit |
+| T6 | `internal/dto/mcpdto/` | `5b6ca51` | ✅ | 随 T2/T3；jsonschema 标签已按 go-sdk 规范修正 |
+| T7 | `docs/mcp-integration.md` | — | ⏳ 待做 | 下一优先 |
+
+**合入进度：** T1 ⏭ → T2✅ → T3✅ → T4✅ → T5✅（待 commit）→ T7⏳
 
 ---
 

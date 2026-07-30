@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"git.itopcms.com/jackliu/doc/internal/config"
-	"git.itopcms.com/jackliu/doc/internal/errs"
 	"git.itopcms.com/jackliu/doc/internal/model"
 	"github.com/beego/beego/v2/core/logs"
 	sdkmcp "github.com/modelcontextprotocol/go-sdk/mcp"
@@ -34,9 +33,4 @@ func RunStdio(ctx context.Context, cfg *config.MCPSection) error {
 
 func quietLogsForStdio() {
 	_ = logs.GetBeeLogger().DelLogger("console")
-}
-
-// RunHTTP is implemented in T5 (Streamable HTTP + Bearer).
-func RunHTTP(ctx context.Context, cfg *config.MCPSection) error {
-	return errs.New(errs.CodeInternal, "MCP HTTP mode is planned for Round 3 T5")
 }
