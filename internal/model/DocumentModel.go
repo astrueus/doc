@@ -21,7 +21,6 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
-	"github.com/beego/beego/v2/server/web"
 )
 
 // Document struct.
@@ -364,7 +363,7 @@ func (item *Document) Processor() *Document {
 					selector.First().AppendHtml(release)
 				}
 			}
-			cdnimg, _ := web.AppConfig.String("cdn::cdnimg")
+			cdnimg := config.MustGlobal().CDN.Img
 
 			docQuery.Find("img").Each(func(i int, selection *goquery.Selection) {
 

@@ -19,9 +19,9 @@ import (
 	"fmt"
 	"log"
 
+	"git.itopcms.com/jackliu/doc/internal/config"
 	"git.itopcms.com/jackliu/doc/internal/model"
 	"github.com/beego/beego/v2/client/orm"
-	"github.com/beego/beego/v2/server/web"
 )
 
 var (
@@ -111,8 +111,9 @@ func RunMigration() {
 
 // 导出数据库的表结构
 func ExportDatabaseTable() ([]string, error) {
-	dbadapter, _ := web.AppConfig.String("database::db_adapter")
-	dbdatabase, _ := web.AppConfig.String("database::db_database")
+	db := config.MustGlobal().Database
+	dbadapter := db.Adapter
+	dbdatabase := db.Database
 	tables := make([]string, 0)
 
 	o := orm.NewOrm()

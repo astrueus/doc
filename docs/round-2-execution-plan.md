@@ -72,8 +72,9 @@ doc/
 │  ├─ cli/                                    # cobra 子命令（原 commands/root.go/web.go/install.go/version.go 移入）
 │  ├─ config/                                  # 【关键】强类型 Config，原 conf/enumerate.go+mail.go 的 Go 部分
 │  │  ├─ config.go                             # Config struct + Load/Reload
-│  │  ├─ working_dir.go                        # 原 ResolveWorkingDirectory
-│  │  └─ enum.go                               # 原 enumerate.go 里的常量与 URL 工具
+│  │  ├─ working_dir.go                        # 工作目录 / ConfigurationFile / init 预加载
+│  │  ├─ enum.go                               # 常量与角色类型
+│  │  └─ getters.go                            # Get* / URLFor* shim（读 MustGlobal）
 │  ├─ controller/                              # ★ Round 2 只搬进来，**不按域再拆子目录**（Round 4 做）
 │  │  └─ (所有原 controllers/*.go 平搬)
 │  ├─ model/                                   # ★ 同上，只搬不拆
@@ -751,7 +752,7 @@ Round 3 直接 `internal/mcp/server.go` 落地，零迁移。
 | T7  | `internal/middleware/` 合并             | —   | 已完成         | ✅   |
 | T8  | 预留 `internal/mcp/` + `mcpdto/`        | —   | 已完成         | ✅   |
 | T9  | 部署 note（清 session/cache）              | —   | 已完成         | ✅   |
-| T10 | 收尾：A（`configs/`→`conf/`）已完成；B/C/D 见 §十五 | —   | —           | 🔄 A✅ |
+| T10 | 收尾：A✅ B3✅ B4✅；B1/B2⏭；C/D1 见 §十五 | —   | —           | 🔄 |
 
 
 ---
@@ -762,7 +763,7 @@ Round 3 直接 `internal/mcp/server.go` 落地，零迁移。
 
 > 核对日期：2026-07-30。T1–T9 主干已完成；以下为收工前待办。  
 > **宣布可进 Round 3 的最低标准：** A 全部完成 + D 文档对齐 + B1 二选一落地 + 核心冒烟（C1 / C2 / 登录）。B2–B4、C4–C5 可不挡 Round 3。  
-> **进度：** §十五 **A 已全部完成**（2026-07-30）；B / C / D1 仍待处理（D2 已随 A6 完成）。
+> **进度：** §十五 **A 已全部完成**（2026-07-30）；**B3/B4 已完成**；B1/B2 已决策跳过；C / D1 仍待处理（D2 已随 A6 完成）。
 
 ### A. 新增：`configs/` → `conf/`（消除 Beego 启动噪音）
 
@@ -792,10 +793,10 @@ Round 3 直接 `internal/mcp/server.go` 落地，零迁移。
 
 | # | 项 | 优先级 | 状态 | 说明 |
 | --- | --- | --- | --- | --- |
-| B1 | `*Result` → `internal/dto/` | 中 / 可决策跳过 | ⬜ | 7 个 Result 仍在 `internal/model/`；`dto/` 仅有 `mcpdto/`。若本轮不做，须在决策 log 写明：「Round 2 因循环依赖暂留 model，Round 4 再搬」 |
-| B2 | `internal/app/` 拆成 `app.go` + `bootstrap.go` + `web.go` | 低 | ⬜ | 现仅整份 `bootstrap.go`；功能可用，属结构债 |
-| B3 | `enumerate_legacy.go` → `working_dir.go` + `enum.go` | 低 | ⬜ | typed `config.go` 已就位；拆文件可选 |
-| B4 | 收敛剩余 `web.AppConfig` 直读 | 低 | ⬜ | Account（钉钉）、Member（LDAP/OAuth）、BaseController `baseurl` 等 → `config.Global` / Getter |
+| B1 | `*Result` → `internal/dto/` | 中 / 可决策跳过 | ⏭ 跳过 | **决策 2026-07-30**：本轮不做。`BookResult` 等内含 orm/`NewBook()`，硬搬易循环依赖；Round 4 再搬。 |
+| B2 | `internal/app/` 拆成 `app.go` + `bootstrap.go` + `web.go` | 低 | ⏭ 跳过 | **决策 2026-07-30**：本轮不做；`bootstrap.go` 暂保持整文件。 |
+| B3 | `enumerate_legacy.go` → `enum.go` + `working_dir.go` + `getters.go` | 低 | ✅ | 方案 A：纯文件拆分，API 不变；已删除 `enumerate_legacy.go` |
+| B4 | 收敛剩余 `web.AppConfig` 直读 | 低 | ✅ | 业务调用方改走 `MustGlobal()` / Getter；`config.go` 内 loader 保留 AppConfig 读取。 |
 
 ### C. 验收未勾（建议实测后勾掉）
 

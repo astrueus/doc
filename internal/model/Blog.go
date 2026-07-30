@@ -14,7 +14,6 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
-	"github.com/beego/beego/v2/server/web"
 )
 
 // 博文表
@@ -289,7 +288,7 @@ func (b *Blog) Processor() *Blog {
 			}
 		})
 		//设置图片为CDN地址
-		if cdnimg, _ := web.AppConfig.String("cdn::cdnimg"); cdnimg != "" {
+		if cdnimg := config.MustGlobal().CDN.Img; cdnimg != "" {
 			content.Find("img").Each(func(i int, contentSelection *goquery.Selection) {
 				if src, ok := contentSelection.Attr("src"); ok && strings.HasPrefix(src, "/uploads/") {
 					contentSelection.SetAttr("src", urlutil.JoinURI(cdnimg, src))

@@ -72,7 +72,7 @@ func (c *BaseController) Prepare() {
 	}
 	c.EnableAnonymous = strings.EqualFold(c.Option["ENABLE_ANONYMOUS"], "true")
 	c.EnableDocumentHistory = strings.EqualFold(c.Option["ENABLE_DOCUMENT_HISTORY"], "true")
-	c.Data["HighlightStyle"] = web.AppConfig.DefaultString("app::highlight_style", "github")
+	c.Data["HighlightStyle"] = config.MustGlobal().App.HighlightStyle
 
 	if b, err := os.ReadFile(filepath.Join(web.BConfig.WebConfig.ViewsPath, "widgets", "scripts.tpl")); err == nil {
 		c.Data["Scripts"] = template.HTML(string(b))
@@ -179,7 +179,7 @@ func (c *BaseController) ExecuteViewPathTemplate(tplName string, data any) (stri
 }
 
 func (c *BaseController) BaseUrl() string {
-	baseUrl := web.AppConfig.DefaultString("baseurl", "")
+	baseUrl := config.MustGlobal().BaseURL
 	if baseUrl != "" {
 		if strings.HasSuffix(baseUrl, "/") {
 			baseUrl = strings.TrimSuffix(baseUrl, "/")
@@ -199,7 +199,7 @@ func (c *BaseController) ShowErrorPage(errCode int, errMsg string) {
 
 	lang := c.Lang
 	if lang == "" {
-		lang, _ = web.AppConfig.String("i18n::default_lang")
+		lang = config.GetDefaultLang()
 	}
 
 	var buf bytes.Buffer
@@ -235,7 +235,7 @@ func (c *BaseController) SetLang() {
 	}
 	if len(lang) == 0 ||
 		!i18n.IsExist(lang) {
-		lang, _ = web.AppConfig.String("i18n::default_lang")
+		lang = config.GetDefaultLang()
 	}
 	if !hasCookie {
 		c.Ctx.SetCookie("lang", lang, 1<<31-1, "/")

@@ -10,7 +10,6 @@ import (
 	"git.itopcms.com/jackliu/doc/internal/model"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
-	"github.com/beego/beego/v2/server/web"
 	"github.com/beego/i18n"
 )
 
@@ -38,7 +37,7 @@ func initialization() {
 		panic(err.Error())
 	}
 
-	lang, _ := web.AppConfig.String("i18n::default_lang")
+	lang := config.GetDefaultLang()
 	err = i18n.SetMessage(lang, "conf/lang/"+lang+".ini")
 	if err != nil {
 		panic(fmt.Errorf("initialize locale error: %s", err))

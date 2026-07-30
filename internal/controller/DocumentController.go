@@ -24,7 +24,6 @@ import (
 	"git.itopcms.com/jackliu/doc/pkg/pagination"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
-	"github.com/beego/beego/v2/server/web"
 	"github.com/beego/i18n"
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/qr"
@@ -252,7 +251,7 @@ func (c *DocumentController) Edit() {
 		}
 	}
 
-	c.Data["BaiDuMapKey"] = web.AppConfig.DefaultString("app::baidumapkey", "")
+	c.Data["BaiDuMapKey"] = config.MustGlobal().App.BaiduMapKey
 
 	if config.GetUploadFileSize() > 0 {
 		c.Data["UploadFileSize"] = config.GetUploadFileSize()

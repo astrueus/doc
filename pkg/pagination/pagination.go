@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/beego/beego/v2/server/web"
+	"git.itopcms.com/jackliu/doc/internal/config"
 	"github.com/beego/i18n"
 )
 
@@ -118,7 +118,7 @@ func (p *Pagination) pageURL(page string) string {
 }
 
 func (p *Pagination) getLang() string {
-	lang, _ := web.AppConfig.String("i18n::default_lang")
+	lang := config.GetDefaultLang()
 	ulang := p.Request.FormValue("lang")
 	if len(ulang) == 0 {
 		clang, err := p.Request.Cookie("lang")

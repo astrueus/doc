@@ -23,7 +23,6 @@ import (
 	"git.itopcms.com/jackliu/doc/internal/config"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
-	"github.com/beego/beego/v2/server/web"
 	"github.com/beego/i18n"
 )
 
@@ -77,10 +76,11 @@ func (m *Member) Login(account string, password string) (*Member, error) {
 	err := o.Raw("select * from md_members where (account = ? or email = ?) and status = 0 limit 1;", account, account).QueryRow(member)
 
 	if err != nil {
-		if web.AppConfig.DefaultBool("ldap::ldap_enable", false) {
+		g := config.MustGlobal()
+		if g.LDAP.Enable {
 			logs.Info("转入LDAP登陆 ->", account)
 			return member.ldapLogin(account, password)
-		} else if url, err := web.AppConfig.String("oauth::http_login_url"); url != "" {
+		} else if g.OAuth.HTTPLoginURL != "" {
 			logs.Info("转入 HTTP 接口登陆 ->", account)
 			return member.httpLogin(account, password)
 		} else {
@@ -121,32 +121,27 @@ func (m *Member) TmpLogin(account string) (*Member, error) {
 
 // ldapLogin 通过LDAP登陆
 func (m *Member) ldapLogin(account string, password string) (*Member, error) {
-	if !web.AppConfig.DefaultBool("ldap::ldap_enable", false) {
+	ldapCfg := config.MustGlobal().LDAP
+	if !ldapCfg.Enable {
 		return m, ErrMemberAuthMethodInvalid
 	}
 	var err error
-	ldaphost, _ := web.AppConfig.String("ldap::ldap_host")
-	lc, err := ldap.Dial("tcp", fmt.Sprintf("%s:%d", ldaphost, web.AppConfig.DefaultInt("ldap::ldap_port", 3268)))
+	lc, err := ldap.Dial("tcp", fmt.Sprintf("%s:%d", ldapCfg.Host, ldapCfg.Port))
 	if err != nil {
 		logs.Error("绑定 LDAP 用户失败 ->", err)
 		return m, ErrLDAPConnect
 	}
 	defer lc.Close()
-	ldapuser, _ := web.AppConfig.String("ldap::ldap_user")
-	ldappass, _ := web.AppConfig.String("ldap::ldap_password")
-	err = lc.Bind(ldapuser, ldappass)
+	err = lc.Bind(ldapCfg.User, ldapCfg.Password)
 	if err != nil {
 		logs.Error("绑定 LDAP 用户失败 ->", err)
 		return m, ErrLDAPFirstBind
 	}
-	ldapbase, _ := web.AppConfig.String("ldap::ldap_base")
-	ldapfilter, _ := web.AppConfig.String("ldap::ldap_filter")
-	ldapattr, _ := web.AppConfig.String("ldap::ldap_attribute")
 	searchRequest := ldap.NewSearchRequest(
-		ldapbase,
+		ldapCfg.Base,
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
 		//修改objectClass通过配置文件获取值
-		fmt.Sprintf("(&(%s)(%s=%s))", ldapfilter, ldapattr, account),
+		fmt.Sprintf("(&(%s)(%s=%s))", ldapCfg.Filter, ldapCfg.Attribute, account),
 		[]string{"dn", "mail"},
 		nil,
 	)
@@ -172,7 +167,7 @@ func (m *Member) ldapLogin(account string, password string) (*Member, error) {
 		m.Email = searchResult.Entries[0].GetAttributeValue("mail")
 		m.AuthMethod = "ldap"
 		m.Avatar = "/static/images/headimgurl.jpg"
-		m.Role = config.SystemRole(web.AppConfig.DefaultInt("ldap::ldap_user_role", 2))
+		m.Role = config.SystemRole(ldapCfg.UserRole)
 		m.CreateTime = time.Now()
 
 		err = m.Add()
@@ -186,7 +181,8 @@ func (m *Member) ldapLogin(account string, password string) (*Member, error) {
 }
 
 func (m *Member) httpLogin(account, password string) (*Member, error) {
-	urlStr, _ := web.AppConfig.String("oauth::http_login_url")
+	oauth := config.MustGlobal().OAuth
+	urlStr := oauth.HTTPLoginURL
 	if urlStr == "" {
 		return nil, ErrMemberAuthMethodInvalid
 	}
@@ -197,7 +193,7 @@ func (m *Member) httpLogin(account, password string) (*Member, error) {
 		"time":     []string{strconv.FormatInt(time.Now().Unix(), 10)},
 	}
 	h := md5.New()
-	h.Write([]byte(val.Encode() + web.AppConfig.DefaultString("oauth::http_login_secret", "")))
+	h.Write([]byte(val.Encode() + oauth.HTTPLoginSecret))
 
 	val.Add("sn", hex.EncodeToString(h.Sum(nil)))
 
@@ -249,7 +245,7 @@ func (m *Member) httpLogin(account, password string) (*Member, error) {
 		member.Account = account
 		member.Password = password
 		member.AuthMethod = "http"
-		member.Role = config.SystemRole(web.AppConfig.DefaultInt("ldap::ldap_user_role", 2))
+		member.Role = config.SystemRole(config.MustGlobal().LDAP.UserRole)
 		member.CreateTime = time.Now()
 		if err := member.Add(); err != nil {
 			logs.Error("自动注册用户错误", err)

@@ -723,6 +723,9 @@ type Cache interface {
 | **2026-07-29** | **配置文件本轮是否拆多文件？**                                                   | **否**，`configs/app.conf` 内部 `[section]` 分组即可；`conf.d/` 多文件方案作为**未来可选**    | ① beego ini 原生支持 `[section]` + `section::key`，改动量最小；② 单文件便于运维/diff/Docker 挂载；③ Step 3 上强类型 `Config` struct 后，无论单/多文件对调用方透明；④ 现有配置 253 行，未到拆文件收益门槛                                                                                                                             |
 | **2026-07-29** | **日志库选型：slog vs zap？**                                              | `uber-go/zap`                                                             | ① 业界事实标准，性能最佳（分配数最少）；② 生态最完善：Lumberjack 轮转 / Sentry / OpenTelemetry 桥接现成；③ Sugared/非 Sugared 双 API 便于从 `beego/logs` 渐进式迁移（先用 Sugared 保留 printf 风格，再逐步换成 zap.Field）；④ `slog` 是标准库但社区桥接仍在补齐，且团队后续接入 APM/告警系统时 zap 生态更省事；⑤ Round 1 已经引入 `cobra` 等新依赖，多一个 `go.uber.org/zap` 边际成本低 |
 | **2026-07-29** | **前端 P0 修复项（editor.md / katex / mermaid）是否再做？**                     | **不做**，已在历史 PR 完成                                                         | ① editor.md 已升 v1.7.17；② katex 404 已修；③ mermaid 已升 10.x；④ **本路线图后续任何一轮不再重复列入**，避免下次生成/审阅时又把它们当待办；如未来因回归再次出现，另开新条目                                                                                                                                                             |
+| **2026-07-30** | **Round 2 收尾 B1：`*Result` → `internal/dto/`？** | **本轮不做**，暂留 `internal/model/`；Round 4 再搬 | Result 文件内含 orm/`NewBook()` 等，硬搬易与 model 循环依赖；计划本就允许暂留 |
+| **2026-07-30** | **Round 2 收尾 B2：拆 `internal/app/bootstrap.go`？** | **本轮不做** | 功能可用；结构债不影响 Round 3 |
+| **2026-07-30** | **配置目录 `configs/` vs `conf/`？** | **改回 `conf/`** | Round 2 后 Go 包已在 `internal/config/`，可对齐 Beego 默认路径，消除启动噪音 |
 
 
 ---

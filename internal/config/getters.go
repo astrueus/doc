@@ -1,82 +1,13 @@
-// Package comment: configuration constants, getters (shim over Global), and URL helpers.
 package config
 
 import (
-	"strings"
-
 	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/beego/beego/v2/server/web"
-)
-
-// 登录用户的Session名
-const LoginSessionName = "LoginSessionName"
-
-const CaptchaSessionName = "__captcha__"
-
-const RegexpEmail = "^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
-
-// 允许用户名中出现点号
-const RegexpAccount = `^[a-zA-Z][a-zA-Z0-9\.-]{2,50}$`
-
-// PageSize 默认分页条数.
-const PageSize = 10
-
-// 用户权限
-const (
-	// 超级管理员.
-	MemberSuperRole SystemRole = iota
-	//普通管理员.
-	MemberAdminRole
-	//普通用户.
-	MemberGeneralRole
-)
-
-// 系统角色
-type SystemRole int
-
-const (
-	// 创始人.
-	BookFounder BookRole = iota
-	//管理者
-	BookAdmin
-	//编辑者.
-	BookEditor
-	//观察者
-	BookObserver
-)
-
-// 项目角色
-type BookRole int
-
-const (
-	LoggerOperate   = "operate"
-	LoggerSystem    = "system"
-	LoggerException = "exception"
-	LoggerDocument  = "document"
-)
-const (
-	//本地账户校验
-	AuthMethodLocal = "local"
-	//LDAP用户校验
-	AuthMethodLDAP = "ldap"
-)
-
-var (
-	VERSION    string
-	BUILD_TIME string
-	GO_VERSION string
-)
-
-var (
-	ConfigurationFile = "./conf/app.conf"
-	WorkingDirectory  = "./"
-	LogFile           = "./runtime/logs"
-	BaseUrl           = ""
-	AutoLoadDelay     = 0
 )
 
 // app_key
@@ -91,6 +22,15 @@ func GetDatabasePrefix() string {
 // 获取默认头像
 func GetDefaultAvatar() string {
 	return URLForWithCdnImage(MustGlobal().App.Avatar)
+}
+
+// GetDefaultLang returns i18n::default_lang (fallback zh-cn).
+func GetDefaultLang() string {
+	lang := MustGlobal().I18n.DefaultLang
+	if lang == "" {
+		return "zh-cn"
+	}
+	return lang
 }
 
 // 获取阅读令牌长度.
@@ -172,21 +112,6 @@ func GetUploadMaxMemory() int64 {
 		return n
 	}
 	return 1 << 26
-}
-
-// ResolveWorkingDirectory 解析程序工作目录。
-// 优先级：-dir 参数 > 环境变量 DOC_HOME > 可执行文件所在目录 > 当前工作目录。
-func ResolveWorkingDirectory(dirFlag string) (string, error) {
-	if p := strings.TrimSpace(dirFlag); p != "" {
-		return filepath.Abs(p)
-	}
-	if p := strings.TrimSpace(os.Getenv("DOC_HOME")); p != "" {
-		return filepath.Abs(p)
-	}
-	if exe, err := filepath.Abs(os.Args[0]); err == nil {
-		return filepath.Dir(exe), nil
-	}
-	return filepath.Abs(".")
 }
 
 // 是否启用导出
@@ -388,33 +313,4 @@ func URLForWithCdnJs(p string, v ...string) string {
 		return cdn + "/" + p
 	}
 	return cdn + p
-}
-
-func WorkingDir(elem ...string) string {
-
-	elems := append([]string{WorkingDirectory}, elem...)
-
-	return filepath.Join(elems...)
-}
-
-func init() {
-	if p, err := filepath.Abs("./conf/app.conf"); err == nil {
-		ConfigurationFile = p
-	}
-	if p, err := filepath.Abs("./"); err == nil {
-		WorkingDirectory = p
-	}
-	if p, err := filepath.Abs("./runtime/logs"); err == nil {
-		LogFile = p
-	}
-	// 提前加载 + typed Config + BConfig 回填：beego 默认从 ./conf/app.conf 读根键；
-	// session 在 [session]，必须 ApplyToBeego，否则路由注册会把 SessionOn=false 固化进路由。
-	if _, err := os.Stat(ConfigurationFile); err == nil {
-		if _, err := Load(ConfigurationFile); err != nil {
-			// 预加载失败仍保底 SessionOn，ResolveCommand 会再 Load
-			web.BConfig.WebConfig.Session.SessionOn = true
-		}
-	} else {
-		web.BConfig.WebConfig.Session.SessionOn = true
-	}
 }

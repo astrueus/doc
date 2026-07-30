@@ -3,13 +3,14 @@ package middleware
 import (
 	"regexp"
 
+	"git.itopcms.com/jackliu/doc/internal/config"
 	"github.com/beego/beego/v2/server/web"
 	"github.com/beego/beego/v2/server/web/context"
 )
 
 // StartRouter validates session cookie shape before static handlers.
 func StartRouter(ctx *context.Context) {
-	sessname, _ := web.AppConfig.String("session::sessionname")
+	sessname := config.MustGlobal().Session.Name
 	sessionId := ctx.Input.Cookie(sessname)
 	if sessionId == "" {
 		return
