@@ -32,8 +32,8 @@ RUN ./doc version
 ADD web/static/fonts/simsun.ttc /usr/share/fonts/win/
 
 
-# Ubuntu 20.04
-FROM ubuntu:focal
+# Ubuntu 22.04 (glibc ≥ 2.34，兼容新版 Calibre)
+FROM ubuntu:jammy
 
 # 切换默认shell为bash
 SHELL ["/bin/bash", "-c"]
@@ -43,25 +43,27 @@ COPY --from=build /app /doc
 WORKDIR /doc
 RUN chmod a+r /usr/share/fonts/win/simsun.ttc
 
-# 备份原有源
-RUN mv /etc/apt/sources.list /etc/apt/sources.list-backup
+# 备份/清理原有源（jammy 可能使用 sources.list.d/ubuntu.sources）
+RUN if [ -f /etc/apt/sources.list ]; then mv /etc/apt/sources.list /etc/apt/sources.list-backup; fi \
+ && rm -f /etc/apt/sources.list.d/ubuntu.sources /etc/apt/sources.list.d/*.sources \
+ && true
 # 最小化源，缩短apt update时间(ca-certificates必须先安装才支持换tsinghua源)
-RUN echo 'deb http://archive.ubuntu.com/ubuntu/ focal main restricted' > /etc/apt/sources.list
+RUN echo 'deb http://archive.ubuntu.com/ubuntu/ jammy main restricted' > /etc/apt/sources.list
 RUN apt-get update
 RUN apt install -y ca-certificates
 # 更换tsinghua源(echo多行内容不能以#开头，会被docker误判为注释行，所以采用\n#开头)
 RUN echo $'\
 \n# from: https://mirrors.tuna.tsinghua.edu.cn/help/ubuntu/\n\
-deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal main restricted universe multiverse\
-\n# deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal main restricted universe multiverse\n\
-deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal-updates main restricted universe multiverse\
-\n# deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal-updates main restricted universe multiverse\n\
-deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal-backports main restricted universe multiverse\
-\n# deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal-backports main restricted universe multiverse\n\
-deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal-security main restricted universe multiverse\
-\n# deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal-security main restricted universe multiverse\
-\n# deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal-proposed main restricted universe multiverse\
-\n# deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal-proposed main restricted universe multiverse'\
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy main restricted universe multiverse\
+\n# deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy main restricted universe multiverse\n\
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse\
+\n# deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy-updates main restricted universe multiverse\n\
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse\
+\n# deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy-backports main restricted universe multiverse\n\
+deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy-security main restricted universe multiverse\
+\n# deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy-security main restricted universe multiverse\
+\n# deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy-proposed main restricted universe multiverse\
+\n# deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ jammy-proposed main restricted universe multiverse'\
 > /etc/apt/sources.list
 
 # 更新软件包信息
@@ -79,8 +81,45 @@ RUN apt install -y --no-install-recommends tzdata
 # 重新配置tzdata软件包，使得时区设置生效
 RUN dpkg-reconfigure --frontend noninteractive tzdata
 
-# 安装 calibre 依赖的包
-RUN apt install -y libgl-dev libnss3-dev libxcomposite-dev libxrandr-dev libxi-dev
+# 安装 Calibre 运行依赖（Qt6 / WebEngine；勿只装 -dev）
+RUN apt install -y --no-install-recommends \
+    libasound2 \
+    libegl1 \
+    libopengl0 \
+    libgl1 \
+    libnss3 \
+    libnspr4 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxrandr2 \
+    libxi6 \
+    libxtst6 \
+    libxkbcommon0 \
+    libxkbcommon-x11-0 \
+    libxkbfile1 \
+    libxcb-cursor0 \
+    libxcb-xinerama0 \
+    libxcb-icccm4 \
+    libxcb-image0 \
+    libxcb-keysyms1 \
+    libxcb-render-util0 \
+    libxcb-shape0 \
+    libxfixes3 \
+    libdbus-1-3 \
+    libfontconfig1 \
+    libfreetype6 \
+    libx11-6 \
+    libxext6 \
+    libxrender1 \
+    libxcb1 \
+    libx11-xcb1 \
+    libcups2 \
+    libdrm2 \
+    libgbm1 \
+    libxshmfence1 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libatspi2.0-0
 # 安装文泉驿字体
 RUN apt install -y fonts-wqy-microhei fonts-wqy-zenhei
 # 安装中文语言包
@@ -91,26 +130,25 @@ RUN update-locale LANG=zh_CN.UTF-8
 ENV LANG=zh_CN.UTF-8
 ENV LANGUAGE=zh_CN:en
 ENV LC_ALL=zh_CN.UTF-8
-# 安装-calibre
+# 安装 Calibre（锁定版本：latest/9.x 在容器中会出现 html5-parser/lxml 的 libxml2 冲突）
 # RUN apt-get install -y calibre # 此种方式安装省事，但会安装很多额外不需要的软件包，导致体积过大
-RUN mkdir -p /tmp/calibre-cache
-# 获取最新版本号
-RUN curl -s http://code.calibre-ebook.com/latest>/tmp/calibre-cache/version
-# 下载最新版本
-# RUN wget -O /tmp/calibre-cache/calibre-x86_64.txz -c https://download.calibre-ebook.com/`cat /tmp/calibre-cache/version`/calibre-`cat /tmp/calibre-cache/version`-x86_64.txz
-RUN wget -O /tmp/calibre-cache/calibre-x86_64.txz -c https://github.com/kovidgoyal/calibre/releases/download/v`cat /tmp/calibre-cache/version`/calibre-`cat /tmp/calibre-cache/version`-x86_64.txz
-# 注: 调试阶段，下载alibre-5.22.1-x86_64.txz到本地(使用 python -m http.server)，加速构建
+ARG CALIBRE_VERSION=7.26.0
+RUN mkdir -p /tmp/calibre-cache \
+ && wget -O /tmp/calibre-cache/calibre-x86_64.txz -c \
+    "https://download.calibre-ebook.com/${CALIBRE_VERSION}/calibre-${CALIBRE_VERSION}-x86_64.txz"
+# 注: 调试阶段可改为本地加速源
 # RUN wget -O /tmp/calibre-cache/calibre-x86_64.txz -c http://10.96.8.252:8000/calibre-5.22.1-x86_64.txz
-# 解压
-RUN mkdir -p /opt/calibre
-# RUN tar --extract --file=/tmp/calibre-cache/calibre-x86_64.txz --directory /opt/calibre
-RUN tar xJof /tmp/calibre-cache/calibre-x86_64.txz -C /opt/calibre
+RUN mkdir -p /opt/calibre \
+ && tar xJof /tmp/calibre-cache/calibre-x86_64.txz -C /opt/calibre
 ENV PATH=$PATH:/opt/calibre
-# 设置calibre相关环境变量
+# 设置calibre相关环境变量（无头容器）
 ENV QTWEBENGINE_CHROMIUM_FLAGS="--no-sandbox"
-ENV QT_QPA_PLATFORM='offscreen'
-# 测试 calibre 可正常使用
-RUN ebook-convert --version
+ENV QT_QPA_PLATFORM=offscreen
+# 测试 calibre 可正常使用（含 PDF，避免漏装 WebEngine 依赖）
+RUN ebook-convert --version \
+ && printf '%s\n' '<html><body><h1>ok</h1></body></html>' > /tmp/smoke.html \
+ && ebook-convert /tmp/smoke.html /tmp/smoke.pdf \
+ && rm -f /tmp/smoke.html /tmp/smoke.pdf
 # 清理calibre缓存
 RUN rm -rf /tmp/calibre-cache
 

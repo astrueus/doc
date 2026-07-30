@@ -1,2 +1,5 @@
 *.js linguist-language=Go
 *.css linguist-language=Go
+# Shell scripts must use LF so Linux containers can execute them.
+*.sh text eol=lf
+deployments/*.sh text eol=lf

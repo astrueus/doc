@@ -449,12 +449,12 @@ func preflightCheck() {
 
 ### PR-2 验收
 
-- [ ] Docker 镜像构建 + `docker compose up` 能起（`docker exec -it doc ls /app` 看到 `configs/ web/ uploads/`）
+- [x] Docker 镜像构建 + `docker compose up` 能起（`docker exec` 看到 `conf/ web/ uploads/`）
 - [x] 首页 CSS/JS 200（浏览器 DevTools Network 面板确认 `/static/css/main.css` 未 404）
 - [x] 验证码图片正常
 - [x] i18n 中英切换生效
-- [ ] 导出 book 到 zip / pdf 能成功（`BookResult.go` 里的 `filetil.CopyFile` 全部走新路径）
-- [ ] spug 部署到 staging 走一遍
+- [x] 导出 book 到 zip / pdf 能成功（`BookResult.go` 里的 `filetil.CopyFile` 全部走新路径；容器内 Calibre 7.26.0）
+- [x] spug 部署到 staging 走一遍
 
 ---
 
@@ -752,7 +752,7 @@ Round 3 直接 `internal/mcp/server.go` 落地，零迁移。
 | T7  | `internal/middleware/` 合并             | —   | 已完成         | ✅   |
 | T8  | 预留 `internal/mcp/` + `mcpdto/`        | —   | 已完成         | ✅   |
 | T9  | 部署 note（清 session/cache）              | —   | 已完成         | ✅   |
-| T10 | 收尾：A✅ B3✅ B4✅ C1✅ C3✅；B1/B2⏭；C2/C4/C5/D1 见 §十五 | —   | —           | 🔄 |
+| T10 | 收尾：A✅ B3✅ B4✅ C1–C5✅；B1/B2⏭；D1 见 §十五 | —   | —           | 🔄 |
 
 
 ---
@@ -763,7 +763,7 @@ Round 3 直接 `internal/mcp/server.go` 落地，零迁移。
 
 > 核对日期：2026-07-30。T1–T9 主干已完成；以下为收工前待办。  
 > **宣布可进 Round 3 的最低标准：** A 全部完成 + D 文档对齐 + B1 二选一落地 + 核心冒烟（C1 / C2 / 登录）。B2–B4、C4–C5 可不挡 Round 3。  
-> **进度：** §十五 **A 已全部完成**（2026-07-30）；**B3/B4 已完成**；B1/B2 已决策跳过；**C1/C3 已验证**；C2/C4/C5 / D1 仍待处理（D2 已随 A6 完成）。
+> **进度：** §十五 **A 已全部完成**（2026-07-30）；**B3/B4 已完成**；B1/B2 已决策跳过；**C1–C5 已验证**（C4：容器 Calibre 7.26.0）；D1 仍待收口（D2 已随 A6 完成）。
 
 ### A. 新增：`configs/` → `conf/`（消除 Beego 启动噪音）
 
@@ -803,10 +803,10 @@ Round 3 直接 `internal/mcp/server.go` 落地，零迁移。
 | # | 项 | 状态 |
 | --- | --- | --- |
 | C1 | `./doc install` 走通 | ✅ |
-| C2 | Docker 构建 + `docker compose up`（目录含 `conf/`、`web/`、`uploads/`） | ⬜ |
+| C2 | Docker 构建 + `docker compose up`（目录含 `conf/`、`web/`、`uploads/`） | ✅ |
 | C3 | i18n 中英切换 | ✅ |
-| C4 | 导出 zip / pdf（本机需 Calibre / `ebook-convert`） | ⬜ |
-| C5 | spug staging 走一遍（若有） | ⬜ |
+| C4 | 导出 zip / pdf（容器钉 Calibre 7.26.0 + WebEngine 依赖） | ✅ |
+| C5 | spug staging 走一遍（若有） | ✅ |
 
 ### D. 文档收口
 
