@@ -336,7 +336,7 @@ go mod tidy
 - [x] `go build ./...` 通过
 - [x] `go vet ./...` 无告警
 - [x] `./doc web`（或 `./doc`）能启动、首页 200
-- [ ] `./doc install` 能走通
+- [x] `./doc install` 能走通
 - [ ] Docker 镜像构建能通过（**PR-2 前**，Docker 里的路径仍是旧的，可能启动失败 → PR-2 才修）
 - [x] 无循环 import；`go list ./...` 全通过
 
@@ -752,7 +752,7 @@ Round 3 直接 `internal/mcp/server.go` 落地，零迁移。
 | T7  | `internal/middleware/` 合并             | —   | 已完成         | ✅   |
 | T8  | 预留 `internal/mcp/` + `mcpdto/`        | —   | 已完成         | ✅   |
 | T9  | 部署 note（清 session/cache）              | —   | 已完成         | ✅   |
-| T10 | 收尾：A✅ B3✅ B4✅；B1/B2⏭；C/D1 见 §十五 | —   | —           | 🔄 |
+| T10 | 收尾：A✅ B3✅ B4✅ C1✅ C3✅；B1/B2⏭；C2/C4/C5/D1 见 §十五 | —   | —           | 🔄 |
 
 
 ---
@@ -763,7 +763,7 @@ Round 3 直接 `internal/mcp/server.go` 落地，零迁移。
 
 > 核对日期：2026-07-30。T1–T9 主干已完成；以下为收工前待办。  
 > **宣布可进 Round 3 的最低标准：** A 全部完成 + D 文档对齐 + B1 二选一落地 + 核心冒烟（C1 / C2 / 登录）。B2–B4、C4–C5 可不挡 Round 3。  
-> **进度：** §十五 **A 已全部完成**（2026-07-30）；**B3/B4 已完成**；B1/B2 已决策跳过；C / D1 仍待处理（D2 已随 A6 完成）。
+> **进度：** §十五 **A 已全部完成**（2026-07-30）；**B3/B4 已完成**；B1/B2 已决策跳过；**C1/C3 已验证**；C2/C4/C5 / D1 仍待处理（D2 已随 A6 完成）。
 
 ### A. 新增：`configs/` → `conf/`（消除 Beego 启动噪音）
 
@@ -802,9 +802,9 @@ Round 3 直接 `internal/mcp/server.go` 落地，零迁移。
 
 | # | 项 | 状态 |
 | --- | --- | --- |
-| C1 | `./doc install` 走通 | ⬜ |
+| C1 | `./doc install` 走通 | ✅ |
 | C2 | Docker 构建 + `docker compose up`（目录含 `conf/`、`web/`、`uploads/`） | ⬜ |
-| C3 | i18n 中英切换 | ⬜ |
+| C3 | i18n 中英切换 | ✅ |
 | C4 | 导出 zip / pdf（本机需 Calibre / `ebook-convert`） | ⬜ |
 | C5 | spug staging 走一遍（若有） | ⬜ |
 
