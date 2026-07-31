@@ -330,6 +330,10 @@ curl -s https://docs.example.com/mcp \
 
 `/member/api-tokens` → 对应行「撤销」。撤销后明文立即失效于库；若刚用过，缓存最多约 5 分钟内仍可能放行（撤销接口会主动删缓存）。
 
+### `Forbidden: invalid Host header "example.com"`？
+
+官方 go-sdk 默认拒绝「请求落在 127.0.0.1 但 Host 非 localhost」的请求（防 DNS 重绑定）。Nginx 反代到本机回环地址时会命中。本仓库已在 `StreamableHTTPOptions` 中设置 `DisableLocalhostProtection=true`（HTTP MCP 另有 Bearer）。若仍见此错误，确认已部署含该修复的版本并重启进程。
+
 ### `malformed payload: invalid message version tag ""; expected "2.0"`？
 
 请求体不是合法 JSON-RPC 2.0（常见：空 body、浏览器 GET、缺少 `"jsonrpc":"2.0"`）。用上面的 curl 或 MCP 客户端重试。

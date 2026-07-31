@@ -23,9 +23,16 @@ func sharedHTTPServer() *sdkmcp.Server {
 	httpServerOnce.Do(func() {
 		configureRateLimiterFromConfig()
 		sharedHTTPSrv = newServer()
+		// DisableLocalhostProtection: Nginx/Traefik 反代到 127.0.0.1 时，
+		// LocalAddr 为 loopback 但 Host 为公网域名，SDK 默认会 403
+		// "Forbidden: invalid Host header"。HTTP MCP 已有 Bearer 鉴权，可安全关闭。
 		streamHandler = sdkmcp.NewStreamableHTTPHandler(
 			func(*http.Request) *sdkmcp.Server { return sharedHTTPSrv },
-			&sdkmcp.StreamableHTTPOptions{Stateless: true, JSONResponse: true},
+			&sdkmcp.StreamableHTTPOptions{
+				Stateless:                    true,
+				JSONResponse:                 true,
+				DisableLocalhostProtection:   true,
+			},
 		)
 	})
 	return sharedHTTPSrv
