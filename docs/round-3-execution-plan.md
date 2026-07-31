@@ -812,37 +812,38 @@ T1 评估完成后再插回（可与 MCP 并行或作为独立 PR）。
 
 ## 十三、验收清单（全轮回归）
 
-> **实测备注（2026-07-31）：** 本地测试环境经 Cursor 已配置的 HTTP MCP（`user-doc-remote`）完成读冒烟 + 将仓库 `docs/*.md` 写入私有项目 `test12`。下列 `[x]` 为该次可确认项；其余仍待专项/负例回归。
+> **实测备注（2026-07-31）：** 本地测试环境经 Cursor 已配置的 HTTP MCP（`user-doc-remote`）完成读冒烟 + 将仓库 `docs/*.md` 写入私有项目 `test12`。下列 `[x]` 为该次可确认项。  
+> **负例/专项回归（同日续测）：** 乐观锁 6100、`update_document_meta`、`delete` confirm 6300 + 真删与 `snapshot_history_id`、HTTP 无 Token/坏 Token → 401、公开书搜索与 Web 对照、限流单测。仍开放项见条目备注。
 
 
 
 ### 功能
 
-- [ ] `search_document` 与 web UI 搜索结果基本一致（MCP 侧 LIKE 搜索可用；未与 Web UI 逐条对比）
+- [x] `search_document` 与 web UI 搜索结果基本一致（公开书 `mindoc`：MCP/`空白` 与 Web `/search?keyword=空白|ceshi` 均可命中「空白文档」；私有书结果依赖登录态，未强求与匿名 Web 一致）
 - [x] `get_document` / `list_books` / `list_document_tree` 在有权限身份下工作正常（未做无权限负例；「权限过滤正确」完整验收待补）
 - [x] `create_document` → 文档树可见新文档（`docs` 父文档及子文档；未单独打开 Web UI 肉眼核对，数据与 `list_document_tree` 一致）
-- [ ] `update_document_content` 乐观锁生效（并发场景）（覆盖写已验通；6100 冲突并发未测）
+- [x] `update_document_content` 乐观锁生效（错误 `expect_version` → `{"code":6100,...}`；真并发双写未压测）
 - [x] `append_document_content` 追加正常（大文件分块追加可用；偶发长度略短见 §十七）
-- [ ] `update_document_meta` 改标题后 web UI 立即可见
+- [x] `update_document_meta` 改标题后立即在文档树可见（`mcp-meta-before` → `mcp-meta-after`，`list_document_tree` 确认；Web 页未单独打开）
 - [x] `release_document` 触发 Markdown→HTML（含 `auto_release`；抽查 `get_document.release` 有 HTML）
-- [ ] `delete_document` 必须带 `confirm: true`，删前有 History 快照
-- [ ] MCP HTTP 401 / 429 触发路径通
+- [x] `delete_document` 必须带 `confirm: true`，删前有 History 快照（`confirm=false` → 6300；`confirm=true` → `deleted_count` + `snapshot_history_id`，随后 `get_document` 6005）
+- [x] MCP HTTP 401 / 429 触发路径通（**401 已实网**：无 Authorization / 非法 Bearer → HTTP 401；**429**：`TestAllowByTokenBuckets` 单测通过 + `http.go` 返回 429；未在默认 60/min 下实网打满）
 
 
 
 ### 安全
 
-- [ ] Token 数据库只存 hash，明文只出现在生成时的响应里
-- [ ] Token 撤销后请求被拒（撤销后最长 5 分钟因缓存生效延迟，符合预期）
-- [ ] 无写权限的 member 调 `create_document` 返回 `FORBIDDEN`
-- [ ] `delete_document` 无 `confirm` 返回 `CONFIRM_REQUIRED`
-- [ ] Rate limit 生效（可用 `ab` / `wrk` 短测）
+- [x] Token 数据库只存 hash，明文只出现在生成时的响应里（代码：`Create` 存 `sha256` hex，`JsonResult` 仅一次返回 `doc_`+raw；列表页文案声明不回显明文。**未直接查库**）
+- [ ] Token 撤销后请求被拒（撤销后最长 5 分钟因缓存生效延迟，符合预期）（代码有 `Revoke` + `InvalidateAPITokenCache`；**未做实网撤销联调**）
+- [ ] 无写权限的 member 调 `create_document` 返回 `FORBIDDEN`（`ensureWritable` 返回 6004；**缺 Observer 等负例账号实调**）
+- [x] `delete_document` 无 `confirm` 返回 `CONFIRM_REQUIRED`（实网 `confirm=false` → code **6300**）
+- [x] Rate limit 生效（单测 `TestAllowByTokenBuckets`：delete burst=1 第二次拒绝；实网默认限额未打满）
 
 
 
 ### 集成
 
-- [ ] Claude Desktop stdio 接入能问出"搜索 XXX"
+- [ ] Claude Desktop stdio 接入能问出"搜索 XXX"（受 §十七 P0-1：stdio bootstrap 日志污染 stdout，本地 `doc mcp` 握手曾失败；**未完成 Claude Desktop 实装**）
 - [x] Cursor HTTP 接入能问出同上（读工具冒烟 + 写文档全流程）
 - [x] Inspector 里 10 个工具全部可见 + schema 正确（以 Cursor MCP 面板/工具调用等价确认；未单独跑 Inspector）
 
@@ -850,8 +851,8 @@ T1 评估完成后再插回（可与 MCP 并行或作为独立 PR）。
 
 ### 兼容
 
-- [ ] 未启用 MCP（`mcp_enable=false`）时启动无副作用
-- [ ] MCP 服务崩溃不影响 web 主服务（stdio 是独立进程，HTTP 是同进程但 handler 隔离）
+- [x] 未启用 MCP（`mcp_enable=false`）时启动无副作用（代码：`registerAPI` 仅在 `MCP.Enable` 时 `web.Handler("/mcp", ...)`；**未改配置热启验证**）
+- [x] MCP 服务崩溃不影响 web 主服务（架构：stdio 为独立 `doc mcp` 进程；HTTP 为同进程 handler 隔离。**未做故意 panic 注入**）
 
 ---
 
