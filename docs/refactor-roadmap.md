@@ -593,14 +593,16 @@ type Cache interface {
 
 > 用户价值最高的一轮。**MCP 支持读写文档**，AI 助手直接接入。代码直接写在 Round 2 完成的最终目录（`internal/mcp/`），零重复搬迁。
 
-- [ ] **搜索最小方案**（对齐 upstream-mindoc-checklist.md §1.1）：MySQL FULLTEXT / SQLite FTS5 + 标题加权
-- [ ] **MCP MVP · stdio**：官方 `modelcontextprotocol/go-sdk` v1.x，10 个工具（4 读 + 6 写）
-  - [ ] 读：`search_document` / `get_document` / `list_books` / `list_document_tree`
-  - [ ] 写：`create_document` / `update_document_content`（乐观锁）/ `append_document_content` / `update_document_meta` / `release_document` / `delete_document`（`confirm: true`）
-- [ ] `models/MemberApiToken.go` 新表 + 后台管理页（**不复用** `MemberToken`）
-- [ ] **MCP Streamable HTTP + Bearer Token**：Beego 挂 `/mcp/`*，`golang.org/x/time/rate` 限流
-- [ ] `internal/dto/mcpdto/`：工具 In/Out struct（为 Round 4 Repository/Service 分层铺路）
-- [ ] `docs/mcp-integration.md`：Claude Desktop / Cursor stdio + HTTP 接入示例
+- [ ] **搜索最小方案**（对齐 upstream-mindoc-checklist.md §1.1）：MySQL FULLTEXT / SQLite FTS5 + 标题加权（⏸ 暂缓，过渡 LIKE）
+- [x] **MCP MVP · stdio**：官方 `modelcontextprotocol/go-sdk` v1.x，10 个工具（4 读 + 6 写）
+  - [x] 读：`search_document` / `get_document` / `list_books` / `list_document_tree`
+  - [x] 写：`create_document` / `update_document_content`（乐观锁）/ `append_document_content` / `update_document_meta` / `release_document` / `delete_document`（`confirm: true`）
+- [x] `models/MemberApiToken.go` 新表 + 后台管理页（**不复用** `MemberToken`）
+- [x] **MCP Streamable HTTP + Bearer Token**：Beego 挂 `/mcp/`*，`golang.org/x/time/rate` 限流
+- [x] `internal/dto/mcpdto/`：工具 In/Out struct（为 Round 4 Repository/Service 分层铺路）
+- [x] `docs/mcp-integration.md`：Claude Desktop / Cursor stdio + HTTP 接入示例
+- [ ] **MCP 体验收尾（§十七）**：stdio 静默 stdout、append 乐观锁/`auto_release`、长文写入约定；可选 upsert / get 截断 / search 带 identify（详见 [round-3-execution-plan.md §十七](./round-3-execution-plan.md#十七后续规划mcp-实测反馈与体验增强)）
+- [ ] **明确不做**：MCP `create_book` / `update_book`（项目生命周期继续走 Web）
 
 **风险：** 中。MCP 是新增功能，不影响存量；写工具通过现有 `BookRole` + 乐观锁 + `confirm` 参数控制风险。搜索改动限于 `models/DocumentSearchResult.go` + 建索引。
 
@@ -611,6 +613,7 @@ type Cache interface {
 - [ ] `beego/i18n` **换** `nicksnyder/go-i18n/v2`
 - [ ] **前端 P1~P2**：Vite 构建，vendor 集中化
 - [ ] （可选）根据 Round 3 MCP 使用反馈，评估是否上倒排索引（bleve / meilisearch）
+- [ ] （可选）**T13 MCP 体验增强**：若 Round 3 未合完 §十七 P0/P1，本轮收口（**不含** Book 写工具）
 
 **风险：** 较高，但可拆多个小 PR。**ORM 迁移建议单独立项**，别混进来。
 
@@ -726,6 +729,8 @@ type Cache interface {
 | **2026-07-30** | **Round 2 收尾 B1：`*Result` → `internal/dto/`？** | **本轮不做**，暂留 `internal/model/`；Round 4 再搬 | Result 文件内含 orm/`NewBook()` 等，硬搬易与 model 循环依赖；计划本就允许暂留 |
 | **2026-07-30** | **Round 2 收尾 B2：拆 `internal/app/bootstrap.go`？** | **本轮不做** | 功能可用；结构债不影响 Round 3 |
 | **2026-07-30** | **配置目录 `configs/` vs `conf/`？** | **改回 `conf/`** | Round 2 后 Go 包已在 `internal/config/`，可对齐 Beego 默认路径，消除启动噪音 |
+| **2026-07-31** | **MCP MVP 之后还要不要扩工具面？** | **先补体验，不大扩工具** | Cursor 实测：10 工具读写闭环已够用；痛点是长文写入、stdio stdout 污染、`append` 缺锁/`auto_release`。详见 round-3 §十七 P0/P1/P2 |
+| **2026-07-31** | **是否增加 MCP `create_book` / `update_book`？** | **当前阶段不做** | MVP 定位「在已有项目里改文档」；Book 创建/设置字段重、误操作面大；建项目继续走 Web。出现「AI/CI 一键建空项目」稳定需求后再做最小集（title/identify/private ± description；默认不做 delete_book） |
 
 
 ---
@@ -758,7 +763,7 @@ refactor-roadmap.md（本文，总纲）
 │   ├─► round-1-execution-plan.md    （Round 1 · T1~T7 详细步骤 + PR 拆分）
 │   ├─► round-2-execution-plan.md    （Round 2 · PR-1/PR-2 + 目录映射总表）
 │   ├─► round-3-execution-plan.md    （Round 3 · MCP 10 工具 + Bearer + 搜索）
-│   └─► round-4-execution-plan.md    （Round 4 · T1~T12 按需推进）
+│   └─► round-4-execution-plan.md    （Round 4 · T1~T13 按需推进；T13=MCP 体验可选）
 │
 ├─► 【参考文档】历史决策与横向清单
 │   ├─► frontend-backend-split-migration-plan.md   （目标二 · 硬编码定位表，Round 2 引用）

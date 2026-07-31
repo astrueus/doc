@@ -360,4 +360,5 @@ T1 FULLTEXT 暂缓，`search_document` 现为 LIKE，与 Web 全局搜索策略�
 ./doc                      # Web；mcp_enable=true 时同端口提供 /mcp
 ```
 
-更多实现细节见 [round-3-execution-plan.md](./round-3-execution-plan.md)。
+更多实现细节见 [round-3-execution-plan.md](./round-3-execution-plan.md)。  
+后续体验增强与「是否做 Book 写工具」的规划见 [round-3-execution-plan.md §十七](./round-3-execution-plan.md#十七后续规划mcp-实测反馈与体验增强)。

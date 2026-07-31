@@ -24,6 +24,7 @@
 | T10 | 补测试：`pkg/` + `internal/service/`（Repository 抽出后立即补） | 持续 | 否 |
 | T11 | （可选）根据 Round 3 MCP 反馈决定是否上倒排/向量检索 | 独立立项 | 否 |
 | T12 | （可选）**评估** ORM 迁移到 gorm/ent/sqlc，本轮**只出评估报告不实施** | 3 天 | 否 |
+| T13 | （可选）**MCP 体验增强**：承接 Round 3 [§十七](./round-3-execution-plan.md#十七后续规划mcp-实测反馈与体验增强) 未做完的 P0/P1；**不含** `create_book`/`update_book` | 1~2 天 | 否 |
 
 **总工期估计：** 3~4 周（按团队人力）；除 T9 外，其他都可以在同一 sprint 内并行推进。
 
@@ -33,6 +34,7 @@
 - ❌ **不做 SPA 完整重写**（`web-ui/` 用 Vue 3 + TS）— 定为 P4 长期目标，本轮到 P2 为止
 - ❌ **不做 Bootstrap 5 / Tailwind 迁移** — P3 定为独立立项
 - ❌ **不实施 CORS/CSP/HSTS 全局安全头**（可挂到 Round 4 尾巴，如果时间足够就做，不阻塞）
+- ❌ **不做 MCP Book 写工具**（`create_book` / `update_book` / `delete_book`）— 见 Round 3 §17.3；项目生命周期继续走 Web
 
 ---
 
@@ -573,6 +575,35 @@ Round 4 结束前团队开会拍板：
 
 ---
 
+## 十三附、T13 · MCP 体验增强（可选）
+
+> 承接 [round-3-execution-plan.md §十七](./round-3-execution-plan.md#十七后续规划mcp-实测反馈与体验增强)。  
+> **优先仍建议在 Round 3 收尾小 PR 做完 P0**；若合并前未做，本任务收口剩余 P0/P1。  
+> **本任务不做** `create_book` / `update_book` / `delete_book`（决策见 Round 3 §17.3）。
+
+### 范围
+
+| 优先级 | 项 | 是否纳入 T13 |
+|--------|-----|----------------|
+| P0-1 | stdio 启动静默 stdout（bootstrap 日志勿污染 MCP） | ✅ 必做（若 Round 3 未合） |
+| P0-2 | `append_document_content`：`expect_version` + `auto_release` | ✅ |
+| P0-3 | `mcp-integration.md` 长文分块写入约定 | ✅ |
+| P1-1 | `upsert_document` 或 create `if_exists=update` | 按需 |
+| P1-2 | `get_document` 截断 / 省略 `release` | 按需 |
+| P1-3 | `search_document` 返回 identify | 按需 |
+| P2 | 批量 import、Resources、附件、Book 写工具、FULLTEXT | ❌ 不在本任务 |
+
+### 验收
+
+- 与 Round 3 §17.5 清单一致
+- 既有 10 工具回归通过；工具列表仍**不包含** Book 写工具
+
+### 预估
+
+1~2 天（仅 P0）；含 P1 约 +0.5~1 天。
+
+---
+
 ## 十四、PR 拆分
 
 | # | PR | 内容 | 大小 | 依赖 |
@@ -589,12 +620,14 @@ Round 4 结束前团队开会拍板：
 | 10 | `test(round4): repository + pkg tests` | T10 | 中 | PR-2 |
 | 11 | `docs(round4): search backend evaluation report` | T11 | 小 | Round 3 数据 |
 | 12 | `docs(round4): ORM migration evaluation report` | T12 | 小 | 无 |
+| 13 | `fix(mcp): stdio quiet + append lock/release (+ optional upsert)` | T13 | 小 | Round 3；若 R3 已收尾则可跳过 |
 
-**合入顺序建议：** PR-1 → PR-3 → PR-4 → PR-6 → PR-2 → PR-10 → PR-8 → PR-5 → PR-7 → PR-9 → PR-11 → PR-12。
+**合入顺序建议：** PR-1 → PR-3 → PR-4 → PR-6 → PR-2 → PR-10 → PR-8 → PR-5 → PR-7 → PR-9 → PR-11 → PR-12；**PR-13（MCP 体验）可随时插入**，与质量类 PR 无硬依赖。
 - PR-1/3/4/6 是"内部收拾"，先落
 - PR-2/10 一起做（Repo 就补测试）
 - PR-8/5/9 前端与 i18n 交叉，PR-9 最重放尾
 - 报告类 PR-7/11/12 与团队讨论同步产出
+- PR-13 优先在 Round 3 分支直接做；仅当 R3 已合且未做时才进 Round 4
 
 ---
 
@@ -632,6 +665,7 @@ Round 4 结束前团队开会拍板：
 | T10 | 补测试 | | | |
 | T11 | 搜索后端评估 | | | |
 | T12 | ORM 迁移评估报告 | | | |
+| T13 | MCP 体验增强（§十七 / 可选） | | | |
 
 ---
 
@@ -643,7 +677,7 @@ Round 4 结束前团队开会拍板：
 - 日志：zap 结构化 + Lumberjack 轮转
 - i18n：go-i18n/v2 + toml/ini 双支持
 - Model：大文件拆解 + Repository 层 + 部分测试
-- MCP：稳定运行，可挂搜索后端
+- MCP：稳定运行；体验项见 Round 3 §十七 / 本轮 T13；可挂搜索后端（T11）
 - 前端：Vite 构建，vendor 集中，为 Round 5+ 的 Bootstrap/Vue 升级铺路
 
 ### Round 5+ 候选（本轮结束时再讨论）
