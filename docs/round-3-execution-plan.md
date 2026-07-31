@@ -4,7 +4,7 @@
 > 目标：让 AI 助手（Claude Desktop / Cursor / 其他 MCP 客户端）通过 MCP 协议对 doc 项目做**读 + 写**操作，含创建/更新/删除文档。**采用官方 `modelcontextprotocol/go-sdk` v1.x**（非社区 `mark3labs/mcp-go`，见 [§八 决策 2026-07-23](./refactor-roadmap.md#八决策记录decision-log)）。
 > **代码直接落在 Round 2 完成的 `internal/mcp/`** — 零重复搬迁。
 >
-> **进度标记（2026-07-30）：** T1 ⏸ 暂缓；T2–T5 ✅。下一优先 **T7**（`docs/mcp-integration.md`）。`search_document` 过渡期使用 `LIKE`。
+> **进度标记（2026-07-31）：** T1 ⏸ 暂缓；T2–T6 ✅；**T7**（接入文档）✅。`search_document` 过渡期使用 `LIKE`。
 
 ---
 
@@ -716,7 +716,7 @@ func AllowByToken(tokenID int, toolKind string) bool {
 | 2 | `feat(round3): MCP stdio server with 10 read/write tools` | T2+T3+T6（已合入 `5b6ca51`） | 中大 |
 | 3 | `feat(round3): MemberApiToken table + management page` | T4（已合入 `4c4f346`） | 中 |
 | 4 | `feat(round3): MCP Streamable HTTP with Bearer & rate limit` | T5（代码已落地，待 commit） | 中 |
-| 5 | `docs(round3): MCP integration guide` | T7（⏳ 下一优先） | 小 |
+| 5 | `docs(round3): MCP integration guide` | T7（✅ 见 `docs/mcp-integration.md`） | 小 |
 
 **合入顺序：** ~~1 →~~ **2 → 3 → 4 → 5**（T1 / PR-1 暂缓，见 §六）。  
 原计划「读/写拆两个 PR」已在实现时合并为一次 stdio 落地（见 §十四）。  
@@ -762,7 +762,7 @@ T1 评估完成后再插回（可与 MCP 并行或作为独立 PR）。
 
 ## 十四、追踪表
 
-> 更新日期：2026-07-30。分支：`feature/round-3-mcp`。T2/T3/T6 合并在同一 commit（stdio 一次注册 10 工具）。
+> 更新日期：2026-07-31。分支：`feature/round-3-mcp`。T2/T3/T6 合并在同一 commit（stdio 一次注册 10 工具）。
 
 | # | 任务 | Commit | 状态 | 备注 |
 |---|---|---|---|---|
@@ -772,9 +772,9 @@ T1 评估完成后再插回（可与 MCP 并行或作为独立 PR）。
 | T4 | `MemberApiToken` + 后台管理页 | `4c4f346` | ✅ | 迁移 `202607301700`；页面 `/member/api-tokens` |
 | T5 | MCP HTTP + Bearer + 限流 | （工作区未提交） | ✅ 代码已落地 | `doc mcp --http` + `mcp_enable` 时挂 `/mcp`；待单独 commit |
 | T6 | `internal/dto/mcpdto/` | `5b6ca51` | ✅ | 随 T2/T3；jsonschema 标签已按 go-sdk 规范修正 |
-| T7 | `docs/mcp-integration.md` | — | ⏳ 待做 | 下一优先 |
+| T7 | `docs/mcp-integration.md` | （工作区未提交） | ✅ | Claude Desktop / Cursor / HTTP 接入 + 工具速查 |
 
-**合入进度：** T1 ⏭ → T2✅ → T3✅ → T4✅ → T5✅（待 commit）→ T7⏳
+**合入进度：** T1 ⏭ → T2✅ → T3✅ → T4✅ → T5✅（待 commit）→ T6✅ → T7✅（待 commit）
 
 ---
 
@@ -788,6 +788,7 @@ T1 评估完成后再插回（可与 MCP 并行或作为独立 PR）。
 
 ## 十六、参考
 
+- [mcp-integration.md](./mcp-integration.md) — **接入指南（T7）**
 - [refactor-roadmap.md §2.1](./refactor-roadmap.md#21-目标一mcp-serverai-接入) — MCP 目标详述
 - [refactor-roadmap.md §六 风险 8/9/10/11](./refactor-roadmap.md#六关键风险清单) — MCP 专属风险
 - [upstream-mindoc-checklist.md §4.2](./upstream-mindoc-checklist.md) — 上游 MinDoc MCP PR 参考（本项目实现方案已超越）

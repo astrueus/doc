@@ -142,6 +142,8 @@ go env -w GONOSUMDB=git.itopcms.com
 
 Web 主进程在 `mcp_enable=true` 时也会挂载 `/mcp`（与主站同端口）。HTTP MCP **必须走 HTTPS**（反代）；`0.0.0.0` 监听会打印告警。Token 在登录后 `/member/api-tokens` 生成。
 
+完整接入说明（Claude Desktop / Cursor / 工具速查）：[docs/mcp-integration.md](docs/mcp-integration.md)。
+
 ### 邮件配置示例
 
 ```ini
