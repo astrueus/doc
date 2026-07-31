@@ -3,6 +3,8 @@
 > 本文是 [refactor-roadmap.md §五 Round 4](./refactor-roadmap.md#🏅-round-4模型--日志--前端现代化3~4-周按需推进) 的**可执行分解**。
 > 目标：把 Round 1~3 打好的目录/配置/MCP 基础之上，做**质量类**改造 — 大 Model 拆分、Repository 抽象、`md_` 硬编码修复、日志换 zap、i18n 换 go-i18n/v2、前端 Vite 构建。
 > **按需推进：** 本轮所有子项**相互独立**，可以按团队精力挑做，不做也不阻塞其他轮次。
+>
+> **状态（2026-07-31）：** 前置核查完成；**技术硬前置已齐，时间窗口类与 Round 3 §十七 P0 未齐**。可按 [§二附](#二附开工准入2026-07-31-核查) 分批开工，**不宣称 Round 4 前置全部完成**。
 
 ---
 
@@ -40,11 +42,87 @@
 
 ## 二、前置条件（Round 3 已完成）
 
-- ✅ 目录结构已是 `cmd/` + `internal/`（Round 2）
-- ✅ 强类型 `config.Config` 可用（Round 2）
-- ✅ MCP 在线，有真实使用数据（Round 3）
-- ✅ `internal/errs/` 稳定运行 ≥ 1 个月
-- ✅ 团队已熟悉 `internal/dto/`、`internal/model/`、`internal/controller/` 布局
+> **核查日期：2026-07-31。** 对照本轮 §二 原文 + Round 3 [§十五 Round 4 前置产物](./round-3-execution-plan.md#十五round-4-前置产物)。
+> **总判：** 目录 / 配置 / MCP MVP / `mcpdto` 等**技术硬前置已齐**；「生产 ≥ 2 周」「`errs` ≥ 1 个月」、§十七 P0 收口、搜索反馈决策等**未齐**。质量类任务可按 §二附分批开工；数据驱动项（T7 拍板、T11）暂缓。
+
+### 2.1 本轮 §二 清单核对
+
+
+| 前置条件 | 状态 | 依据 |
+|---|---|---|
+| 目录结构已是 `cmd/` + `internal/`（Round 2） | ✅ | `cmd/doc/main.go`、`internal/*` 已定型 |
+| 强类型 `config.Config` 可用（Round 2） | ✅ | `internal/config/config.go` 含 `Global` / 各 section |
+| MCP 在线，有真实使用数据（Round 3） | ⚠️ 半完成 | T2–T7 已合入 `v2.2.1`；仅本地 Cursor 实测（2026-07-31），**无生产 ≥ 2 周统计** |
+| `internal/errs/` 稳定运行 ≥ 1 个月 | ❌ | 2026-07-29 引入，距核查日约 **2 天** |
+| 团队已熟悉 `internal/dto/`、`internal/model/`、`internal/controller/` 布局 | ✅（结构已齐） | 三包均在；熟悉度属软条件 |
+
+### 2.2 Round 3 §十五 补充核对
+
+
+| 前置产物 | 状态 | 依据 |
+|---|---|---|
+| MCP 工具生产运行 ≥ 2 周 + 使用统计 | ❌ | 当天本地实测，无生产窗口 |
+| 是否上倒排索引（基于搜索质量反馈）的决策 | ❌ 尚早 | Round 3 T1 暂缓；缺召回/投诉数据；归 T11 |
+| `internal/dto/mcpdto/` 结构稳定 | ✅ | `book.go` / `document.go` / `search.go` 已落地 |
+| §十七 P0/P1 消化，或明确推迟到本轮 T13 | ⚠️ 半完成 | 追踪表仍「待做」；代码未做 P0；T13 可承接，但**尚未书面闭环「全部推迟」** |
+
+### 2.3 对开工的含义
+
+- **可开工：** 不依赖「跑满 N 周」的质量改造（见 §二附「可立刻开工」）。
+- **先补或挂 T13：** Round 3 [§十七 P0](./round-3-execution-plan.md#十七后续规划mcp-实测反馈与体验增强)（stdio 静默、`append` 加固、长文约定）。
+- **暂缓拍板/实施：** T11；T7 上 `gocache/v3` 的实施决策（可先出「维持方案 A」报告）。
+
+---
+
+## 二附、开工准入（2026-07-31 核查）
+
+> 判定标准：只看**硬依赖是否已在仓库落地**；任务自身写了触发条件的，按触发条件卡死。不把「跑满 N 周」当成所有任务的统一闸门。
+
+### 可立刻开工（无硬阻塞）
+
+
+| 任务 | 理由 | 注意点 |
+|---|---|---|
+| **T13（P0 优先）** | Round 3 MVP 已合入；P0 代码/文档均未做；PR 表写明可随时插入 | **建议最先做**；P0-1 与 T4 的 stdout 有交集 |
+| **T1** `BookModel` 拆分 | 方案 A 同 package；`BookModel.go` ~34KB 在 | 与 T3 改同一文件，勿并行硬刚 |
+| **T3** `md_` 修复 | `config.GetDatabasePrefix()` 已有；多处 raw SQL 可改 | 迁移 SQL（如 `migrate_v03`）勿当业务硬编码乱改；建议紧跟 T1 |
+| **T5** i18n → go-i18n/v2 | `beego/i18n` 仍在 `go.mod`；语言包在 `conf/lang/` | 下文若写 `configs/lang`，以 **`conf/lang`** 为准 |
+| **T6** session gob→msgpack | **缓存侧 Round 1 已是 msgpack**；只剩 `gob.Register(Member)` / session / `pkg/gob` | 上线必须清 session；§八「改 cache.go」步骤已过时，勿重复改 |
+| **T8** 前端 P1 | IE shim、`<!--[if lt IE 9]>` 仍在多处模板 | 实际路径如 `web/static/respond.js/1.4.2/`，非文档旧扁平路径 |
+| **T10（部分）** | `pkg/`、`errs/`、`config` 可测；与 T2 无关 | Repository 测试等 T2 |
+| **T12** ORM 评估报告 | 纯文档，不实施 | 无阻塞；有 T2/T3 体感更好，不强求 |
+
+### 有条件开工（能动手，但别全开 / 别拍板）
+
+
+| 任务 | 条件 |
+|---|---|
+| **T2** Repository | 技术上可开；若同期改 `tools_write.go`，先做完 **T13 P0-2** 再迁 Repo，避免双改 |
+| **T4** zap | 可开适配层；示例若写 `os.Stdout` 会加重 MCP stdio 污染 → **先做 T13 P0-1，或 MCP 模式禁止打 stdout** |
+| **T9** Vite | 无代码硬依赖，但体量大；建议 **T8 后再上** |
+| **T7** 缓存评估 | **可写报告框架**；决策要「MCP 上线后 DB 压力」，目前只有本地实测 → **不宜现在拍板上 gocache** |
+| **T10（Repo 部分）** | 依赖 T2 落地 |
+
+### 现在不宜开工
+
+
+| 任务 | 原因 |
+|---|---|
+| **T11** 搜索后端评估/实施 | 触发条件：Round 3 上线后 **2~4 周** 召回/投诉/数据量；核查日当天刚测完 |
+| **T7 实施**（评估结论若要上 gocache） | 缺压力数据；此刻只允许「暂维持方案 A」的保守结论 |
+
+### 建议开工顺序（严格版）
+
+```
+1. T13 P0（stdio 静默 + append 加固 + 文档约定）   ← Round 3 债，优先
+2. T1 → T3                                       ← 同域、小风险收拾
+3. T4（避开 MCP stdout）/ T6 / T8 / T5 / T10(pkg) ← 可并行
+4. T2 → T10(repo)                                ← T13 稳定后再动写工具
+5. T12（随时可写）; T9（T8 后）; T7 仅出「维持 A」报告
+6. T11 / T7 真正选型                             ← 等 2~4 周数据
+```
+
+**一句话：** T1 / T3 / T5 / T6 / T8 / T12 / T10(pkg) 与 T13(P0) 现在就能做；T2 / T4 / T9 能做但要避让冲突；T11 与「上 gocache」现在做没有依据。
 
 ---
 
@@ -89,6 +167,8 @@ internal/model/book/
 ---
 
 ## 四、T2 · Repository 抽象（3~5 天）
+
+> **开工注意（2026-07-31）：** 有条件开工。若同期改 `internal/mcp/tools_write.go`，先完成 **T13 P0-2**（`append` 的 `expect_version` / `auto_release`），再把乐观锁迁入 Repository，避免双改。
 
 ### 目标
 
@@ -187,6 +267,8 @@ rg 'md_[a-z_]+' --type go
 ## 六、T4 · 日志换 `uber-go/zap`（2~3 天）
 
 > 决策：[§八 决策 2026-07-29](./refactor-roadmap.md#八决策记录decision-log) — `uber-go/zap` 胜出 `log/slog`。
+>
+> **开工注意（2026-07-31）：** 有条件开工。下方示例若默认写 `os.Stdout`，会加重 Round 3 §十七 **P0-1**（`doc mcp` stdio 被 bootstrap/日志污染）。**先做 T13 P0-1，或在 MCP stdio 模式下禁止向 stdout 打日志（只 stderr / 文件）。**
 
 ### 依赖
 
@@ -288,7 +370,7 @@ logs.SetLogger("zap", "")
 ### 现状
 
 - `github.com/beego/i18n v0.0.0-20161101132742-e9308947f407` — **11 年前**的老包，`ini` 格式
-- `configs/lang/zh-cn.ini` / `configs/lang/en-us.ini`
+- 语言包路径以 **`conf/lang/zh-cn.ini` / `conf/lang/en-us.ini`** 为准（Round 2 收尾定型；下文若出现 `configs/lang` 视为历史笔误）
 - 30+ 处 `i18n.Tr(lang, "key")` 调用（templates + Go 代码）
 
 ### 目标包
@@ -344,7 +426,7 @@ func IsExist(lang string) bool           { return has(lang) }
 - 中英切换生效
 - 后台管理页 / 前端登录页 / 提示语全对
 - `beego/i18n` 依赖可从 `go.mod` 移除
-- Round 2 T3 里 `configs/app.conf` 的 `[i18n]` section 仍读到
+- Round 2 T3 里 `conf/app.conf` 的 `[i18n]` section 仍读到
 
 ---
 
@@ -354,6 +436,11 @@ func IsExist(lang string) bool           { return has(lang) }
 
 Round 2 风险 13：`gob` 编码类型名 = **"包路径.类型名"**；每次目录/包路径变都会崩。msgpack 只按字段 tag 序列化，与包路径解耦。
 
+### 现状（2026-07-31 核查）
+
+- **缓存侧已完成：** Round 1 已将 `internal/cache/` 序列化改为 msgpack（`beego_adapter.go` 使用 `vmihailenco/msgpack/v5`）。**本任务不要再改 cache 序列化。**
+- **仍待处理：** Beego session 的 gob、`internal/app/bootstrap.go` 的 `gob.Register(model.Member{})`、以及 `pkg/gob`（cookie remember 等）。
+
 ### 依赖
 
 ```powershell
@@ -362,12 +449,13 @@ go get github.com/vmihailenco/msgpack/v5@latest
 
 ### 改造点
 
-1. `internal/cache/cache.go`（Round 1 shim）：内部 `encoding/gob` → `msgpack`
-2. `internal/cache/beego_adapter.go`：同上
+1. ~~`internal/cache/cache.go`：内部 `encoding/gob` → `msgpack`~~ — **已完成，跳过**
+2. ~~`internal/cache/beego_adapter.go`：同上~~ — **已完成，跳过**
 3. Beego session 序列化：Beego session 用 gob 序列化 struct，可以：
    - **方案 A**：注册自定义 session serializer（beego v2 支持）
    - **方案 B**：`SetMember` 只塞 `member_id`，`Prepare` 里按 id 查库（重回 Round 1 T6 的 options 缓存思路）
-4. 删掉 `internal/app/bootstrap.go`（原 `commands/command.go:113-115`）的 `gob.Register(models.Blog{})` 等硬编码
+4. 删掉或收敛 `internal/app/bootstrap.go` 的 `gob.Register(model.Member{})`（以及若仍存在的其它 `gob.Register`）
+5. 评估 `pkg/gob`：cookie remember 是否一并迁 msgpack，或保持独立路径并写清边界
 
 ### 上线策略
 
@@ -386,6 +474,8 @@ go get github.com/vmihailenco/msgpack/v5@latest
 ## 九、T7 · 缓存方案 B 评估（2~3 天）
 
 > 决策点：Round 1 T5 已抽好 `Cache` 接口，本轮决定"要不要上 gocache/v3 / 分层缓存"。
+>
+> **开工注意（2026-07-31）：** 可写评估报告框架；**不宜现在拍板上 gocache**（缺 MCP/业务 DB 压力数据）。默认保守结论：**维持方案 A**，待 2~4 周后再复评。
 
 ### 评估维度
 
@@ -431,8 +521,8 @@ loader := cache.NewLoadable[[]byte](chain, func(ctx, key) ([]byte, error) {
 
 - **静态资源版本号**：现有 `cdnjs "..." "version"` 机制（`views/widgets/scripts.tpl`）铺开到所有引用
 - **删 IE 兼容 shim**：
-  - `web/static/respond.min.js` → 删
-  - `web/static/html5shiv.min.js` → 删
+  - `web/static/respond.js/1.4.2/respond.min.js`（及同类路径）→ 删
+  - `web/static/html5shiv/3.7.3/html5shiv.min.js`（及同类路径）→ 删
   - 模板里 `<!--[if lt IE 9]>` 条件注释 → 删
 
 **验收：** Chrome / Firefox / Edge 现代版本行为不变；升级第三方库时 URL 带版本号可避免浏览器缓存。
@@ -440,6 +530,8 @@ loader := cache.NewLoadable[[]byte](chain, func(ctx, key) ([]byte, error) {
 ### T9 · P2（1~2 周）
 
 > 引入 Vite 前端构建。**注意：** 本轮**不做** Bootstrap 升级、不做 Vue 3 迁移；只搭构建流水线 + vendor 集中管理 + 抽离内联 JS。
+>
+> **开工注意（2026-07-31）：** 有条件开工；建议 **T8 完成后再上**，避免版本号与构建流水线交叉。
 
 #### 目录结构
 
@@ -529,6 +621,8 @@ go get github.com/stretchr/testify@latest
 
 ## 十二、T11 · 倒排/向量检索（可选，独立评估）
 
+> **开工注意（2026-07-31）：** **现在不宜开工。** 触发条件未满足（Round 3 仅本地实测，无生产 2~4 周反馈）。
+
 ### 触发条件
 
 Round 3 上线后 2~4 周，收集：
@@ -550,7 +644,7 @@ Round 3 上线后 2~4 周，收集：
 
 - Round 3 T1 的 `searchProvider` 抽象天然可扩展 → 加 `bleveProvider` / `meilisearchProvider`
 - `internal/mcp/search_provider.go` 加实现
-- `configs/app.conf` `[search]` section 加 provider 配置
+- `configs/app.conf` `[search]` section 加 provider 配置（路径以现网 **`conf/app.conf`** 为准）
 
 ---
 
@@ -580,6 +674,8 @@ Round 4 结束前团队开会拍板：
 > 承接 [round-3-execution-plan.md §十七](./round-3-execution-plan.md#十七后续规划mcp-实测反馈与体验增强)。  
 > **优先仍建议在 Round 3 收尾小 PR 做完 P0**；若合并前未做，本任务收口剩余 P0/P1。  
 > **本任务不做** `create_book` / `update_book` / `delete_book`（决策见 Round 3 §17.3）。
+>
+> **开工注意（2026-07-31）：** Round 3 已合入且 P0 未做 → **本轮建议最先开工**（见 §二附）。P0 完成后，T4 / T2 再动相关面。
 
 ### 范围
 
@@ -622,12 +718,16 @@ Round 4 结束前团队开会拍板：
 | 12 | `docs(round4): ORM migration evaluation report` | T12 | 小 | 无 |
 | 13 | `fix(mcp): stdio quiet + append lock/release (+ optional upsert)` | T13 | 小 | Round 3；若 R3 已收尾则可跳过 |
 
-**合入顺序建议：** PR-1 → PR-3 → PR-4 → PR-6 → PR-2 → PR-10 → PR-8 → PR-5 → PR-7 → PR-9 → PR-11 → PR-12；**PR-13（MCP 体验）可随时插入**，与质量类 PR 无硬依赖。
-- PR-1/3/4/6 是"内部收拾"，先落
-- PR-2/10 一起做（Repo 就补测试）
-- PR-8/5/9 前端与 i18n 交叉，PR-9 最重放尾
-- 报告类 PR-7/11/12 与团队讨论同步产出
-- PR-13 优先在 Round 3 分支直接做；仅当 R3 已合且未做时才进 Round 4
+**合入顺序建议（与 [§二附](#二附开工准入2026-07-31-核查) 对齐，2026-07-31）：**
+
+1. **PR-13（T13 P0）优先插入** — Round 3 体验债；与质量类无硬依赖，但挡住 T4 stdout / T2 改写工具时的冲突面
+2. **PR-1 → PR-3**（T1 → T3）— 同域收拾，避免并行改 `BookModel`
+3. **PR-4 / PR-6 / PR-8 / PR-5** 与 **T10(pkg)** 可并行 — PR-4 须避开 MCP stdout
+4. **PR-2 → PR-10**（T2 → 测）— 等 T13 P0-2 稳定后再动 `tools_write.go`
+5. **PR-12** 随时；**PR-9** 放在 PR-8 之后；**PR-7** 本期只出「维持方案 A」报告
+6. **PR-11 / T7 真正选型** — 等 2~4 周数据
+
+原宽泛顺序（内部收拾 → Repo/测 → 前端/i18n → 报告）仍作参考；以 §二附严格顺序为准。
 
 ---
 
@@ -651,27 +751,30 @@ Round 4 结束前团队开会拍板：
 
 ## 十六、追踪表
 
-| # | 任务 | PR | Commit | 状态 |
-|---|---|---|---|---|
-| T1 | `BookModel` 拆解 | | | |
-| T2 | Repository 抽象 | | | |
-| T3 | `md_` 硬编码修复 | | | |
-| T4 | zap + Lumberjack | | | |
-| T5 | go-i18n/v2 | | | |
-| T6 | gob→msgpack | | | |
-| T7 | 缓存评估报告 | | | |
-| T8 | 前端 P1 | | | |
-| T9 | Vite 构建 (P2) | | | |
-| T10 | 补测试 | | | |
-| T11 | 搜索后端评估 | | | |
-| T12 | ORM 迁移评估报告 | | | |
-| T13 | MCP 体验增强（§十七 / 可选） | | | |
+> 更新日期：2026-07-31。准入列见 [§二附](#二附开工准入2026-07-31-核查)。
+
+
+| # | 任务 | 准入 | PR | Commit | 状态 |
+|---|---|---|---|---|---|
+| T1 | `BookModel` 拆解 | ✅ 可立刻 | | | 未开始 |
+| T2 | Repository 抽象 | ⚠️ 有条件（先 T13 P0-2） | | | 未开始 |
+| T3 | `md_` 硬编码修复 | ✅ 可立刻（跟 T1） | | | 未开始 |
+| T4 | zap + Lumberjack | ⚠️ 有条件（先 P0-1 / 禁 stdout） | | | 未开始 |
+| T5 | go-i18n/v2 | ✅ 可立刻 | | | 未开始 |
+| T6 | gob→msgpack（**仅 session**；cache 已 msgpack） | ✅ 可立刻 | | | 未开始 |
+| T7 | 缓存评估报告 | ⚠️ 仅「维持 A」报告；实施暂缓 | | | 未开始 |
+| T8 | 前端 P1 | ✅ 可立刻 | | | 未开始 |
+| T9 | Vite 构建 (P2) | ⚠️ 建议 T8 后 | | | 未开始 |
+| T10 | 补测试 | ✅ pkg/errs/config；Repo 等 T2 | | | 未开始 |
+| T11 | 搜索后端评估 | ❌ 等 2~4 周数据 | | | 暂缓 |
+| T12 | ORM 迁移评估报告 | ✅ 可立刻 | | | 未开始 |
+| T13 | MCP 体验增强（§十七 P0 优先） | ✅ **建议最先** | | | 未开始 |
 
 ---
 
 ## 十七、Round 4 完成后的项目状态
 
-- 目录形态：`cmd/` + `internal/` + `pkg/` + `web/` + `configs/` + `deployments/`（Round 2 定型）
+- 目录形态：`cmd/` + `internal/` + `pkg/` + `web/` + `conf/` + `deployments/`（Round 2 定型）
 - 配置：强类型 `config.Config`，`[section]` 分组，支持 `.env`
 - 缓存：抽象接口 + msgpack 序列化 + 可选分层
 - 日志：zap 结构化 + Lumberjack 轮转
@@ -694,6 +797,9 @@ Round 4 结束前团队开会拍板：
 
 ## 十八、参考
 
+- [§二附 开工准入（2026-07-31）](#二附开工准入2026-07-31-核查) — 本轮可开工 / 有条件 / 暂缓清单
+- [round-3-execution-plan.md §十五](./round-3-execution-plan.md#十五round-4-前置产物) — Round 4 前置产物
+- [round-3-execution-plan.md §十七](./round-3-execution-plan.md#十七后续规划mcp-实测反馈与体验增强) — MCP P0/P1（由 T13 承接）
 - [refactor-roadmap.md §2.4](./refactor-roadmap.md#24-目标四缓存--模型组件升级) — 缓存/模型详述
 - [refactor-roadmap.md §三 支线](./refactor-roadmap.md#三支线其他技术债) — 日志/i18n/测试/main.go/gopool/requests
 - [refactor-roadmap.md §四](./refactor-roadmap.md#四支线前端与静态资源) — 前端分阶段方案
