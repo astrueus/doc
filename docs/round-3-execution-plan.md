@@ -797,8 +797,8 @@ func AllowByToken(tokenID int, toolKind string) bool {
 | 1   | `feat(round3): search fulltext index + provider abstraction` | T1（⏸ 暂缓）                          | 中   |
 | 2   | `feat(round3): MCP stdio server with 10 read/write tools`    | T2+T3+T6（已合入 `5b6ca51`）           | 中大  |
 | 3   | `feat(round3): MemberApiToken table + management page`       | T4（已合入 `4c4f346`）                 | 中   |
-| 4   | `feat(round3): MCP Streamable HTTP with Bearer & rate limit` | T5（代码已落地，待 commit）                | 中   |
-| 5   | `docs(round3): MCP integration guide`                        | T7（✅ 见 `docs/mcp-integration.md`） | 小   |
+| 4   | `feat(round3): MCP Streamable HTTP with Bearer & rate limit` | T5（已合入 `2fe3f6a`）                  | 中   |
+| 5   | `docs(round3): MCP integration guide`                        | T7（已合入 `67b30d5`）                  | 小   |
 
 
 **合入顺序：** ~~1 →~~ **2 → 3 → 4 → 5**（T1 / PR-1 暂缓，见 §六）。  
@@ -812,17 +812,19 @@ T1 评估完成后再插回（可与 MCP 并行或作为独立 PR）。
 
 ## 十三、验收清单（全轮回归）
 
+> **实测备注（2026-07-31）：** 本地测试环境经 Cursor 已配置的 HTTP MCP（`user-doc-remote`）完成读冒烟 + 将仓库 `docs/*.md` 写入私有项目 `test12`。下列 `[x]` 为该次可确认项；其余仍待专项/负例回归。
+
 
 
 ### 功能
 
-- [ ] `search_document` 与 web UI 搜索结果基本一致
-- [ ] `get_document` / `list_books` / `list_document_tree` 权限过滤正确
-- [ ] `create_document` → web UI 能看到新文档
-- [ ] `update_document_content` 乐观锁生效（并发场景）
-- [ ] `append_document_content` 追加正常
+- [ ] `search_document` 与 web UI 搜索结果基本一致（MCP 侧 LIKE 搜索可用；未与 Web UI 逐条对比）
+- [x] `get_document` / `list_books` / `list_document_tree` 在有权限身份下工作正常（未做无权限负例；「权限过滤正确」完整验收待补）
+- [x] `create_document` → 文档树可见新文档（`docs` 父文档及子文档；未单独打开 Web UI 肉眼核对，数据与 `list_document_tree` 一致）
+- [ ] `update_document_content` 乐观锁生效（并发场景）（覆盖写已验通；6100 冲突并发未测）
+- [x] `append_document_content` 追加正常（大文件分块追加可用；偶发长度略短见 §十七）
 - [ ] `update_document_meta` 改标题后 web UI 立即可见
-- [ ] `release_document` 触发 Markdown→HTML
+- [x] `release_document` 触发 Markdown→HTML（含 `auto_release`；抽查 `get_document.release` 有 HTML）
 - [ ] `delete_document` 必须带 `confirm: true`，删前有 History 快照
 - [ ] MCP HTTP 401 / 429 触发路径通
 
@@ -841,8 +843,8 @@ T1 评估完成后再插回（可与 MCP 并行或作为独立 PR）。
 ### 集成
 
 - [ ] Claude Desktop stdio 接入能问出"搜索 XXX"
-- [ ] Cursor HTTP 接入能问出同上
-- [ ] Inspector 里 10 个工具全部可见 + schema 正确
+- [x] Cursor HTTP 接入能问出同上（读工具冒烟 + 写文档全流程）
+- [x] Inspector 里 10 个工具全部可见 + schema 正确（以 Cursor MCP 面板/工具调用等价确认；未单独跑 Inspector）
 
 
 
@@ -857,7 +859,7 @@ T1 评估完成后再插回（可与 MCP 并行或作为独立 PR）。
 
 ## 十四、追踪表
 
-> 更新日期：2026-07-31。分支：`feature/round-3-mcp`。T2/T3/T6 合并在同一 commit（stdio 一次注册 10 工具）。
+> 更新日期：2026-07-31。已合入 `v2.2.1`。T2/T3/T6 合并在同一 commit（stdio 一次注册 10 工具）。
 
 
 | #   | 任务                               | Commit           | 状态    | 备注                                                    |
