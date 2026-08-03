@@ -1005,7 +1005,7 @@ Round 3 MVP（T2–T7）✅
 
 ### 17.5 验收建议（P0 收尾时）
 
-- [ ] `doc mcp`（stdio）冷启动后客户端可 `initialize`，stdout 无 beego/bootstrap 杂讯
-- [ ] `append_document_content` 在错误 `expect_version` 时返回 6100；`auto_release=true` 后 Web 可读到 HTML
-- [ ] `mcp-integration.md` 含「长文分块写入」小节
+- [x] `doc mcp`（stdio）冷启动后客户端可 `initialize`，stdout 无 beego/bootstrap 杂讯（T13 P0-1）
+- [x] `append_document_content` 在错误 `expect_version` 时返回 6100；`auto_release=true` 后 Web 可读到 HTML（T13 P0-2）
+- [x] `mcp-integration.md` 含「长文分块写入」小节（T13 P0-3）
 - [ ] 回归：既有 10 工具 schema 与权限行为不变；**仍无** `create_book` / `update_book`

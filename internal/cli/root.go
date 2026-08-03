@@ -19,6 +19,10 @@ var rootCmd = &cobra.Command{
 	Short: "Doc — Documentation & knowledge base server",
 	Long:  "Doc is a documentation management server. Run without a subcommand to start the web service.",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		// MCP stdio uses stdout for JSON-RPC; never print preflight warnings there.
+		if isMCPStdioCommand(cmd) {
+			return
+		}
 		preflightCheck()
 	},
 	RunE: runWeb,
@@ -53,6 +57,16 @@ func buildFlagArgs() []string {
 // bootstrapFromFlags initializes config/DB/cache using cobra persistent flags.
 func bootstrapFromFlags() {
 	app.ResolveCommand(buildFlagArgs())
+}
+
+// isMCPStdioCommand reports whether the running command is `doc mcp` without --http.
+func isMCPStdioCommand(cmd *cobra.Command) bool {
+	for c := cmd; c != nil; c = c.Parent() {
+		if c.Name() == "mcp" {
+			return !httpMode
+		}
+	}
+	return false
 }
 
 // preflightCheck warns about Round 1/legacy layout leftovers. Does not abort.

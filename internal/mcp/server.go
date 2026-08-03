@@ -39,7 +39,7 @@ func newServer() *sdkmcp.Server {
 
 	sdkmcp.AddTool(srv, &sdkmcp.Tool{
 		Name:        "append_document_content",
-		Description: "Append Markdown to a document.",
+		Description: "Append Markdown with optimistic locking via expect_version; optional auto_release.",
 	}, handleAppendDocumentContent)
 
 	sdkmcp.AddTool(srv, &sdkmcp.Tool{

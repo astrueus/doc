@@ -108,13 +108,30 @@ func handleAppendDocumentContent(ctx context.Context, _ *sdkmcp.CallToolRequest,
 	}
 
 	newVersion := time.Now().Unix()
-	doc.Markdown = doc.Markdown + in.MarkdownAppend
-	doc.Version = newVersion
-	doc.ModifyAt = m.MemberId
-	if err := doc.InsertOrUpdate("markdown", "version", "modify_at", "modify_time"); err != nil {
+	newMarkdown := doc.Markdown + in.MarkdownAppend
+	o := orm.NewOrm()
+	aff, err := o.QueryTable(doc.TableNameWithPrefix()).
+		Filter("document_id", in.DocumentID).
+		Filter("version", in.ExpectVersion).
+		Update(orm.Params{
+			"markdown":  newMarkdown,
+			"version":   newVersion,
+			"modify_at": m.MemberId,
+		})
+	if err != nil {
 		return toolBizErrorOut[mcpdto.AppendDocumentContentOut](errs.Wrap(errs.CodeInternal, "append failed", err))
 	}
-	return nil, mcpdto.AppendDocumentContentOut{DocumentID: doc.DocumentId, Version: newVersion}, nil
+	if aff == 0 {
+		return toolBizErrorOut[mcpdto.AppendDocumentContentOut](errs.New(errs.CodeVersionConflict, "version conflict: please refetch with get_document and retry"))
+	}
+
+	if in.AutoRelease {
+		if err := releaseOneDocument(in.DocumentID); err != nil {
+			logs.Warning("auto_release failed for doc %d: %v", in.DocumentID, err)
+		}
+	}
+
+	return nil, mcpdto.AppendDocumentContentOut{DocumentID: in.DocumentID, Version: newVersion}, nil
 }
 
 func handleUpdateDocumentMeta(ctx context.Context, _ *sdkmcp.CallToolRequest, in mcpdto.UpdateDocumentMetaIn) (*sdkmcp.CallToolResult, mcpdto.UpdateDocumentMetaOut, error) {

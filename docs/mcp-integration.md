@@ -250,11 +250,19 @@ curl -s https://docs.example.com/mcp \
 { "document_id": 99, "version": 1710000100, "message": "updated" }
 ```
 
-#### `append_document_content`
+#### `append_document_content`（乐观锁）
+
+先 `get_document` 取 `version`，再带 **必填** `expect_version` 追加 Markdown。错误 version → `6100`。
 
 ```json
-{ "document_id": 99, "markdown_append": "\n\n追加段落" }
+// In
+{ "document_id": 99, "expect_version": 1710000100, "markdown_append": "\n\n追加段落", "auto_release": false }
+
+// Out
+{ "document_id": 99, "version": 1710000200 }
 ```
+
+> **Breaking（T13 P0）：** `expect_version` 现为必填，与 `update_document_content` 一致；旧客户端不传会失败。
 
 #### `update_document_meta`
 
@@ -308,8 +316,18 @@ curl -s https://docs.example.com/mcp \
 ### 遇到 `VERSION_CONFLICT`（6100）怎么办？
 
 1. 再调 `get_document` 拿最新 `version` 与 `markdown`。
-2. 在客户端做 diff/merge。
-3. 用新的 `expect_version` 再调 `update_document_content`。
+2. 在客户端做 diff/merge（若需要）。
+3. 用新的 `expect_version` 再调 `update_document_content` 或 `append_document_content`。
+
+### 长文怎么分块写入？
+
+客户端 / 中间层对单次工具参数体有限制：约 **30–60KB** 的 Markdown 一次 `update_document_content` 容易卡住或截断。推荐：
+
+1. **首段**：`update_document_content`（带 `expect_version`）写入开头内容。
+2. **后续**：多次 `append_document_content`，每次带上一步返回的新 `version` 作为 `expect_version`；单块建议远小于 30KB。
+3. **收尾**：最后一次 `auto_release: true`，或单独调 `release_document`，让 Web 可读到 HTML。
+
+若中途 `6100`：重新 `get_document`，确认已写入内容后从断点继续 append（勿用过期 version 盲写）。
 
 ### 遇到 HTTP 429 / rate limit 怎么办？
 
@@ -329,6 +347,10 @@ curl -s https://docs.example.com/mcp \
 ### 如何撤销 Token？
 
 `/member/api-tokens` → 对应行「撤销」。撤销后明文立即失效于库；若刚用过，缓存最多约 5 分钟内仍可能放行（撤销接口会主动删缓存）。
+
+### `doc mcp` stdio 握手失败 / `invalid trailing data`？
+
+stdio 模式 stdout 专供 MCP JSON-RPC。已在 bootstrap 前关闭 console logger，并跳过会 `fmt.Println` 的 preflight。若仍失败：确认使用含 T13 P0 的二进制；勿在 MCP 进程外把日志重定向到同一 stdout。
 
 ### `Forbidden: invalid Host header "example.com"`？
 

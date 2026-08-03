@@ -46,7 +46,9 @@ type UpdateDocumentContentOut struct {
 
 type AppendDocumentContentIn struct {
 	DocumentID     int    `json:"document_id" jsonschema:"文档 ID"`
+	ExpectVersion  int64  `json:"expect_version" jsonschema:"期望的 Document.Version，乐观锁用"`
 	MarkdownAppend string `json:"markdown_append" jsonschema:"追加的 Markdown 内容"`
+	AutoRelease    bool   `json:"auto_release,omitempty" jsonschema:"写入后是否立即 release（Markdown→HTML），默认 false"`
 }
 
 type AppendDocumentContentOut struct {
