@@ -31,6 +31,9 @@ database
 /conf/app.conf
 .env
 .env.local
+.env.release
+scripts/.env.release
+*.env.release
 /vendor
 /runtime
 /uploads/*
