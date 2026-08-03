@@ -781,15 +781,15 @@ Round 4 结束前团队开会拍板：
 | # | 任务 | 准入 | 分支 / PR | Commit | 状态 |
 |---|---|---|---|---|---|
 | T1 | `BookModel` 拆解 | ✅ 已做完 | `v2.2.1`（经 `feat/round4-t1-t3`） | `c090401` | ✅ 已完成（方案 A：`book_model` / `book_query` / `book_copy` / `book_import*`） |
-| T2 | Repository 抽象 | ✅ 已做完（初版） | `v2.2.1` | （待提交） | ✅ Document/Book/Member Repo；MCP 写工具走 `DocumentRepo`；controller 未改 |
+| T2 | Repository 抽象 | ✅ 已做完（初版） | `v2.2.1` | `cd8e446` | ✅ Document/Book/Member Repo；MCP 写工具走 `DocumentRepo`；controller 未改 |
 | T3 | `md_` 硬编码修复 | ✅ 已做完 | `v2.2.1`（经 `feat/round4-t1-t3`） | `c090401` | ✅ 已完成（业务 raw SQL；`migrate/` 未改） |
 | T4 | zap + Lumberjack | ✅ 已做完 | `v2.2.1` | `0a1df13` + `f9be16c` | ✅ 已完成；跟进：默认 Info、stderr 可读有色、文件 json 无 ANSI |
-| T5 | i18n 替换 | ✅ 已做完 | `v2.2.1` | （待提交） | ✅ 移除 `beego/i18n`；`internal/i18n` 读既有 `.ini`（未强绑 go-i18n/toml） |
+| T5 | i18n 替换 | ✅ 已做完 | `v2.2.1` | `cd8e446` | ✅ 移除 `beego/i18n`；`internal/i18n` 读既有 `.ini`（未强绑 go-i18n/toml） |
 | T6 | Session 只存 id + remember msgpack | ✅ 已做完 | `v2.2.1` | `4141346` + `f9be16c` | ✅ 已完成；跟进：`FilterUser`/`Account` 改用 `auth.MemberIDFromSession` |
 | T7 | 缓存评估报告 | ⚠️ 仅「维持 A」报告；实施暂缓 | `v2.2.1` | | 未开始 |
 | T8 | 前端 P1 | ✅ 已做完 | `v2.2.1` | `98c8bb4` | ✅ 已完成（去 IE shim；cdnjs `"version"`） |
 | T9 | Vite 构建 (P2) | ⚠️ 建议 T8 后 | `v2.2.1` | | 未开始 |
-| T10 | 补测试 | ✅ pkg 已做；Repo 测随 T2 | `v2.2.1` | （待提交） | ✅ `pkg/*` + errs/auth/logging/i18n；见 `docs/round-4-coverage.md` |
+| T10 | 补测试 | ✅ pkg 已做；Repo 测随 T2 | `v2.2.1` | `cd8e446` | ✅ `pkg/*` + errs/auth/logging/i18n；见 `docs/round-4-coverage.md` |
 | T11 | 搜索后端评估 | ❌ 等 2~4 周数据 | — | | 暂缓 |
 | T12 | ORM 迁移评估报告 | ✅ 可立刻 | `v2.2.1` | | 未开始 |
 | T13 | MCP 体验增强（§十七 **P0**） | ✅ 已做完 | `v2.2.1`（经 `feat/round4-t13-mcp-p0`） | `c70d4c1`（merge `92b4d08`） | ✅ 已完成（P0-1/2/3；**P1 未做**） |
