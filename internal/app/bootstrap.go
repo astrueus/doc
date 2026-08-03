@@ -1,7 +1,6 @@
 package app
 
 import (
-	"encoding/gob"
 	"flag"
 	"fmt"
 	"log"
@@ -18,6 +17,7 @@ import (
 
 	"git.itopcms.com/jackliu/doc/internal/cache"
 	cfg "git.itopcms.com/jackliu/doc/internal/config"
+	"git.itopcms.com/jackliu/doc/internal/logging"
 	"git.itopcms.com/jackliu/doc/internal/model"
 	"git.itopcms.com/jackliu/doc/pkg/filetil"
 	beegoCache "github.com/beego/beego/v2/client/cache"
@@ -29,6 +29,7 @@ import (
 	"github.com/beego/i18n"
 	"github.com/fsnotify/fsnotify"
 	"github.com/lifei6671/gocaptcha"
+	"go.uber.org/zap"
 )
 
 // RegisterDataBase 注册数据库
@@ -125,83 +126,43 @@ func SuppressConsoleLogger() {
 	_ = logs.GetBeeLogger().DelLogger("console")
 }
 
-// RegisterLogger 注册日志
-func RegisterLogger(log string) {
+// RegisterLogger 注册日志（zap + lumberjack；beego/logs 经 shim 转发）
+func RegisterLogger(logDir string) {
 	g := cfg.MustGlobal()
 
-	logs.SetLogFuncCall(true)
-	if !suppressConsoleLogger {
-		_ = logs.SetLogger("console")
+	if logDir == "" {
+		logPath, err := filepath.Abs(g.Log.Path)
+		if err == nil {
+			logDir = logPath
+		} else {
+			logDir = cfg.WorkingDir("runtime", "logs")
+		}
 	}
-	logs.EnableFuncCallDepth(true)
 
+	logger, err := logging.NewLogger(g.Log, logging.Options{
+		SuppressConsole: suppressConsoleLogger,
+		LogDir:          logDir,
+	})
+	if err != nil {
+		log.Printf("init zap logger failed: %v", err)
+		return
+	}
+	zap.ReplaceGlobals(logger)
+	logging.SetAdapterLogger(logger)
+	logging.RegisterBeeLoggerAdapter()
+
+	_ = logs.GetBeeLogger().DelLogger("console")
+	_ = logs.GetBeeLogger().DelLogger("file")
+	_ = logs.GetBeeLogger().DelLogger("zap")
+
+	logs.SetLogFuncCall(true)
+	logs.EnableFuncCallDepth(true)
+	if err := logs.SetLogger("zap", ""); err != nil {
+		log.Printf("set zap beego adapter failed: %v", err)
+	}
 	if g.Log.IsAsync {
 		logs.Async(1e3)
 	}
-	if log == "" {
-		logPath, err := filepath.Abs(g.Log.Path)
-		if err == nil {
-			log = logPath
-		} else {
-			log = cfg.WorkingDir("runtime", "logs")
-		}
-	}
-
-	logPath := filepath.Join(log, "log.log")
-
-	if _, err := os.Stat(log); os.IsNotExist(err) {
-		_ = os.MkdirAll(log, 0755)
-	}
-
-	logConfig := make(map[string]any, 1)
-
-	logConfig["filename"] = logPath
-	logConfig["perm"] = "0755"
-	logConfig["rotate"] = true
-
-	if maxLines := g.Log.MaxLines; maxLines > 0 {
-		logConfig["maxLines"] = maxLines
-	}
-	if maxSize := g.Log.MaxSize; maxSize > 0 {
-		logConfig["maxsize"] = maxSize
-	} else if maxSize == 0 {
-		// keep default beego size when unset
-	}
-	if !g.Log.Daily {
-		logConfig["daily"] = false
-	}
-	if maxDays := g.Log.MaxDays; maxDays > 0 {
-		logConfig["maxdays"] = maxDays
-	}
-	if level := g.Log.Level; level != "" {
-		switch level {
-		case "Emergency":
-			logConfig["level"] = logs.LevelEmergency
-		case "Alert":
-			logConfig["level"] = logs.LevelAlert
-		case "Critical":
-			logConfig["level"] = logs.LevelCritical
-		case "Error":
-			logConfig["level"] = logs.LevelError
-		case "Warning":
-			logConfig["level"] = logs.LevelWarning
-		case "Notice":
-			logConfig["level"] = logs.LevelNotice
-		case "Informational":
-			logConfig["level"] = logs.LevelInformational
-		case "Debug":
-			logConfig["level"] = logs.LevelDebug
-		}
-	}
-	b, err := json.Marshal(logConfig)
-	if err != nil {
-		logs.Error("初始化文件日志时出错 ->", err)
-		_ = logs.SetLogger("file", `{"filename":"`+logPath+`"}`)
-	} else {
-		_ = logs.SetLogger(logs.AdapterFile, string(b))
-	}
-
-	logs.SetLogFuncCall(true)
 }
 
 // RegisterCommand is retained for compatibility; CLI entry is cli.Execute().
@@ -560,7 +521,6 @@ func init() {
 	if err := gocaptcha.SetFontPath(cfg.WorkingDir("web", "static", "fonts")); err != nil {
 		log.Fatal("读取字体文件失败 ->", err)
 	}
-	gob.Register(model.Member{})
 
 	if p, err := filepath.Abs(os.Args[0]); err == nil {
 		cfg.WorkingDirectory = filepath.Dir(p)

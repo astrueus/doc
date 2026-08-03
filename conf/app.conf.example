@@ -199,6 +199,8 @@ log_maxdays = "${MINDOC_LOG_MAX_DAYS||30}"
 log_level = "${MINDOC_LOG_LEVEL||Alert}"
 # 是否异步生成日志，默认是 true
 log_is_async = "${MINDOC_LOG_IS_ASYNC||TRUE}"
+# 日志格式：json（默认，便于采集）/ console（人类可读）
+log_format = "${DOC_LOG_FORMAT||json}"
 
 ##########钉钉应用相关配置##############
 [dingtalk]

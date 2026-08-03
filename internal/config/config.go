@@ -99,6 +99,7 @@ type LogSection struct {
 	MaxDays   int
 	Level     string
 	IsAsync   bool
+	Format    string // json (default) | console
 }
 
 type UploadSection struct {
@@ -259,6 +260,7 @@ func readFromAppConfig() *Config {
 			MaxDays:  secInt("log", "log_maxdays", 7),
 			Level:    secString("log", "log_level", "Trace"),
 			IsAsync:  secBool("log", "log_is_async", true),
+			Format:   secString("log", "log_format", "json"),
 		},
 		Upload: UploadSection{
 			FileExt:   secString("upload", "upload_file_ext", "png|jpg|jpeg|gif|txt|doc|docx|pdf"),
