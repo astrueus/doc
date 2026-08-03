@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"git.itopcms.com/jackliu/doc/internal/app"
 	"git.itopcms.com/jackliu/doc/internal/config"
 	"git.itopcms.com/jackliu/doc/internal/mcp"
 	"github.com/spf13/cobra"
@@ -15,6 +16,10 @@ var mcpCmd = &cobra.Command{
 	Use:   "mcp",
 	Short: "Start MCP server (stdio by default)",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if !httpMode {
+			// Must run before bootstrap: RegisterLogger / DB init otherwise pollute stdout.
+			app.SuppressConsoleLogger()
+		}
 		bootstrapFromFlags()
 		ctx := context.Background()
 		cfg := &config.MustGlobal().MCP

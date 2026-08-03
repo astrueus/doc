@@ -115,12 +115,24 @@ func RegisterModel() {
 	//migrate.RegisterMigration()
 }
 
+// suppressConsoleLogger skips the beego console adapter so MCP stdio
+// stdout stays clean for the JSON-RPC protocol.
+var suppressConsoleLogger bool
+
+// SuppressConsoleLogger disables console logging (call before bootstrap for doc mcp stdio).
+func SuppressConsoleLogger() {
+	suppressConsoleLogger = true
+	_ = logs.GetBeeLogger().DelLogger("console")
+}
+
 // RegisterLogger 注册日志
 func RegisterLogger(log string) {
 	g := cfg.MustGlobal()
 
 	logs.SetLogFuncCall(true)
-	_ = logs.SetLogger("console")
+	if !suppressConsoleLogger {
+		_ = logs.SetLogger("console")
+	}
 	logs.EnableFuncCallDepth(true)
 
 	if g.Log.IsAsync {

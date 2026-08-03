@@ -26,11 +26,8 @@ func RunStdio(ctx context.Context, cfg *config.MCPSection) error {
 	}
 
 	ctx = withMember(ctx, member)
-	quietLogsForStdio()
+	// Belt-and-suspenders: cli already called app.SuppressConsoleLogger before bootstrap.
+	_ = logs.GetBeeLogger().DelLogger("console")
 	srv := newServer()
 	return srv.Run(ctx, &sdkmcp.StdioTransport{})
-}
-
-func quietLogsForStdio() {
-	_ = logs.GetBeeLogger().DelLogger("console")
 }
