@@ -194,12 +194,13 @@ log_maxsize = "${MINDOC_LOG_MAX_SIZE}"
 log_daily = "${MINDOC_LOG_DAILY||true}"
 # 文件最多保存多少天，默认保存 7 天
 log_maxdays = "${MINDOC_LOG_MAX_DAYS||30}"
-# 日志保存的时候的级别，默认是 Trace 级别。
+# 日志级别（T4 起由 zap 严格执行）。默认 Info；生产可调为 Warning/Error。
 # 可选值： Emergency/Alert/Critical/Error/Warning/Notice/Informational/Debug/Trace
-log_level = "${MINDOC_LOG_LEVEL||Alert}"
+log_level = "${MINDOC_LOG_LEVEL||Info}"
 # 是否异步生成日志，默认是 true
 log_is_async = "${MINDOC_LOG_IS_ASYNC||TRUE}"
-# 日志格式：json（默认，便于采集）/ console（人类可读）
+# 文件日志格式：json（默认，便于采集）/ console（与 stderr 同风格）
+# 控制台（stderr）始终为人类可读格式，不受此项影响
 log_format = "${DOC_LOG_FORMAT||json}"
 
 ##########钉钉应用相关配置##############

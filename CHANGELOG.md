@@ -8,7 +8,9 @@
 ### Changed
 
 - 日志：`uber-go/zap` + Lumberjack，经 beego/logs shim 转发；MCP stdio 仍禁 stdout（仅文件 / 可选 stderr）
+- 日志体验：默认 `log_level=Info`（旧默认 `Alert` 会被 zap 滤掉 Info）；stderr 固定 beego 风格可读格式（保留颜色），文件默认 json 且剥离 ANSI；shim 使用 `[file:line]`
 - Session：不再 gob 序列化整份 `Member`
+- 修复：`FilterUser` / 登录页仍按 `model.Member` 断言 Session，T6 只存 `member_id` 后编辑等操作会误跳登录；统一用 `auth.MemberIDFromSession`
 - 前端 P1：移除 IE shim / 条件注释；常用静态资源 `cdnjs` 补 `"version"`
 
 ## Unreleased / Round 2

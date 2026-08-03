@@ -363,6 +363,17 @@ logs.SetLogger("zap", "")
 - 老 `logs.Error(...)` 输出到 zap 格式
 - `grep -R 'logs\.' internal/` 数量可控，后续 PR 逐步减少
 
+### 跟进（2026-08-03 · 体验修补）
+
+落地后实测补充，已合入 `v2.2.1`：
+
+| 问题 | 处理 |
+|---|---|
+| 默认 `log_level=Alert` 被 zap **严格执行**，Info 启动日志「消失」 | 默认改为 `Info`（`conf/app.conf.example` + config fallback） |
+| 控制台整段 JSON、caller 落在 `shim_beego.go` | stderr 固定 beego 风格可读格式；shim 拼 `[file:line]`；尽早 `RegisterLogger` |
+| 文件 JSON 出现 `\u001b`，控制台又失去颜色 | 文件路径 `stripANSICore` 剥 ANSI；stderr 保留访问日志色 + beego 同款 level 色（`1;34` / `1;44` 等） |
+| MCP stdio | 仍禁 stdout；仅文件（+ 可选 SuppressConsole） |
+
 ---
 
 ## 七、T5 · i18n 换 `nicksnyder/go-i18n/v2`（2~3 天）
@@ -468,6 +479,12 @@ go get github.com/vmihailenco/msgpack/v5@latest
 - `rg 'gob\.Register' internal/` 无残留
 - 清 session + cache 后启动一切正常
 - 目录再挪一次（比如未来 controller 拆域）不会出现反序列化错误
+
+### 跟进（2026-08-03 · 登录过滤器漏改）
+
+方案 B 落地后，`Prepare` / `SetMember` 已按 `member_id` 工作，但 **`middleware.FilterUser` 与 `AccountController` 登录/注册页仍 `.(model.Member)` 断言**。结果：浏览正常，点编辑/管理（`/book/*`、`/api/*` 等）被当成未登录并 302 到登录页。
+
+**修复：** 抽出 `internal/auth.MemberIDFromSession`（兼容 `int` / 旧 `Member`），`FilterUser`、`BaseController`、`AccountController` 统一使用。
 
 ---
 
@@ -754,7 +771,7 @@ Round 4 结束前团队开会拍板：
 
 > 更新日期：**2026-08-03**。准入列见 [§二附](#二附开工准入2026-07-31-核查)。  
 > **合入分支：** 已完成项均已合入 **`v2.2.1`**；**后续 Round 4 改动一律在 `v2.2.1` 上直接推进**（不再为每项单开长期 feature 分支，除非破坏面大需隔离评审）。  
-> **进度摘要：** T13 P0 / T1 / T3 / **T4 / T6 / T8** ✅；T2/T5/T10/T12 可继续；T11 / T7 实施仍暂缓。
+> **进度摘要：** T13 P0 / T1 / T3 / **T4 / T6 / T8** ✅（T4/T6 含 2026-08-03 体验/鉴权跟进）；T2/T5/T10/T12 可继续；T11 / T7 实施仍暂缓。
 
 
 | # | 任务 | 准入 | 分支 / PR | Commit | 状态 |
@@ -762,9 +779,9 @@ Round 4 结束前团队开会拍板：
 | T1 | `BookModel` 拆解 | ✅ 已做完 | `v2.2.1`（经 `feat/round4-t1-t3`） | `c090401` | ✅ 已完成（方案 A：`book_model` / `book_query` / `book_copy` / `book_import*`） |
 | T2 | Repository 抽象 | ✅ 可开工（T13 P0-2 已合） | `v2.2.1` | | 未开始 |
 | T3 | `md_` 硬编码修复 | ✅ 已做完 | `v2.2.1`（经 `feat/round4-t1-t3`） | `c090401` | ✅ 已完成（业务 raw SQL；`migrate/` 未改） |
-| T4 | zap + Lumberjack | ✅ 已做完 | `v2.2.1` | `0a1df13` | ✅ 已完成（`internal/logging` + beego shim；stdio 禁 stdout） |
+| T4 | zap + Lumberjack | ✅ 已做完 | `v2.2.1` | `0a1df13` + 跟进见本次提交 | ✅ 已完成；跟进：默认 Info、stderr 可读有色、文件 json 无 ANSI |
 | T5 | go-i18n/v2 | ✅ 可立刻 | `v2.2.1` | | 未开始 |
-| T6 | Session 只存 id + remember msgpack | ✅ 已做完 | `v2.2.1` | `4141346` | ✅ 已完成（方案 B；**上线需清 session**） |
+| T6 | Session 只存 id + remember msgpack | ✅ 已做完 | `v2.2.1` | `4141346` + 跟进见本次提交 | ✅ 已完成；跟进：`FilterUser`/`Account` 改用 `auth.MemberIDFromSession` |
 | T7 | 缓存评估报告 | ⚠️ 仅「维持 A」报告；实施暂缓 | `v2.2.1` | | 未开始 |
 | T8 | 前端 P1 | ✅ 已做完 | `v2.2.1` | `98c8bb4` | ✅ 已完成（去 IE shim；cdnjs `"version"`） |
 | T9 | Vite 构建 (P2) | ⚠️ 建议 T8 后 | `v2.2.1` | | 未开始 |

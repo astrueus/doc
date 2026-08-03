@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
 )
 
@@ -99,7 +98,7 @@ type LogSection struct {
 	MaxDays   int
 	Level     string
 	IsAsync   bool
-	Format    string // json (default) | console
+	Format    string // file format: json (default) | console; stderr always console-style
 }
 
 type UploadSection struct {
@@ -258,7 +257,7 @@ func readFromAppConfig() *Config {
 			MaxSize:  secInt("log", "log_maxsize", 0),
 			Daily:    secBool("log", "log_daily", true),
 			MaxDays:  secInt("log", "log_maxdays", 7),
-			Level:    secString("log", "log_level", "Trace"),
+			Level:    secString("log", "log_level", "Info"),
 			IsAsync:  secBool("log", "log_is_async", true),
 			Format:   secString("log", "log_format", "json"),
 		},
@@ -358,9 +357,6 @@ func ApplyToBeego(c *Config) {
 
 	web.BConfig.MaxUploadSize = GetUploadMaxSize()
 	web.BConfig.MaxMemory = GetUploadMaxMemory()
-
-	logs.Info("typed config applied → session_on=%v provider=%s httpport=%d",
-		c.Session.On, c.Session.Provider, c.HTTPPort)
 }
 
 func rootString(key, def string) string {

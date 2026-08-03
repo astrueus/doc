@@ -4,16 +4,15 @@ import (
 	"encoding/json"
 	"net/url"
 
+	"git.itopcms.com/jackliu/doc/internal/auth"
 	"git.itopcms.com/jackliu/doc/internal/config"
-	"git.itopcms.com/jackliu/doc/internal/model"
 	"github.com/beego/beego/v2/server/web"
 	"github.com/beego/beego/v2/server/web/context"
 )
 
 // FilterUser requires a logged-in member; redirects to login with ?url= for return.
 func FilterUser(ctx *context.Context) {
-	_, ok := ctx.Input.Session(config.LoginSessionName).(model.Member)
-	if ok {
+	if id, ok := auth.MemberIDFromSession(ctx.Input.Session(config.LoginSessionName)); ok && id > 0 {
 		return
 	}
 

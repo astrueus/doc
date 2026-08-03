@@ -11,6 +11,7 @@ import (
 
 	"html/template"
 
+	"git.itopcms.com/jackliu/doc/internal/auth"
 	"git.itopcms.com/jackliu/doc/internal/config"
 	"git.itopcms.com/jackliu/doc/internal/errs"
 	"git.itopcms.com/jackliu/doc/internal/model"
@@ -47,7 +48,7 @@ func (c *BaseController) Prepare() {
 	c.EnableAnonymous = false
 	c.EnableDocumentHistory = false
 
-	if memberID, ok := sessionMemberID(c.GetSession(config.LoginSessionName)); ok && memberID > 0 {
+	if memberID, ok := auth.MemberIDFromSession(c.GetSession(config.LoginSessionName)); ok && memberID > 0 {
 		if member, err := model.NewMember().Find(memberID); err == nil && member != nil && member.MemberId > 0 {
 			c.Member = member
 			c.Data["Member"] = c.Member
@@ -100,25 +101,6 @@ func (c *BaseController) SetMember(member model.Member) {
 		c.SetSession(config.LoginSessionName, member.MemberId)
 		c.SetSession("uid", member.MemberId)
 	}
-}
-
-// sessionMemberID extracts member id from session value (int or legacy Member).
-func sessionMemberID(v any) (int, bool) {
-	switch id := v.(type) {
-	case int:
-		return id, id > 0
-	case int64:
-		return int(id), id > 0
-	case float64: // JSON/session providers sometimes store numbers as float64
-		return int(id), int(id) > 0
-	case model.Member:
-		return id.MemberId, id.MemberId > 0
-	case *model.Member:
-		if id != nil {
-			return id.MemberId, id.MemberId > 0
-		}
-	}
-	return 0, false
 }
 
 // JsonResult 响应 json 结果

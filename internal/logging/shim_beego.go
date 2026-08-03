@@ -2,6 +2,7 @@ package logging
 
 import (
 	"fmt"
+	"path/filepath"
 	"sync"
 
 	"github.com/beego/beego/v2/core/logs"
@@ -76,12 +77,12 @@ func (a *zapAdapter) WriteMsg(lm *logs.LogMsg) error {
 	if lm.Prefix != "" {
 		msg = lm.Prefix + " " + msg
 	}
-	fields := []zap.Field{}
+	// Keep ANSI for stderr (access-log colors); file core strips via stripANSICore.
 	if lm.FilePath != "" {
-		fields = append(fields, zap.String("file", lm.FilePath), zap.Int("line", lm.LineNumber))
+		msg = fmt.Sprintf("[%s:%d] %s", filepath.Base(lm.FilePath), lm.LineNumber, msg)
 	}
 	level := mapBeegoLevel(lm.Level)
-	logger.Log(level, msg, fields...)
+	logger.Log(level, msg)
 	return nil
 }
 

@@ -10,6 +10,7 @@ import (
 
 	"html/template"
 
+	"git.itopcms.com/jackliu/doc/internal/auth"
 	"git.itopcms.com/jackliu/doc/internal/config"
 	"git.itopcms.com/jackliu/doc/internal/model"
 	"git.itopcms.com/jackliu/doc/internal/thirdparty/dingtalk"
@@ -81,7 +82,7 @@ func (c *AccountController) Login() {
 
 	c.TplName = "account/login.tpl"
 
-	if member, ok := c.GetSession(config.LoginSessionName).(model.Member); ok && member.MemberId > 0 {
+	if id, ok := auth.MemberIDFromSession(c.GetSession(config.LoginSessionName)); ok && id > 0 {
 		u := c.GetString("url")
 		if u == "" {
 			u = c.Ctx.Request.Header.Get("Referer")
@@ -299,7 +300,7 @@ func (c *AccountController) Register() {
 	c.TplName = "account/register.tpl"
 
 	//如果用户登录了，则跳转到网站首页
-	if member, ok := c.GetSession(config.LoginSessionName).(model.Member); ok && member.MemberId > 0 {
+	if id, ok := auth.MemberIDFromSession(c.GetSession(config.LoginSessionName)); ok && id > 0 {
 		c.Redirect(config.URLFor("HomeController.Index"), 302)
 	}
 	// 如果没有开启用户注册

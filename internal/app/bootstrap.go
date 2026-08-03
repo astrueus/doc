@@ -271,7 +271,6 @@ func ResolveCommand(args []string) {
 		log.Fatal("解析工作目录失败 ->", err)
 	}
 	cfg.WorkingDirectory = resolvedDir
-	logs.Info("工作目录 ->", cfg.WorkingDirectory)
 
 	if configFile != "" {
 		cfg.ConfigurationFile = configFile
@@ -291,11 +290,6 @@ func ResolveCommand(args []string) {
 	}
 	g := cfg.MustGlobal()
 
-	web.BConfig.MaxUploadSize = cfg.GetUploadMaxSize()
-	web.BConfig.MaxMemory = cfg.GetUploadMaxMemory()
-	logs.Info("上传限制 -> MaxUploadSize=%d MaxMemory=%d business_upload_file_size=%d",
-		web.BConfig.MaxUploadSize, web.BConfig.MaxMemory, cfg.GetUploadFileSize())
-
 	if logFile != "" {
 		cfg.LogFile = logFile
 	} else {
@@ -306,6 +300,17 @@ func ResolveCommand(args []string) {
 			cfg.LogFile = cfg.WorkingDir("runtime", "logs")
 		}
 	}
+	// Register as early as possible so bootstrap Info/Debug share one format.
+	RegisterLogger(cfg.LogFile)
+
+	logs.Info("工作目录 ->", cfg.WorkingDirectory)
+	logs.Info("typed config applied → session_on=%v provider=%s httpport=%d",
+		g.Session.On, g.Session.Provider, g.HTTPPort)
+
+	web.BConfig.MaxUploadSize = cfg.GetUploadMaxSize()
+	web.BConfig.MaxMemory = cfg.GetUploadMaxMemory()
+	logs.Info("上传限制 -> MaxUploadSize=%d MaxMemory=%d business_upload_file_size=%d",
+		web.BConfig.MaxUploadSize, web.BConfig.MaxMemory, cfg.GetUploadFileSize())
 
 	cfg.AutoLoadDelay = g.AutoLoadDelay
 	uploads := cfg.WorkingDir("uploads")
@@ -329,7 +334,6 @@ func ResolveCommand(args []string) {
 	RegisterDataBase()
 	RegisterCache()
 	RegisterModel()
-	RegisterLogger(cfg.LogFile)
 
 }
 
