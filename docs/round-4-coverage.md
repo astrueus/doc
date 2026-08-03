@@ -2,6 +2,8 @@
 
 Round 4 T10 阶段产出：覆盖 `pkg/` 以及 `internal/errs`、`auth`、`logging`、`i18n`、`repository` 等包的基础单测。
 
+> **后续：** `scripts/test.sh` / CI 硬闸 / 覆盖率门槛 📦 **已移交 [Round 5 T7](./round-5-execution-plan.md#九t7--测试工程化1~2-天)**。
+
 ## 如何刷新
 
 ```powershell

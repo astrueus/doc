@@ -4,7 +4,8 @@
 > 目标：把 Round 1~3 打好的目录/配置/MCP 基础之上，做**质量类**改造 — 大 Model 拆分、Repository 抽象、`md_` 硬编码修复、日志换 zap、i18n 现代化、前端静态资源治理（P1）与可选 Vite（P2）。
 > **按需推进：** 本轮所有子项**相互独立**，可以按团队精力挑做，不做也不阻塞其他轮次。
 >
-> **状态（2026-08-03 核查）：** 可立刻/有条件开工的代码项中，**T1–T6、T8、T10(pkg)、T13 P0、T2 初版、T5（internal/i18n）已合入 `v2.2.1`**。仍开放：T7「维持 A」报告、T9 Vite、T12 ORM 评估报告、T13 P1（按需）、T11（数据窗口）。详见 [§十六](#十六追踪表) / [§十六附](#十六附完成度核查2026-08-03)。
+> **状态（2026-08-03 核查）：** 可立刻/有条件开工的代码项中，**T1–T6、T8、T10(pkg)、T13 P0、T2 初版、T5（internal/i18n）已合入 `v2.2.1`**。  
+> **遗留移交 Round 5：** T7「维持 A」报告、T9 Vite、T12 ORM 评估、T13 P1、T11（数据窗口），以及 Service/`*Result`/CI 等有意缺口。详见 [round-5-execution-plan.md](./round-5-execution-plan.md) / [§十六附](#十六附完成度核查2026-08-03)。
 >
 > **历史（2026-07-31）：** 前置核查完成；当时技术硬前置已齐，时间窗口类与 Round 3 §十七 P0 未齐。可按 [§二附](#二附开工准入2026-07-31-核查) 分批开工（§二附保留当日口径，完成态以 §十六为准）。
 
@@ -22,13 +23,13 @@
 | T4 | 日志换 `uber-go/zap` + Lumberjack 轮转 | 2~3 天 | 否（保留 beego/logs 兼容 shim） |
 | T5 | `beego/i18n` → 自研 `internal/i18n`（保留 `.ini`；原计划 go-i18n/v2 见 §七落地说明） | 2~3 天 | 否 |
 | T6 | Session/gob 序列化换 msgpack（**根治** Round 2 风险 13） | 1~2 天 | 否 |
-| T7 | 缓存方案 B 评估 · 上 `gocache/v3` 或 singleflight + tag | 2~3 天 | 否 |
-| T8 | 前端 P1：静态资源版本号 + 删 IE 兼容 shim | 1~2 天 | 否 |
-| T9 | 前端 P2：Vite 构建 + vendor 集中 + 抽离内联 JS | 1~2 周 | 否 |
-| T10 | 补测试：`pkg/` + `internal/service/`（Repository 抽出后立即补） | 持续 | 否 |
-| T11 | （可选）根据 Round 3 MCP 反馈决定是否上倒排/向量检索 | 独立立项 | 否 |
-| T12 | （可选）**评估** ORM 迁移到 gorm/ent/sqlc，本轮**只出评估报告不实施** | 3 天 | 否 |
-| T13 | （可选）**MCP 体验增强**：承接 Round 3 [§十七](./round-3-execution-plan.md#十七后续规划mcp-实测反馈与体验增强) 未做完的 P0/P1；**不含** `create_book`/`update_book` | 1~2 天 | 否 |
+| T7 | 缓存方案 B 评估 · 上 `gocache/v3` 或 singleflight + tag | 2~3 天 | 否 | 📦 **已移交 Round 5 T1/T12** |
+| T8 | 前端 P1：静态资源版本号 + 删 IE 兼容 shim | 1~2 天 | 否 | ✅ 已完成 |
+| T9 | 前端 P2：Vite 构建 + vendor 集中 + 抽离内联 JS | 1~2 周 | 否 | 📦 **已移交 Round 5 T6** |
+| T10 | 补测试：`pkg/` + Repository（抽出后立即补） | 持续 | 否 | ✅ 基线；CI → R5 T7 |
+| T11 | （可选）根据 Round 3 MCP 反馈决定是否上倒排/向量检索 | 独立立项 | 否 | 📦 **已移交 Round 5 T4** |
+| T12 | （可选）**评估** ORM 迁移到 gorm/ent/sqlc，本轮**只出评估报告不实施** | 3 天 | 否 | 📦 **已移交 Round 5 T2** |
+| T13 | （可选）**MCP 体验增强**：承接 Round 3 [§十七](./round-3-execution-plan.md#十七后续规划mcp-实测反馈与体验增强) 未做完的 P0/P1；**不含** `create_book`/`update_book` | 1~2 天 | 否 | ✅ P0；P1 📦→R5 T5 |
 
 **总工期估计：** 3~4 周（按团队人力）；除 T9 外，其他都可以在同一 sprint 内并行推进。
 
@@ -64,9 +65,9 @@
 | 前置产物 | 状态 | 依据 |
 |---|---|---|
 | MCP 工具生产运行 ≥ 2 周 + 使用统计 | ❌ | 当天本地实测，无生产窗口 |
-| 是否上倒排索引（基于搜索质量反馈）的决策 | ❌ 尚早 | Round 3 T1 暂缓；缺召回/投诉数据；归 T11 |
+| 是否上倒排索引（基于搜索质量反馈）的决策 | ❌ 尚早 → 📦R5 T4 | Round 3 T1 已移交 R5 T3；缺召回数据 |
 | `internal/dto/mcpdto/` 结构稳定 | ✅ | `book.go` / `document.go` / `search.go` 已落地 |
-| §十七 P0/P1 消化，或明确推迟到本轮 T13 | ✅ P0 已合；P1 按需 | 2026-08-03：T13 P0-1/2/3 已合入；P1 仍可选未做 |
+| §十七 P0/P1 消化，或明确推迟到本轮 T13 | ✅ P0 已合；P1 📦→R5 | 2026-08-03：P0 已合入；**P1 已移交 Round 5 T5** |
 
 ### 2.3 对开工的含义
 
@@ -503,6 +504,8 @@ go get github.com/vmihailenco/msgpack/v5@latest
 
 ## 九、T7 · 缓存方案 B 评估（2~3 天）
 
+> 📦 **已移交 [Round 5 T1](./round-5-execution-plan.md#三t1--缓存方案评估报告0.5~1-天)**（实施闸门 → R5 T12）。下文保留为历史步骤底稿，Round 4 **不再排期**。
+
 > 决策点：Round 1 T5 已抽好 `Cache` 接口，本轮决定"要不要上 gocache/v3 / 分层缓存"。
 >
 > **开工注意（2026-07-31）：** 可写评估报告框架；**不宜现在拍板上 gocache**（缺 MCP/业务 DB 压力数据）。默认保守结论：**维持方案 A**，待 2~4 周后再复评。
@@ -559,6 +562,8 @@ loader := cache.NewLoadable[[]byte](chain, func(ctx, key) ([]byte, error) {
 
 ### T9 · P2（1~2 周）
 
+> 📦 **已移交 [Round 5 T6](./round-5-execution-plan.md#八t6--前端-p2-vite1~2-周)**。下文保留为步骤底稿，Round 4 **不再排期**。
+>
 > 引入 Vite 前端构建。**注意：** 本轮**不做** Bootstrap 升级、不做 Vue 3 迁移；只搭构建流水线 + vendor 集中管理 + 抽离内联 JS。
 >
 > **开工注意（2026-07-31）：** 有条件开工；建议 **T8 完成后再上**，避免版本号与构建流水线交叉。
@@ -639,15 +644,15 @@ go get github.com/stretchr/testify@latest
 
 ### CI 集成
 
-- 加 `scripts/test.sh`：`go test -race -cover ./...`
-- GitHub Actions（如果用）加测试 job
+- 加 `scripts/test.sh`：`go test -race -cover ./...` — 📦 **CI 脚本已移交 Round 5 T7**
+- GitHub Actions（如果用）加测试 job — 同上
 
 ### 验收
 
 - [x] `go test ./pkg/...` 相关包无失败（见 [round-4-coverage.md](./round-4-coverage.md)）
 - [x] Repository 乐观锁等测随 T2（`internal/repository/document_repo_test.go`）
-- [ ] `scripts/test.sh` / CI job — **未加**（可后续补）
-- [ ] 全仓覆盖率门槛 — 仅基线快照，未设 CI 硬闸
+- [ ] `scripts/test.sh` / CI job — 📦 **已移交 Round 5 T7**
+- [ ] 全仓覆盖率门槛 — 仅基线快照；硬闸 → Round 5 T7
 
 ### 落地说明（2026-08-03）
 
@@ -657,6 +662,8 @@ go get github.com/stretchr/testify@latest
 
 ## 十二、T11 · 倒排/向量检索（可选，独立评估）
 
+> 📦 **已移交 [Round 5 T4](./round-5-execution-plan.md#六t4--倒排--向量检索评估可选--数据闸门)**。下文保留触发条件与备选表。
+>
 > **开工注意（2026-07-31）：** **现在不宜开工。** 触发条件未满足（Round 3 仅本地实测，无生产 2~4 周反馈）。
 
 ### 触发条件
@@ -686,6 +693,8 @@ Round 3 上线后 2~4 周，收集：
 
 ## 十三、T12 · ORM 迁移评估报告（3 天 · 不实施）
 
+> 📦 **已移交 [Round 5 T2](./round-5-execution-plan.md#四t2--orm-迁移评估报告1~3-天--不实施)**。输出文件名可改为 `docs/round-5-orm-migration-evaluation.md`。
+
 ### 输出
 
 `docs/round-4-orm-migration-evaluation.md`，内容：
@@ -708,10 +717,8 @@ Round 4 结束前团队开会拍板：
 ## 十三附、T13 · MCP 体验增强（可选）
 
 > 承接 [round-3-execution-plan.md §十七](./round-3-execution-plan.md#十七后续规划mcp-实测反馈与体验增强)。  
-> **优先仍建议在 Round 3 收尾小 PR 做完 P0**；若合并前未做，本任务收口剩余 P0/P1。  
+> **P0：✅ 已合入**（`c70d4c1`）。**P1：📦 已移交 [Round 5 T5](./round-5-execution-plan.md#七t5--mcp-体验-p10.5~1-天)**，Round 4 不再排期。  
 > **本任务不做** `create_book` / `update_book` / `delete_book`（决策见 Round 3 §17.3）。
->
-> **开工注意（2026-07-31）：** Round 3 已合入且 P0 未做 → **本轮建议最先开工**（见 §二附）。P0 完成后，T4 / T2 再动相关面。
 
 ### 范围
 
@@ -729,7 +736,7 @@ Round 4 结束前团队开会拍板：
 
 - [x] 与 Round 3 §17.5 P0 清单一致（stdio / append / 长文约定）
 - [x] 既有工具回归通过；工具列表仍**不包含** Book 写工具
-- [ ] P1（upsert / get 截断 / search identify）— 按需，未做
+- [ ] P1（upsert / get 截断 / search identify）— 📦 **已移交 Round 5 T5**
 
 ### 预估
 
@@ -747,13 +754,13 @@ Round 4 结束前团队开会拍板：
 | 4 | `feat(round4): zap logger with lumberjack (beego/logs shim)` | T4 | 中 | 无 |
 | 5 | `feat(round4): migrate to nicksnyder/go-i18n/v2` | T5 | 中 | 无 |
 | 6 | `refactor(round4): replace gob with msgpack for cache/session` | T6 | 中 | 无（上线**需清缓存+session**） |
-| 7 | `docs(round4): cache evaluation (gocache/v3 or stay)` | T7 | 小 | 无 |
-| 8 | `chore(round4): frontend P1 – versioning + drop IE shims` | T8 | 小 | 无 |
-| 9 | `feat(round4): Vite build pipeline + manifest integration` | T9 | 大 | 无 |
-| 10 | `test(round4): repository + pkg tests` | T10 | 中 | PR-2 |
-| 11 | `docs(round4): search backend evaluation report` | T11 | 小 | Round 3 数据 |
-| 12 | `docs(round4): ORM migration evaluation report` | T12 | 小 | 无 |
-| 13 | `fix(mcp): stdio quiet + append lock/release (+ optional upsert)` | T13 | 小 | Round 3；若 R3 已收尾则可跳过 |
+| 7 | `docs(round4): cache evaluation (gocache/v3 or stay)` | T7 | 小 | 📦→R5 T1（本轮不再开） |
+| 8 | `chore(round4): frontend P1 – versioning + drop IE shims` | T8 | 小 | ✅ 已合 |
+| 9 | `feat(round4): Vite build pipeline + manifest integration` | T9 | 大 | 📦→R5 T6 |
+| 10 | `test(round4): repository + pkg tests` | T10 | 中 | ✅ 基线；CI→R5 T7 |
+| 11 | `docs(round4): search backend evaluation report` | T11 | 小 | 📦→R5 T4 |
+| 12 | `docs(round4): ORM migration evaluation report` | T12 | 小 | 📦→R5 T2 |
+| 13 | `fix(mcp): stdio quiet + append lock/release (+ optional upsert)` | T13 | 小 | ✅ P0；P1→R5 T5 |
 
 **合入顺序建议（与 [§二附](#二附开工准入2026-07-31-核查) 对齐，2026-07-31）：**
 
@@ -791,7 +798,8 @@ Round 4 结束前团队开会拍板：
 
 > 更新日期：**2026-08-03**（推送至 `db4bb2b`）。准入列见 [§二附](#二附开工准入2026-07-31-核查)（历史口径）；**完成态以本表与 §十六附为准**。  
 > **合入分支：** 已完成项均已合入 **`v2.2.1`**；后续 Round 4 改动一律在 `v2.2.1` 上直接推进。  
-> **进度摘要：** 代码主线 **T1–T6、T8、T10(pkg)、T2 初版、T5、T13 P0** ✅。仍开放：**T7 报告 / T9 / T12 / T13 P1 / T11**；T7 实施与 T11 仍暂缓拍板。
+> **进度摘要：** 代码主线 **T1–T6、T8、T10(pkg)、T2 初版、T5、T13 P0** ✅。  
+> **遗留移交 [Round 5](./round-5-execution-plan.md)：** T7 报告 / T9 Vite / T12 / T13 P1 / T11；以及 Service、CI、`*Result` 等有意缺口。
 
 
 | # | 任务 | 准入 | 分支 / PR | Commit | 状态 |
@@ -802,26 +810,26 @@ Round 4 结束前团队开会拍板：
 | T4 | zap + Lumberjack | ✅ 已做完 | `v2.2.1` | `0a1df13` + `f9be16c` | ✅ 已完成；跟进：默认 Info、stderr 可读有色、文件 json 无 ANSI |
 | T5 | i18n 替换 | ✅ 已做完 | `v2.2.1` | `cd8e446` | ✅ 移除 `beego/i18n`；`internal/i18n` 读既有 `.ini`（未强绑 go-i18n/toml） |
 | T6 | Session 只存 id + remember msgpack | ✅ 已做完 | `v2.2.1` | `4141346` + `f9be16c` | ✅ 已完成；跟进：`FilterUser`/`Account` 改用 `auth.MemberIDFromSession` |
-| T7 | 缓存评估报告 | ⚠️ 仅「维持 A」报告；实施暂缓 | `v2.2.1` | | ⏳ **报告未写**（实施仍不宜拍板上 gocache） |
+| T7 | 缓存评估报告 | 📦→R5 T1 | — | — | **已移交** [Round 5 T1](./round-5-execution-plan.md#三t1--缓存方案评估报告0.5~1-天)；报告未写 |
 | T8 | 前端 P1 | ✅ 已做完 | `v2.2.1` | `98c8bb4` | ✅ 模板去 IE 条件注释；cdnjs `"version"`；`web/static` 下仍可能残留 html5shiv 等文件（未引用即可） |
-| T9 | Vite 构建 (P2) | ⚠️ T8 后可开 | `v2.2.1` | | ⏳ **未开始**（体量大） |
-| T10 | 补测试 | ✅ pkg + Repo 测已做 | `v2.2.1` | `cd8e446` | ✅ 基线见 [round-4-coverage.md](./round-4-coverage.md)；无 `scripts/test.sh`/CI 硬闸 |
-| T11 | 搜索后端评估 | ❌ 等 2~4 周数据 | — | | ⏸ 暂缓 |
-| T12 | ORM 迁移评估报告 | ✅ 可立刻 | `v2.2.1` | | ⏳ **报告未写**（本轮只评估不实施） |
-| T13 | MCP 体验增强 | ✅ P0 已做完 | `v2.2.1` | `c70d4c1`（merge `92b4d08`） | ✅ P0-1/2/3；⏳ **P1 按需未做** |
+| T9 | Vite 构建 (P2) | 📦→R5 T6 | — | — | **已移交** [Round 5 T6](./round-5-execution-plan.md#八t6--前端-p2-vite1~2-周) |
+| T10 | 补测试 | ✅ pkg + Repo 测已做 | `v2.2.1` | `cd8e446` | ✅ 基线见 [round-4-coverage.md](./round-4-coverage.md)；`scripts/test.sh`/CI → **R5 T7** |
+| T11 | 搜索后端评估 | 📦→R5 T4 | — | — | **已移交** [Round 5 T4](./round-5-execution-plan.md#六t4--倒排--向量检索评估可选--数据闸门) |
+| T12 | ORM 迁移评估报告 | 📦→R5 T2 | — | — | **已移交** [Round 5 T2](./round-5-execution-plan.md#四t2--orm-迁移评估报告1~3-天--不实施) |
+| T13 | MCP 体验增强 | ✅ P0；P1 📦→R5 T5 | `v2.2.1` | `c70d4c1`（merge `92b4d08`） | ✅ P0-1/2/3；**P1 已移交** [R5 T5](./round-5-execution-plan.md#七t5--mcp-体验-p10.5~1-天) |
 
-**建议下一批（仍在 `v2.2.1`）：**
+**建议下一批（Round 4 已收工，改走 Round 5）：**
 
-1. **轻量文档：** T7「维持 A」报告 或 T12 ORM 评估报告  
-2. **按需体验：** T13 P1（upsert / get 截断 / search identify）  
-3. **大块工程：** T9 Vite（单独 sprint）  
-4. **勿开：** T11、T7 上 gocache 实施（缺数据）
+1. **轻量文档：** Round 5 T1 / T2  
+2. **按需体验：** Round 5 T5（原 T13 P1）  
+3. **大块工程：** Round 5 T6 Vite  
+4. **数据闸门：** Round 5 T4 / T12（勿再当 Round 4 待办）
 
 ---
 
 ## 十六附、完成度核查（2026-08-03）
 
-> 对照 §二附「可立刻 / 有条件开工」与仓库实态。结论：**当时能开工的代码项已基本收口**；剩余多为报告、可选增强或大体量前端。
+> 对照 §二附「可立刻 / 有条件开工」与仓库实态。结论：**当时能开工的代码项已基本收口**；未做项均已📦移交 [Round 5](./round-5-execution-plan.md)，本轮不再排期。
 
 ### 已处理完成（代码已合 `v2.2.1`）
 
@@ -836,34 +844,30 @@ Round 4 结束前团队开会拍板：
 | T10(pkg) | 多包 `*_test.go` + coverage 文档 | ✅（CI 脚本未做） |
 | T2 初版 | `internal/repository`；MCP 写工具走 Repo；DocumentRepo 测 | ✅（无 Service 层） |
 
-### 仍可执行但未做（建议排期）
+### 📦 已移交 Round 5（不再在本轮排期）
 
-| 项 | 阻塞？ | 说明 |
+| 原 Round 4 项 | Round 5 承接 | 说明 |
 |---|---|---|
-| **T7「维持 A」报告** | 无 | 纯文档；实施仍暂缓 |
-| **T12 ORM 评估报告** | 无 | 纯文档；不实施 |
-| **T13 P1** | 无（按需） | upsert / get 截断 / search 带 identify |
-| **T9 Vite** | 无硬阻塞 | 建议单独 sprint；T8 已完成前置 |
+| **T7「维持 A」报告** | [T1](./round-5-execution-plan.md#三t1--缓存方案评估报告0.5~1-天) | 纯文档；实施见 R5 T12（闸门） |
+| **T12 ORM 评估报告** | [T2](./round-5-execution-plan.md#四t2--orm-迁移评估报告1~3-天--不实施) | 只评估不实施 |
+| **T13 P1** | [T5](./round-5-execution-plan.md#七t5--mcp-体验-p10.5~1-天) | upsert / get 截断 / search identify |
+| **T9 Vite** | [T6](./round-5-execution-plan.md#八t6--前端-p2-vite1~2-周) | 建议独立 sprint |
+| **T11 倒排/向量** | [T4](./round-5-execution-plan.md#六t4--倒排--向量检索评估可选--数据闸门) | 数据闸门不变 |
+| **T7 上 gocache 实施** | [T12](./round-5-execution-plan.md) | 缺压力数据时勿开 |
+| `scripts/test.sh` / CI | [T7](./round-5-execution-plan.md#九t7--测试工程化1~2-天) | T10 有意缺口 |
+| `internal/service/` / Repo 扩面 | [T9](./round-5-execution-plan.md#十一t9--repository-扩面--可选-service3~5-天) | T2 有意简化 |
+| `*Result`→dto | [T8](./round-5-execution-plan.md#十t8--result--internaldto2~4-天) | 来自 Round 2 B1 |
 
-### 明确不宜现在做
-
-| 项 | 原因 |
-|---|---|
-| T11 | 缺 2~4 周召回/投诉数据 |
-| T7 上 gocache **实施** | 缺压力数据；只允许「维持 A」结论 |
-
-### 有意未做 / 部分缺口（不算失败）
+### 有意未做 / 部分缺口（Round 4 内不算失败；已移交见上表）
 
 | 缺口 | 说明 |
 |---|---|
-| `internal/service/` | T2 原验收写了 Service；落地改为 MCP→Repo，controller 渐进不变 |
-| `scripts/test.sh` / Actions | T10 可选 CI；未加 |
-| go-i18n/v2 + toml | T5 改为兼容层读 ini |
+| go-i18n/v2 + toml | T5 改为兼容层读 ini（**本轮定型，不移交**） |
 | §十五上线勾选 | 多为**运维/冒烟**，非代码是否合并的判定 |
 
 ### 一句话
 
-**「能立刻写代码推进」的 Round 4 项已完成；剩下是报告、按需 MCP P1、以及可选的 Vite 大改。**
+**Round 4 代码主线已完成；未做的报告 / Vite / P1 / 搜索后端 / CI / 分层债均已📦移交 [Round 5](./round-5-execution-plan.md)。**
 
 ---
 
@@ -875,36 +879,37 @@ Round 4 结束前团队开会拍板：
 |---|---|---|
 | 目录 | `cmd/` + `internal/` + `pkg/` + `web/` + `conf/` + `deployments/` | ✅ Round 2 定型 |
 | 配置 | 强类型 `config.Config`，`[section]`，`.env` | ✅ |
-| 缓存 | 接口 + msgpack；方案仍为 A | ⏳ T7 报告未写；未上 gocache |
+| 缓存 | 接口 + msgpack；方案仍为 A | 📦 报告 → Round 5 T1；实施闸门 R5 T12 |
 | 日志 | zap + Lumberjack；stderr 有色 / 文件 json | ✅ |
 | i18n | `internal/i18n` + 既有 `.ini` | 原写 go-i18n/toml → **已偏离并文档化** |
-| Model | BookModel 已拆；Repo 初版 | ✅；Service 层未建 |
-| MCP | MVP + P0；写路径走 DocumentRepo | ⏳ P1 按需；T11 暂缓 |
-| 前端 | P1（去 IE / 版本号）✅ | ⏳ P2 Vite 未做 |
-| 测试 | pkg + errs/auth/logging/i18n/repository 基线 | ⏳ 无 CI 硬闸 / 全仓覆盖率门槛 |
+| Model | BookModel 已拆；Repo 初版 | ✅；Service → Round 5 T9 |
+| MCP | MVP + P0；写路径走 DocumentRepo | 📦 P1 → R5 T5；倒排 → R5 T4 |
+| 前端 | P1（去 IE / 版本号）✅ | 📦 P2 Vite → Round 5 T6 |
+| 测试 | pkg + errs/auth/logging/i18n/repository 基线 | 📦 CI 硬闸 → Round 5 T7 |
 | AI 协作 | `AGENTS.md` / `CLAUDE.md` / Cursor 规则 | ✅ 中文约定 |
 
-### Round 5+ 候选（本轮结束时再讨论）
+### Round 5+ 候选（已部分落入 Round 5）
 
-- ORM 迁移（gorm / ent / sqlc，选 1）— 先看 T12 报告
+正式排期见 [round-5-execution-plan.md](./round-5-execution-plan.md)。仍留 Round 6+ 的：
+
+- ORM 迁移**实施**（gorm / ent / sqlc，选 1）— 先看 Round 5 T2 报告
 - 前端 P3：Bootstrap 3 → 5 或 Tailwind
 - 前端 P4：`web-ui/` Vue 3 + TS SPA
-- 倒排 / 向量检索独立服务（T11 触发后）
+- 倒排 / 向量检索**落地**（Round 5 T4 评估后）
 - OTel 全链路追踪
-- CORS / CSP / HSTS 全局安全头 + secure middleware
-- 单元/集成测试覆盖率 ≥ 40%
-- 补 `internal/service/`、把更多读路径迁入 Repository
+- 单元/集成测试覆盖率 ≥ 40%（Round 5 T7 先建门槛）
 
 ---
 
 ## 十八、参考
 
 - [§十六附 完成度核查（2026-08-03）](#十六附完成度核查2026-08-03)
+- [round-5-execution-plan.md](./round-5-execution-plan.md) — **遗留项正式排期（报告 / Vite / P1 / 搜索 / CI / 分层）**
 - [round-4-coverage.md](./round-4-coverage.md) — T10 测试基线
 - [AGENTS.md](../AGENTS.md) — AI 协作 / 中文约定
 - [§二附 开工准入（2026-07-31）](#二附开工准入2026-07-31-核查) — 本轮可开工 / 有条件 / 暂缓清单（历史）
-- [round-3-execution-plan.md §十五](./round-3-execution-plan.md#十五round-4-前置产物) — Round 4 前置产物
-- [round-3-execution-plan.md §十七](./round-3-execution-plan.md#十七后续规划mcp-实测反馈与体验增强) — MCP P0/P1（由 T13 承接）
+- [round-3-execution-plan.md §十五](./round-3-execution-plan.md#十五round-4--round-5-前置与移交) — Round 4/5 前置与移交
+- [round-3-execution-plan.md §十七](./round-3-execution-plan.md#十七后续规划mcp-实测反馈与体验增强) — MCP P0（R4 T13）/ P1（📦 R5 T5）
 - [refactor-roadmap.md §2.4](./refactor-roadmap.md#24-目标四缓存--模型组件升级) — 缓存/模型详述
 - [refactor-roadmap.md §三 支线](./refactor-roadmap.md#三支线其他技术债) — 日志/i18n/测试/main.go/gopool/requests
 - [refactor-roadmap.md §四](./refactor-roadmap.md#四支线前端与静态资源) — 前端分阶段方案

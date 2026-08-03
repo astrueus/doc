@@ -34,8 +34,8 @@
 
 ### 本轮**不做**（明确排除）
 
-- ❌ **不拆 Controller/Model 内部大文件**：`DocumentController.go` (37KB) / `BookModel.go` (34KB) **只搬目录、不拆域**，减小 blast radius。域拆分放 Round 4。
-- ❌ **不换 ORM/迁移器**：`beego/orm` 保留；Repository/Service 层不落地（Round 4）。
+- ❌ **不拆 Controller/Model 内部大文件**：`DocumentController.go` (37KB) / `BookModel.go` (34KB) **只搬目录、不拆域**，减小 blast radius。域拆分：BookModel 已在 Round 4；Controller 📦 **Round 5 T10（可选）**。
+- ❌ **不换 ORM/迁移器**：`beego/orm` 保留；Repository 初版在 Round 4；Service/`*Result`→dto 📦 **Round 5 T8/T9**。
 - ❌ **不换日志**：`beego/logs` 保留（Round 4 换 zap）。
 - ❌ **不上 MCP**：只**预留** `internal/mcp/` 空目录，代码 Round 3 写。
 - ❌ **不拆** `conf/` **为多文件**：只做单文件 `[section]` 分组（见 [refactor-roadmap.md §八 决策 2026-07-29](./refactor-roadmap.md#八决策记录decision-log)；目录名以收尾 A 的 `conf/` 为准）。
@@ -75,9 +75,9 @@ doc/
 │  │  ├─ enum.go                               # 常量与角色类型
 │  │  ├─ getters.go                            # Get* / URLFor* shim（读 MustGlobal）
 │  │  └─ mail.go                               # 邮件相关配置辅助
-│  ├─ controller/                              # ★ Round 2 只搬进来，**不按域再拆子目录**（Round 4 做）
+│  ├─ controller/                              # ★ Round 2 只搬进来，**不按域再拆子目录**（📦 Round 5 T10 可选）
 │  │  └─ (所有原 controllers/*.go 平搬)
-│  ├─ model/                                   # ★ 同上，只搬不拆；*Result 仍留此包（B1 跳过 → Round 4）
+│  ├─ model/                                   # ★ 同上，只搬不拆；*Result 仍留此包（B1 跳过 → 📦 Round 5 T8）
 │  │  └─ (所有原 models/*.go 平搬，含 *Result.go)
 │  ├─ dto/                                     # 本轮仅预留 mcpdto/（业务 *Result 未迁入）
 │  │  └─ mcpdto/                               # 【空目录 · Round 3 写入】
@@ -116,7 +116,7 @@ doc/
 
 **关键原则：**
 
-1. `internal/controller/` 与 `internal/model/` **本轮只平搬**，`Round 4` 才按域拆子目录（`document/`、`book/` 等）。**不允许**在本轮同时拆域，否则 diff 无法 review。
+1. `internal/controller/` 与 `internal/model/` **本轮只平搬**，按域拆子目录：BookModel 已在 Round 4；Controller / `*Result`→dto 📦 **Round 5 T8/T10**。**不允许**在本轮同时拆域，否则 diff 无法 review。
 2. `pkg/` 只放**没有业务耦合**的工具；如 `utils/gopool/` 被 model 用了但没耦合业务，也放 `pkg/`；`utils/dingtalk/` 是业务集成，放 `internal/thirdparty/dingtalk/`。
 3. `internal/` 天然阻止外部 module 误引，符合 Go 官方 layout 建议。
 4. 模块路径**保持** `git.itopcms.com/jackliu/doc`，只改子包 import。
@@ -142,7 +142,7 @@ doc/
 | `conf/app.conf` / `.example` / `lang/`                                                                           | Round 1 曾迁 `configs/`；**收尾 A 改回 `conf/`**（正式布局）                                                              | 勿再写回 `configs/`                                                            |
 | `controllers/*.go`                                                                                               | `internal/controller/*.go`                                                                                   | 只搬不拆域                                                                     |
 | `models/*.go`                                                                                                    | `internal/model/*.go`                                                                                        | 只搬不拆域                                                                     |
-| `models/*Result.go` (Book/Member/Attachment/Comment/DocumentSearch/ConvertBook/Blog)                             | **本轮仍留 `internal/model/`**（B1 跳过）；Round 4 再评估迁 `internal/dto/`                                           | 计划曾写迁 dto；因循环依赖风险本轮不做                                                      |
+| `models/*Result.go` (Book/Member/Attachment/Comment/DocumentSearch/ConvertBook/Blog)                             | **本轮仍留 `internal/model/`**（B1 跳过）；📦 **已移交 Round 5 T8** 再评估迁 `internal/dto/`                                           | 计划曾写迁 dto；因循环依赖风险本轮不做                                                      |
 | `middleware/filter.go` + `routers/filter.go`                                                                     | `internal/middleware/` 合并                                                                                    | 见 T7                                                                      |
 | `routers/router.go` (148 行)                                                                                      | `internal/router/router.go` + `account.go` / `manager.go` / `book.go` / `document.go` / `blog.go` / `api.go` | 见 T6 与 [router-split-migration-plan.md](./router-split-migration-plan.md) |
 | `cache/cache.go` / `cache_null.go` / `iface.go` / `beego_adapter.go` / `null.go`                                 | `internal/cache/`                                                                                            | Round 1 T5 新增文件一起迁                                                        |
@@ -794,8 +794,8 @@ Round 3 直接 `internal/mcp/server.go` 落地，零迁移。
 
 | # | 项 | 优先级 | 状态 | 说明 |
 | --- | --- | --- | --- | --- |
-| B1 | `*Result` → `internal/dto/` | 中 / 可决策跳过 | ⏭ 跳过 | **决策 2026-07-30**：本轮不做。`BookResult` 等内含 orm/`NewBook()`，硬搬易循环依赖；Round 4 再搬。 |
-| B2 | `internal/app/` 拆成 `app.go` + `bootstrap.go` + `web.go` | 低 | ⏭ 跳过 | **决策 2026-07-30**：本轮不做；`bootstrap.go` 暂保持整文件。 |
+| B1 | `*Result` → `internal/dto/` | 中 / 可决策跳过 | ⏭ 跳过 | **决策 2026-07-30**：本轮不做。📦 **已移交 Round 5 T8**（原写 Round 4 再搬）。 |
+| B2 | `internal/app/` 拆成 `app.go` + `bootstrap.go` + `web.go` | 低 | ⏭ 跳过 | **决策 2026-07-30**：本轮不做；📦 **已移交 Round 5 T13**（低优）。 |
 | B3 | `enumerate_legacy.go` → `enum.go` + `working_dir.go` + `getters.go` | 低 | ✅ | 方案 A：纯文件拆分，API 不变；已删除 `enumerate_legacy.go` |
 | B4 | 收敛剩余 `web.AppConfig` 直读 | 低 | ✅ | 业务调用方改走 `MustGlobal()` / Getter；`config.go` 内 loader 保留 AppConfig 读取。 |
 
@@ -819,8 +819,8 @@ Round 3 直接 `internal/mcp/server.go` 落地，零迁移。
 ### 建议执行顺序（已完成）
 
 1. ✅ **A**（`configs` → `conf`）  
-2. ✅ **B1** 决策：本轮不做（Round 4）  
-3. ✅ **B3/B4** 完成；**B2** 跳过  
+2. ✅ **B1** 决策：本轮不做（📦 已移交 Round 5 T8）  
+3. ✅ **B3/B4** 完成；**B2** 跳过（📦 已移交 Round 5 T13）
 4. ✅ **C1–C5** 验收  
 5. ✅ **D1/D2** 文档对齐  
 

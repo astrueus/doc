@@ -43,7 +43,7 @@
 
 - Go 1.25.0（已满足，`go.mod` line 3）
 - 分支：~~建议~~ `feature/round-1-refactor` **实际在** `v2.1.0` **上直接完成**（7 个独立 commit，未新建 feature 分支）
-- 本地能跑 `go build ./...` + `go test ./...`（当前项目无 `_test.go`，Round 4 再补测试）
+- 本地能跑 `go build ./...` + `go test ./...`（测试基线已在 Round 4；CI 硬闸 📦 Round 5 T7）
 
 ---
 

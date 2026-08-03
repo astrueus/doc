@@ -4,7 +4,8 @@
 > 目标：让 AI 助手（Claude Desktop / Cursor / 其他 MCP 客户端）通过 MCP 协议对 doc 项目做**读 + 写**操作，含创建/更新/删除文档。**采用官方** `modelcontextprotocol/go-sdk` **v1.x**（非社区 `mark3labs/mcp-go`，见 [§八 决策 2026-07-23](./refactor-roadmap.md#八决策记录decision-log)）。
 > **代码直接落在 Round 2 完成的** `internal/mcp/` — 零重复搬迁。
 >
-> **进度标记（2026-08-03）：** T1 ⏸ 暂缓；T2–T7 ✅（MCP MVP 闭环）。§十七 **P0 ✅**（经 Round 4 T13）；P1 按需。`search_document` 过渡期使用 `LIKE`。
+> **进度标记（2026-08-03）：** T2–T7 ✅（MCP MVP 闭环）。§十七 **P0 ✅**（经 Round 4 T13）。  
+> **已移交 Round 5：** T1 搜索 FULLTEXT/FTS5 → [R5 T3](./round-5-execution-plan.md#五t3--搜索最小方案-fulltext--fts52~4-天)；§十七 P1 → [R5 T5](./round-5-execution-plan.md#七t5--mcp-体验-p10.5~1-天)；倒排评估 → [R5 T4](./round-5-execution-plan.md#六t4--倒排--向量检索评估可选--数据闸门)。`search_document` 过渡期仍为 `LIKE`。
 > **实测后续：** Cursor MCP 批量写入 `docs/` 后的体验缺口与是否做 Book 级工具，见 [§十七](#十七后续规划mcp-实测反馈与体验增强)。
 
 ---
@@ -20,7 +21,7 @@
 
 | 序号  | 任务                                                      | 工作量          | 上线感知                               |
 | --- | ------------------------------------------------------- | ------------ | ---------------------------------- |
-| T1  | 搜索最小方案（MySQL FULLTEXT / SQLite FTS5 + 标题加权）             | 2~3 天        | ⏸ **暂缓**（2026-07-30：方案待再评估；不挡 T2+） |
+| T1  | 搜索最小方案（MySQL FULLTEXT / SQLite FTS5 + 标题加权）             | 2~3 天        | 📦 **已移交 Round 5 T3**（原 ⏸ 暂缓；过渡期 LIKE） |
 | T2  | MCP MVP · stdio · 4 个读工具                                | 2 天          | 新增 CLI `doc mcp`                   |
 | T3  | MCP MVP · stdio · 6 个写工具（含乐观锁 + 确认参数）                   | 2~3 天        | 同上                                 |
 | T4  | `internal/model/MemberApiToken` 新表 + 后台管理页              | 2 天          | 新增管理页 `/member/api-tokens`         |
@@ -241,9 +242,9 @@ web/views/member/
 
 ## 六、T1 · 搜索最小方案（2~3 天）
 
-> **状态（2026-07-30）：⏸ 暂缓 / 方案待再评估。**  
-> 曾尝试按本节落地后已还原，不纳入当前 Round 3 合入范围。待评估点包括：索引列 `markdown` vs 现网 `release`、迁移形态（Go `Migration` vs `*.up.sql`）、锁表风险、是否与 MCP 解耦等。  
-> **过渡：** T2 `search_document` 可先基于现有 `DocumentSearchResult` / `LIKE`；本节方案保留作后续评估底稿，勿删。
+> **状态（2026-08-03）：📦 已移交 [Round 5 T3](./round-5-execution-plan.md#五t3--搜索最小方案-fulltext--fts52~4-天)。**  
+> 下文为历史底稿（原 2026-07-30 ⏸ 暂缓）。曾尝试按本节落地后已还原，不纳入 Round 3 合入范围。待评估点包括：索引列 `markdown` vs 现网 `release`、迁移形态、锁表风险、是否与 MCP 解耦等。  
+> **过渡：** `search_document` 现基于 `DocumentSearchResult` / `LIKE`；方案底稿勿删，由 Round 5 执行。
 
 
 
@@ -794,7 +795,7 @@ func AllowByToken(tokenID int, toolKind string) bool {
 
 | #   | PR                                                           | 内容                                | 大小  |
 | --- | ------------------------------------------------------------ | --------------------------------- | --- |
-| 1   | `feat(round3): search fulltext index + provider abstraction` | T1（⏸ 暂缓）                          | 中   |
+| 1   | `feat(round3): search fulltext index + provider abstraction` | T1（📦→R5 T3，本轮不合）                          | 中   |
 | 2   | `feat(round3): MCP stdio server with 10 read/write tools`    | T2+T3+T6（已合入 `5b6ca51`）           | 中大  |
 | 3   | `feat(round3): MemberApiToken table + management page`       | T4（已合入 `4c4f346`）                 | 中   |
 | 4   | `feat(round3): MCP Streamable HTTP with Bearer & rate limit` | T5（已合入 `2fe3f6a`）                  | 中   |
@@ -865,28 +866,30 @@ T1 评估完成后再插回（可与 MCP 并行或作为独立 PR）。
 
 | #   | 任务                               | Commit           | 状态    | 备注                                                    |
 | --- | -------------------------------- | ---------------- | ----- | ----------------------------------------------------- |
-| T1  | 搜索 FULLTEXT/FTS5 + Provider      | —                | ⏸ 暂缓  | 2026-07-30 方案待再评估；不挡 MCP；过渡期 `search_document` 用 LIKE |
+| T1  | 搜索 FULLTEXT/FTS5 + Provider      | —                | 📦→R5 T3 | 原 ⏸；**已移交** [round-5 T3](./round-5-execution-plan.md)；过渡期 LIKE |
 | T2  | MCP stdio · 4 读工具                | `5b6ca51`        | ✅     | 与 T3/T6 同 commit                                      |
 | T3  | MCP stdio · 6 写工具（乐观锁 + confirm） | `5b6ca51`        | ✅     | 与 T2/T6 同 commit                                      |
 | T4  | `MemberApiToken` + 后台管理页         | `4c4f346`        | ✅     | 迁移 `202607301700`；页面 `/member/api-tokens`             |
 | T5  | MCP HTTP + Bearer + 限流           | `2fe3f6a`（以分支为准） | ✅     | `doc mcp --http` + `mcp_enable` 时挂 `/mcp`             |
 | T6  | `internal/dto/mcpdto/`           | `5b6ca51`        | ✅     | 随 T2/T3；jsonschema 标签已按 go-sdk 规范修正                   |
 | T7  | `docs/mcp-integration.md`        | `67b30d5`        | ✅     | Claude Desktop / Cursor / HTTP 接入 + 工具速查              |
-| —   | MCP 体验增强（P0/P1）                  | P0: `c70d4c1`（R4 T13） | ✅ P0 / ⏳ P1 | P0 已合入 `v2.2.1`；P1 按需见 Round 4 T13 |
+| —   | MCP 体验增强（P0/P1）                  | P0: `c70d4c1`（R4 T13） | ✅ P0 / 📦 P1→R5 T5 | P0 已合入；**P1 已移交** [round-5 T5](./round-5-execution-plan.md#七t5--mcp-体验-p10.5~1-天) |
 
 
-**合入进度：** T1 ⏭ → T2✅ → T3✅ → T4✅ → T5✅ → T6✅ → T7✅ → **§十七 P0 ✅（R4 T13）→ P1 按需**
+**合入进度：** T1 📦→R5 → T2✅ → T3✅ → T4✅ → T5✅ → T6✅ → T7✅ → **§十七 P0 ✅（R4 T13）→ P1 📦→R5 T5**
 
 ---
 
 
 
-## 十五、Round 4 前置产物
+## 十五、Round 4 / Round 5 前置与移交
 
-- [ ] MCP 工具生产运行 ≥ 2 周并收集统计 — **时间窗口类，仍可能未齐**
-- [ ] 决定是否上倒排索引 — **归 Round 4 T11，等数据**
+- [ ] MCP 工具生产运行 ≥ 2 周并收集统计 — **时间窗口类**（影响 Round 5 T4 / T12 拍板）
+- [ ] 决定是否上倒排索引 — 📦 **已移交 Round 5 T4**（等数据）
 - [x] `internal/dto/mcpdto/` 结构稳定
-- [x] §十七 **P0** 已消化（Round 4 T13）；P1 按需 / 可继续挂在 T13
+- [x] §十七 **P0** 已消化（Round 4 T13）
+- [ ] §十七 **P1** — 📦 **已移交 Round 5 T5**（不再挂 Round 4 T13）
+- [ ] 搜索 FULLTEXT — 📦 **已移交 Round 5 T3**
 
 ---
 
@@ -901,7 +904,8 @@ T1 评估完成后再插回（可与 MCP 并行或作为独立 PR）。
 - [modelcontextprotocol/go-sdk](https://github.com/modelcontextprotocol/go-sdk) — 官方 Go SDK
 - [MCP Go SDK Quick Start](https://go.sdk.modelcontextprotocol.io/quick_start/)
 - [MCP 规范](https://modelcontextprotocol.io/)
-- [round-4-execution-plan.md T13](./round-4-execution-plan.md#十三附t13--mcp-体验增强可选) — Round 4 可选承接本轮 §十七
+- [round-4-execution-plan.md T13](./round-4-execution-plan.md#十三附t13--mcp-体验增强可选) — Round 4 已收口 §十七 **P0**
+- [round-5-execution-plan.md](./round-5-execution-plan.md) — **P1 / FULLTEXT / 倒排等已移交至此**
 
 ---
 
@@ -911,7 +915,7 @@ T1 评估完成后再插回（可与 MCP 并行或作为独立 PR）。
 
 > **背景（2026-07-31）：** 在本地测试环境通过 Cursor 已配置的 `user-doc-remote` MCP，完成读工具冒烟 + 将仓库 `docs/*.md`（16 篇）写入私有项目 `test12`。  
 > **总判：** Round 3 的 10 工具已形成「搜 → 读 → 改 → 发布」闭环，**不必为功能完整再堆大量新工具**；后续以**体验缺口与缺陷**为主。  
-> **落点：** P0/P1 优先作为 **Round 3 收尾小 PR**；来不及则并入 [Round 4 T13](./round-4-execution-plan.md#十三附t13--mcp-体验增强可选)。P2 与 Book 级工具默认延后。
+> **落点：** P0 已由 Round 4 T13 收口。**P1 📦 已移交 [Round 5 T5](./round-5-execution-plan.md#七t5--mcp-体验-p10.5~1-天)**（不再挂 Round 4）。P2 与 Book 级工具默认延后；FULLTEXT 见 Round 5 T3。
 
 
 
@@ -923,8 +927,8 @@ T1 评估完成后再插回（可与 MCP 并行或作为独立 PR）。
 | 大文档（约 30–60KB）一次 `update_document_content` 易被客户端/中间层卡住 | 只能「首段 update + 多次 append」；分块时曾出现约 2–5% 内容缺失风险 | 体验 / 约定            |
 | `append_document_content` 无乐观锁、无 `auto_release`        | 连写不安全；分块写完还需再调 `release_document`             | P0 加固              |
 | `doc mcp` stdio 启动时 bootstrap 日志打到 **stdout**          | MCP 握手失败（`invalid trailing data`）             | P0 缺陷              |
-| `search_document` 仅 SQL `LIKE`                         | AI「找相关文档」质量一般                                 | 仍归 **T1** 评估，不挡收工  |
-| 缺「按 identify 查找 / upsert」                              | 批量同步要先 `list_document_tree` 再对表               | P1 可选              |
+| `search_document` 仅 SQL `LIKE`                         | AI「找相关文档」质量一般                                 | 📦→ **Round 5 T3**（原 T1）  |
+| 缺「按 identify 查找 / upsert」                              | 批量同步要先 `list_document_tree` 再对表               | 📦→ **Round 5 T5**（P1）  |
 | 无批量/事务型写                                               | 多篇文档需大量 tool call                             | P2 延后              |
 | 无 `create_book` / `update_book`                        | 建项目仍走 Web                                     | **明确暂不做**（见 §17.3） |
 
@@ -947,7 +951,9 @@ T1 评估完成后再插回（可与 MCP 并行或作为独立 PR）。
 
 
 
-#### P1 — 按需小增强（仍围绕文档读写）
+#### P1 — 按需小增强（📦 已移交 Round 5 T5）
+
+> 下列项**不再**由 Round 3/4 排期；执行见 [round-5-execution-plan.md §七](./round-5-execution-plan.md#七t5--mcp-体验-p10.5~1-天)。
 
 
 | #    | 项                                                            | 说明                                                             |
@@ -967,7 +973,7 @@ T1 评估完成后再插回（可与 MCP 并行或作为独立 PR）。
 | P2-1 | `import_documents` / 批量 create | 限流、体积、部分失败语义复杂                           |
 | P2-2 | MCP Resources / Prompts        | 对当前 Doc 工作流收益有限                          |
 | P2-3 | 附件上传、历史 diff、评论                | Web 已有能力，MCP 暂不镜像                        |
-| P2-4 | **T1 FULLTEXT/FTS5**           | 独立评估（见 §六），与「工具是否够用」解耦；质量数据见 Round 4 T11 |
+| P2-4 | **T1 FULLTEXT/FTS5**           | 📦 **已移交 Round 5 T3**（方案底稿见 §六）；倒排质量数据见 Round 5 T4 |
 | P2-5 | Book 级 MCP 写工具                 | 见下节决策                                    |
 
 
@@ -994,11 +1000,11 @@ T1 评估完成后再插回（可与 MCP 并行或作为独立 PR）。
 Round 3 MVP（T2–T7）✅
     │
     ├─► §十七 P0 ✅（Round 4 T13 / `c70d4c1`）
-    ├─► §十七 P1（按需，未做）
+    ├─► §十七 P1 📦 已移交 Round 5 T5
+    ├─► T1 搜索 FULLTEXT 📦 已移交 Round 5 T3
     │
-    └─► Round 4（代码主线 ✅，见 round-4 §十六）
-            ├─ T11  搜索后端（LIKE 不够时，等数据）
-            └─ T13  MCP 体验（P0 已完成；P1 按需；不含 Book 写工具）
+    └─► Round 4（代码主线 ✅）→ 其余遗留见 Round 5
+            └─► Round 5：T3 搜索 · T4 倒排（闸门）· T5 MCP P1 · …
 ```
 
 

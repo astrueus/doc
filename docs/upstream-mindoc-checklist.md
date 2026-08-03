@@ -596,7 +596,7 @@ Day 1 下午    : 回归（编辑/阅读/Blog/PDF）
 > - 落地轮次：Round 3（用户价值最高的一轮）
 >
 > **保留的历史信息**（对齐上游 mindoc 时可参考）：
-> - MCP 与搜索的耦合关系仍在，本项目 Round 3 会一并上 MySQL FULLTEXT / SQLite FTS5 + 标题加权
+> - MCP 与搜索的耦合关系仍在；FULLTEXT/FTS5 + 标题加权原计划 Round 3，**📦 已移交 Round 5 T3**（见 [round-5-execution-plan.md](./round-5-execution-plan.md)）
 > - 内部数据源仍走 `DocumentSearchResult.FindToPager` 与 `models/Document.FindById`，权限按 `BookRole` 过滤（比公开文档过滤更严格）
 
 ---

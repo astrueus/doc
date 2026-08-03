@@ -7,10 +7,10 @@
 > 3. 配置模块优化（Go 代码与配置文件解耦、分组）
 > 4. 缓存 / 模型等基础组件升级
 >
-> 同时汇总"顺带发现的技术债"与"前端现代化"两条支线，给出四轮可独立上线的迭代计划。
+> 同时汇总"顺带发现的技术债"与"前端现代化"两条支线，给出多轮可独立上线的迭代计划。
 >
 > **文档生成依据：** 当前仓库代码基线（2026-07 起）；进度以 **2026-08-03 / 分支** `v2.2.1` 为准。  
-> **总进度：** Round 1–2 ✅ · Round 3 MCP MVP ✅（搜索 T1 ⏸；§十七 P0 ✅）· Round 4 代码主线 ✅（余报告 / Vite / P1 / T11）。详见 [§七](#七迭代进度追踪)、[docs/README.md](./README.md)、[round-4 §十六附](./round-4-execution-plan.md#十六附完成度核查2026-08-03)。
+> **总进度：** Round 1–2 ✅ · Round 3 MCP MVP ✅（搜索 T1 → Round 5 T3）· Round 3 §十七 P0 ✅ · Round 4 代码主线 ✅ · **Round 5 ⏳ 规划中**（搜索 / Vite / 工程化 / 分层债）。详见 [§七](#七迭代进度追踪)、[docs/README.md](./README.md)、[round-5-execution-plan.md](./round-5-execution-plan.md)。
 >
 > **相关文档：**
 >
@@ -20,6 +20,7 @@
 >   - [round-3-execution-plan.md](./round-3-execution-plan.md) — Round 3 · MCP Server（10 工具 + Bearer + 搜索）
 >   - [round-4-execution-plan.md](./round-4-execution-plan.md) — Round 4 · 模型 / 日志 / i18n / 前端（含完成度核查）
 >   - [round-4-coverage.md](./round-4-coverage.md) — Round 4 T10 测试基线
+>   - [round-5-execution-plan.md](./round-5-execution-plan.md) — Round 5 · 搜索可用化 + Vite + 工程化收尾
 > - **参考文档：**
 >   - [frontend-backend-split-migration-plan.md](./frontend-backend-split-migration-plan.md) — 前后端目录拆分（Round 2 目标目录已更新，附录 A/B 硬编码定位仍适用）
 >   - [router-split-migration-plan.md](./router-split-migration-plan.md) — 路由按职责拆分与 `/api` 前缀治理（Round 2 T6 使用）
@@ -47,12 +48,13 @@
 | ORM    | `beego/orm`                                          | 与框架同命运；已封 Repository 初版 |
 | i18n   | `internal/i18n`（读 `conf/lang/*.ini`）                 | ✅ 已替掉 `beego/i18n`      |
 | 日志     | `uber-go/zap` + Lumberjack（beego/logs shim）          | ✅ Round 4 T4            |
-| 缓存     | `internal/cache` 接口 + msgpack；方案仍为 A                 | Round 1 已抽象；T7 报告未写     |
+| 缓存     | `internal/cache` 接口 + msgpack；方案仍为 A                 | Round 5 T1 出报告     |
 | 模板     | `html/template`（beego 内置）                            | 稳定                      |
 | CLI 服务 | `cobra` + `kardianos/service`                        | Round 1/2               |
 | 数据库驱动  | `go-sql-driver/mysql` + `mattn/go-sqlite3`           | 稳定，无 PostgreSQL         |
 | MCP    | 官方 `modelcontextprotocol/go-sdk`；stdio + HTTP `/mcp` | ✅ Round 3 MVP + T13 P0  |
-| 前端     | Bootstrap 3.2 + jQuery + editor.md 等；P1 已去 IE / 补版本号 | ⏳ Vite P2 未做            |
+| 前端     | Bootstrap 3.2 + jQuery + editor.md 等；P1 已去 IE / 补版本号 | ⏳ Vite → Round 5 T6            |
+| 搜索     | Web/MCP 现为 `LIKE`                                   | ⏳ FULLTEXT → Round 5 T3       |
 
 
 
@@ -238,7 +240,7 @@ doc/
   - 配置文件：中期曾迁 `configs/`；**Round 2 收尾 A 定型仍为根目录 `conf/`**（`app.conf` / `lang/`）
   - 全仓 30+ 处 `import "git.itopcms.com/jackliu/doc/conf"` → `internal/config`
   - 硬编码路径最终对齐 `"./conf/app.conf"`、`"conf/lang/"+lang+".ini"`（勿再写回 `configs/`）
-3. **Controller 拆分**（可选，建议 Round 4 再做）：`DocumentController.go` 37KB 按方法组拆成 `internal/controller/document/read.go`、`edit.go`、`history.go`、`export.go`。**Round 2 只搬目录、不拆域**，减小 blast radius。
+3. **Controller 拆分**（可选，📦 **Round 5 T10**）：`DocumentController.go` 37KB 按方法组拆成 `internal/controller/document/read.go`、`edit.go`、`history.go`、`export.go`。**Round 2 只搬目录、不拆域**，减小 blast radius。
 4. `routers` **拆分**：见 [router-split-migration-plan.md](./router-split-migration-plan.md)，落到 `internal/router/`。
 5. **模板/静态资源路径**：`commands/command.go:311, 332, 334, 337, 342, 345-347` 的 `ViewsPath` / `StaticDir` / 字体路径全部同步；`BookResult.go` 里的导出资源拷贝路径也要一起改（详见 frontend-backend-split-migration-plan.md 附录 A）。
 6. **中间件合并**：原 `middleware/filter.go` + `routers/filter.go` 合到 `internal/middleware/`。
@@ -548,7 +550,7 @@ type Cache interface {
 | ---------- | -------------------------------------------------------------------------------- | --------- |
 | ~~**P0**~~ | ~~修 katex 404、editor.md 升 v1.7.17、mermaid 升 10.x~~ ✅ **已完成（历史 PR）**              | ~~0.5 天~~ |
 | **P1**     | 静态资源加版本号（现有 `cdnjs "..." "version"` 机制铺开）；删 `respond.js` / `html5shiv`（不再支持 IE8） | 1~2 天     |
-| **P2**     | 引入前端构建工具（Vite），vendor 集中管理；抽离 `views/*.tpl` 里的内联 JS                              | 1~2 周     |
+| **P2**     | 引入前端构建工具（Vite），vendor 集中管理；抽离 `views/*.tpl` 里的内联 JS                              | 1~2 周 · 📦 Round 5 T6     |
 | **P3**     | 逐步替换：Bootstrap 3 → Bootstrap 5 或 Tailwind；jQuery 组件 → Vue 3 组件（增量迁移，不用一次性 SPA 化） | 3~4 周     |
 | **P4**     | 后端只做 API + 模板；`web-ui/` 用 Vue 3 + TypeScript + Vite 做完整 SPA；老模板路由保留兼容期           | 长期        |
 
@@ -600,7 +602,7 @@ type Cache interface {
 
 > 用户价值最高的一轮。**MCP 支持读写文档**，AI 助手直接接入。代码直接写在 Round 2 完成的最终目录（`internal/mcp/`），零重复搬迁。
 
-- [ ] **搜索最小方案**（对齐 upstream-mindoc-checklist.md §1.1）：MySQL FULLTEXT / SQLite FTS5 + 标题加权 — **⏸ 暂缓**（过渡期 `LIKE`；归 Round 4 T11）
+- [ ] **搜索最小方案**（对齐 upstream-mindoc-checklist.md §1.1）：MySQL FULLTEXT / SQLite FTS5 + 标题加权 — **⏸ 已移交 Round 5 T3**（过渡期 `LIKE`）
 - [x] **MCP MVP · stdio**：官方 `modelcontextprotocol/go-sdk` v1.x，10 个工具（4 读 + 6 写）
   - [x] 读：`search_document` / `get_document` / `list_books` / `list_document_tree`
   - [x] 写：`create_document` / `update_document_content`（乐观锁）/ `append_document_content` / `update_document_meta` / `release_document` / `delete_document`（`confirm: true`）
@@ -609,27 +611,43 @@ type Cache interface {
 - [x] `internal/dto/mcpdto/`：工具 In/Out struct（为 Round 4 Repository/Service 分层铺路）
 - [x] `docs/mcp-integration.md`：Claude Desktop / Cursor stdio + HTTP 接入示例
 - [x] **MCP 体验收尾（§十七）P0**：stdio 静默 stdout、append 乐观锁/`auto_release`、长文写入约定（Round 4 T13 / `c70d4c1`）
-- [ ] **MCP 体验 P1（按需）**：upsert / get 截断 / search 带 identify
+- [ ] **MCP 体验 P1（按需）**：upsert / get 截断 / search 带 identify — **→ Round 5 T5**
 - [x] **明确不做**：MCP `create_book` / `update_book`（项目生命周期继续走 Web）
 
 **风险：** 中。MCP 是新增功能，不影响存量；写工具通过现有 `BookRole` + 乐观锁 + `confirm` 参数控制风险。搜索改动限于 `models/DocumentSearchResult.go` + 建索引。
 
 ### 🏅 Round 4：模型 / 日志 / 前端现代化（3~4 周，按需推进）
 
-> **进度（2026-08-03）：** 代码主线已合入 `v2.2.1`。详见 [round-4-execution-plan.md §十六](./round-4-execution-plan.md#十六追踪表)。
+> **进度（2026-08-03）：** 代码主线已合入 `v2.2.1`。详见 [round-4-execution-plan.md §十六](./round-4-execution-plan.md#十六追踪表)。  
+> **遗留移交：** 报告 / Vite / P1 / T11 / 分层债 → [Round 5](./round-5-execution-plan.md)。
 
 - [x] **模型层**：`BookModel` 拆解 + Repository 初版 + `md_` 硬编码修复（业务 SQL）
 - [x] **日志换** `uber-go/zap` + Lumberjack + beego/logs shim；stdio 禁 stdout
 - [x] **i18n**：移除 `beego/i18n`，落地 `internal/i18n`（保留 `.ini`；未强绑 go-i18n/toml）
 - [x] **前端 P1**：去 IE shim / 条件注释；cdnjs 版本号
-- [ ] **前端 P2**：Vite 构建（未开始）
+- [ ] **前端 P2**：Vite 构建 — **→ Round 5 T6**
 - [x] **Session**：只存 `member_id` + remember msgpack；FilterUser 跟进修复
 - [x] **测试基线**：`pkg/`* + errs/auth/logging/i18n/repository（见 [round-4-coverage.md](./round-4-coverage.md)）
-- [ ] （可选）T7「维持 A」缓存评估报告；T12 ORM 评估报告
-- [ ] （可选）根据 MCP 使用反馈评估倒排索引（bleve / meilisearch）— T11，等数据
-- [x] （可选）**T13 MCP 体验 P0** 已收口；P1 按需未做（**不含** Book 写工具）
+- [ ] （可选）T7「维持 A」缓存评估报告；T12 ORM 评估报告 — **→ Round 5 T1/T2**
+- [ ] （可选）根据 MCP 使用反馈评估倒排索引（bleve / meilisearch）— **→ Round 5 T4**
+- [x] （可选）**T13 MCP 体验 P0** 已收口；P1 → Round 5 T5（**不含** Book 写工具）
 
 **风险：** 较高，但可拆多个小 PR。**ORM 迁移建议单独立项**，别混进来。
+
+### 🎯 Round 5：搜索可用化 + 前端构建 + 工程化收尾（3~5 周，按需推进）
+
+> **进度（2026-08-03）：** ⏳ 规划完成、未开工。明细见 [round-5-execution-plan.md](./round-5-execution-plan.md)。
+
+- [ ] **T1/T2** 缓存「维持 A」报告 + ORM 评估报告（只评估）
+- [ ] **T3** 搜索 FULLTEXT/FTS5 + Provider（承接 Round 3 T1）
+- [ ] **T5** MCP P1（upsert / 截断 / search identify）
+- [ ] **T6** 前端 Vite P2（建议独立 sprint）
+- [ ] **T7** `scripts/test.sh` + CI 覆盖率门槛
+- [ ] **T8/T9** `*Result`→dto + Repository 扩面 / 可选 Service
+- [ ] （可选）T4 倒排评估 · T10 Controller 拆分 · T11 安全头 · T12 缓存实施 · T13 拆 bootstrap
+- [x] **明确不做**：完整 ORM 替换实施、Bootstrap5/Vue SPA、MCP Book 写工具、OTel
+
+**风险：** 中。搜索升级需锁表/迁移说明；Vite 体量大宜单开；缓存/倒排/ORM 实施均有闸门。
 
 ---
 
@@ -646,7 +664,7 @@ type Cache interface {
 | 4   | `config_auto_delay` 热加载                     | `commands/command.go:468-512`；重构配置时要保留或明确宣布废弃                                                           | Round 2 完成时明确表态                                                                                                                         |
 | 5   | `orm.DefaultRowsLimit = -1` 全局关掉了默认分页       | `commands/command.go:39`；重构 model 时不要依赖默认                                                               | 显式在每个 Query 里写 `Limit()`                                                                                                                |
 | 6   | Beego `web.BConfig.WebConfig.ViewsPath` 硬编码 | `commands/command.go:345-347`；目录变动要同步                                                                   | Round 2 迁移时统一改                                                                                                                          |
-| 7   | 前端 vendor 无版本管理                             | 升级/回退困难                                                                                                 | Round 4 引入 Vite 时用 npm/pnpm 管起来                                                                                                         |
+| 7   | 前端 vendor 无版本管理                             | 升级/回退困难                                                                                                 | 📦 Round 5 T6 引入 Vite 时用 npm/pnpm 管起来                                                                                                         |
 | 8   | **AI 通过 MCP 批量误删/误覆盖文档**                    | `delete_document` 若无保护，AI 幻觉可导致成片文档消失                                                                   | ① 强制 `confirm: true` 参数；② 每分钟删除/写入次数限流（`golang.org/x/time/rate`）；③ 写工具保存前存快照到 `DocumentHistory`；④ Round 3 上线前先在测试项目跑                    |
 | 9   | **AI 与人同时编辑同一文档**                           | AI 覆盖人的未保存改动，或反之                                                                                        | `update_document_content` 强制带 `expect_version`（对应 `Document.Version` 时间戳）做乐观锁；版本不匹配返回 `VERSION_CONFLICT`，AI 侧 `get_document` 后重试        |
 | 10  | **MCP API Token 泄露**                        | Token 一旦泄露，AI 侧任何写权限都可能被滥用                                                                              | ① 数据库只存 `sha256(token)`，不存明文；② 支持 `expires_at` 和一键撤销；③ 记录 `last_used_at`，异常访问可审计；④ HTTP 强制 HTTPS（部署要求）                                  |
@@ -705,8 +723,8 @@ type Cache interface {
 | 块 | 内容 | 状态 |
 |---|---|---|
 | **A** | `configs/` → Beego 默认 **`conf/`**（A1–A7：目录、Go 路径、部署脚本、ignore、preflight、文档、本地 conf） | ✅ |
-| **B1** | `*Result` → `internal/dto/` | ⏭ 跳过（Round 4 再议；见 §八 2026-07-30） |
-| **B2** | 拆 `internal/app/bootstrap.go` | ⏭ 跳过（见 §八 2026-07-30） |
+| **B1** | `*Result` → `internal/dto/` | ⏭ 跳过（📦 已移交 Round 5 T8；见 §八） |
+| **B2** | 拆 `internal/app/bootstrap.go` | ⏭ 跳过（📦 已移交 Round 5 T13） |
 | **B3** | `enumerate_legacy` → `enum` / `working_dir` / `getters` | ✅ |
 | **B4** | 业务侧收敛 `web.AppConfig` 直读 | ✅ |
 | **C1–C5** | install / Docker compose / i18n / 导出 / spug staging | ✅ |
@@ -724,22 +742,22 @@ type Cache interface {
 
 
 
-### Round 3（MCP + 搜索）— ✅ MVP；T1 ⏸
+### Round 3（MCP + 搜索）— ✅ MVP；T1 📦→R5
 
 详见 [round-3-execution-plan.md §十四](./round-3-execution-plan.md#十四追踪表)。
 
-- [ ] 搜索 FULLTEXT/FTS5 + 标题加权 — **⏸ 暂缓**（过渡期 LIKE）
+- [ ] 搜索 FULLTEXT/FTS5 + 标题加权 — **→ Round 5 T3**（过渡期 LIKE）
 - [x] MCP stdio · 4 读 + 6 写工具
 - [x] `MemberApiToken` + 后台管理页
 - [x] MCP Streamable HTTP + Bearer + 限流
 - [x] `internal/dto/mcpdto/`
 - [x] `docs/mcp-integration.md`
 - [x] §十七 **P0** 体验（经 Round 4 T13）
-- [ ] §十七 **P1**（按需）
+- [ ] §十七 **P1** — **→ Round 5 T5**
 
 
 
-### Round 4 — 🔶 代码主线 ✅
+### Round 4 — 🔶 代码主线 ✅（遗留移交 Round 5）
 
 详见 [round-4-execution-plan.md §十六](./round-4-execution-plan.md#十六追踪表) / [§十六附](./round-4-execution-plan.md#十六附完成度核查2026-08-03)。合入分支 `v2.2.1`。
 
@@ -752,9 +770,21 @@ type Cache interface {
 - [x] 前端 P1 — `98c8bb4`
 - [x] T10 测试基线 — `cd8e446`；[round-4-coverage.md](./round-4-coverage.md)
 - [x] T13 MCP P0 — `c70d4c1`
-- [ ] 前端 P2 Vite
-- [ ] T7「维持 A」报告 / T12 ORM 评估报告
-- [ ] T13 P1（按需）/ T11（等数据）
+- [ ] 前端 P2 Vite / T7·T12 报告 / T13 P1 / T11 — **→ [Round 5](./round-5-execution-plan.md)**
+
+
+
+### Round 5 — ⏳ 规划中（未开工）
+
+详见 [round-5-execution-plan.md §十四](./round-5-execution-plan.md#十四追踪表)。
+
+- [ ] T1 缓存评估报告 · T2 ORM 评估报告
+- [ ] T3 搜索 FULLTEXT/FTS5 + Provider
+- [ ] T5 MCP P1
+- [ ] T6 Vite P2（建议独立 sprint）
+- [ ] T7 测试 CI / 覆盖率门槛
+- [ ] T8 `*Result`→dto · T9 Repo/Service 扩面
+- [ ] （可选/闸门）T4 倒排 · T10 Controller 拆分 · T11 安全头 · T12 缓存实施 · T13 bootstrap
 
 ---
 
@@ -778,9 +808,10 @@ type Cache interface {
 | **2026-07-29** | **配置文件本轮是否拆多文件？**                                                   | **否**，定型后 `conf/app.conf` 内部 `[section]` 分组即可；`conf.d/` 多文件方案作为**未来可选** | ① beego ini 原生支持 `[section]` + `section::key`，改动量最小；② 单文件便于运维/diff/Docker 挂载；③ Step 3 上强类型 `Config` struct 后，无论单/多文件对调用方透明；④ 现有配置未到拆文件收益门槛                                                                                                                             |
 | **2026-07-29** | **日志库选型：slog vs zap？**                                              | `uber-go/zap`                                                             | ① 业界事实标准，性能最佳（分配数最少）；② 生态最完善：Lumberjack 轮转 / Sentry / OpenTelemetry 桥接现成；③ Sugared/非 Sugared 双 API 便于从 `beego/logs` 渐进式迁移（先用 Sugared 保留 printf 风格，再逐步换成 zap.Field）；④ `slog` 是标准库但社区桥接仍在补齐，且团队后续接入 APM/告警系统时 zap 生态更省事；⑤ Round 1 已经引入 `cobra` 等新依赖，多一个 `go.uber.org/zap` 边际成本低 |
 | **2026-07-29** | **前端 P0 修复项（editor.md / katex / mermaid）是否再做？**                     | **不做**，已在历史 PR 完成                                                         | ① editor.md 已升 v1.7.17；② katex 404 已修；③ mermaid 已升 10.x；④ **本路线图后续任何一轮不再重复列入**，避免下次生成/审阅时又把它们当待办；如未来因回归再次出现，另开新条目                                                                                                                                                             |
-| **2026-07-30** | **Round 2 收尾 B1：**`*Result` **→** `internal/dto/`**？**              | **本轮不做**，暂留 `internal/model/`；Round 4 再搬                                  | Result 文件内含 orm/`NewBook()` 等，硬搬易与 model 循环依赖；计划本就允许暂留                                                                                                                                                                                                                        |
-| **2026-07-30** | **Round 2 收尾 B2：拆** `internal/app/bootstrap.go`**？**                | **本轮不做**                                                                  | 功能可用；结构债不影响 Round 3                                                                                                                                                                                                                                                           |
+| **2026-07-30** | **Round 2 收尾 B1：**`*Result` **→** `internal/dto/`**？**              | **本轮不做**，暂留 `internal/model/`；**Round 5 T8** 再搬                                  | Result 文件内含 orm/`NewBook()` 等，硬搬易与 model 循环依赖；计划本就允许暂留                                                                                                                                                                                                                        |
+| **2026-07-30** | **Round 2 收尾 B2：拆** `internal/app/bootstrap.go`**？**                | **本轮不做**                                                                  | 功能可用；结构债不影响 Round 3；**Round 5 T13 低优再议**                                                                                                                                                                                                                                                           |
 | **2026-07-30** | **配置目录** `configs/` **vs** `conf/`**？**                             | **改回** `conf/`                                                            | Round 2 后 Go 包已在 `internal/config/`，可对齐 Beego 默认路径，消除启动噪音                                                                                                                                                                                                                     |
+| **2026-08-03** | **Round 5 主题与范围？** | **搜索可用化 + Vite + 工程化收尾 + 分层债**；ORM/gocache/倒排实施有闸门 | Round 4 代码主线已收；遗留报告/Vite/P1/搜索/CI/B1 不宜无限挂在 Round 4；见 [round-5-execution-plan.md](./round-5-execution-plan.md) |
 | **2026-07-31** | **MCP MVP 之后还要不要扩工具面？**                                             | **先补体验，不大扩工具**                                                            | Cursor 实测：10 工具读写闭环已够用；痛点是长文写入、stdio stdout 污染、`append` 缺锁/`auto_release`。详见 round-3 §十七 P0/P1/P2                                                                                                                                                                             |
 | **2026-07-31** | **是否增加 MCP** `create_book` **/** `update_book`**？**                 | **当前阶段不做**                                                                | MVP 定位「在已有项目里改文档」；Book 创建/设置字段重、误操作面大；建项目继续走 Web。出现「AI/CI 一键建空项目」稳定需求后再做最小集（title/identify/private ± description；默认不做 delete_book）                                                                                                                                            |
 | **2026-08-03** | **Round 4 T5：是否上 go-i18n/v2 + toml？**                               | **否**；落地 `internal/i18n` 读既有 `.ini`                                       | 保持 `section.key` + `Sprintf` 与模板 `{{i18n}}` 零改动；去掉 11 年前的 `beego/i18n` 即可。复数/ICU 需求出现后再迁                                                                                                                                                                                      |
@@ -818,7 +849,8 @@ refactor-roadmap.md（本文，总纲）+ docs/README.md（文档索引与进度
 │   ├─► round-2-execution-plan.md    （Round 2 · ✅ 已完成）
 │   ├─► round-3-execution-plan.md    （Round 3 · MVP ✅；T1⏸；§十七 P0✅）
 │   ├─► round-4-execution-plan.md    （Round 4 · 代码主线 ✅；§十六附完成度核查）
-│   └─► round-4-coverage.md          （Round 4 T10 测试基线）
+│   ├─► round-4-coverage.md          （Round 4 T10 测试基线）
+│   └─► round-5-execution-plan.md    （Round 5 · ⏳ 搜索 / Vite / 工程化）
 │
 ├─► 【参考文档】历史决策与横向清单
 │   ├─► frontend-backend-split-migration-plan.md   （目标二 · 硬编码定位表，Round 2 引用）

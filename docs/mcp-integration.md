@@ -184,7 +184,7 @@ curl -s https://docs.example.com/mcp \
 
 #### `search_document`
 
-当前搜索实现为 **SQL LIKE**（Round 3 T1 FULLTEXT 暂缓）。
+当前搜索实现为 **SQL LIKE**（Round 3 T1 已📦移交 [Round 5 T3](./round-5-execution-plan.md)；FULLTEXT 尚未落地）。
 
 ```json
 // In
@@ -362,7 +362,7 @@ stdio 模式 stdout 专供 MCP JSON-RPC。已在 bootstrap 前关闭 console log
 
 ### 搜索结果和网页不太一样？
 
-T1 FULLTEXT 暂缓，`search_document` 现为 LIKE，与 Web 全局搜索策略接近但不保证排序完全一致。
+T1 FULLTEXT 已📦移交 Round 5 T3，`search_document` 现为 LIKE，与 Web 全局搜索策略接近但不保证排序完全一致。
 
 ---
 
@@ -388,4 +388,4 @@ T1 FULLTEXT 暂缓，`search_document` 现为 LIKE，与 Web 全局搜索策略�
 
 更多实现细节见 [round-3-execution-plan.md](./round-3-execution-plan.md)。  
 后续体验增强与「是否做 Book 写工具」的规划见 [round-3-execution-plan.md §十七](./round-3-execution-plan.md#十七后续规划mcp-实测反馈与体验增强)。  
-**进度：** §十七 **P0 已合入**（Round 4 T13）；P1 按需；Book 写工具当前不做。整体轮次进度见 [docs/README.md](./README.md)。
+**进度：** §十七 **P0 已合入**（Round 4 T13）；**P1 📦 已移交 Round 5 T5**；Book 写工具当前不做。整体轮次进度见 [docs/README.md](./README.md) / [round-5-execution-plan.md](./round-5-execution-plan.md)。
