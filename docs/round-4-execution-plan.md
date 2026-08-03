@@ -762,11 +762,11 @@ Round 4 结束前团队开会拍板：
 | T1 | `BookModel` 拆解 | ✅ 已做完 | `v2.2.1`（经 `feat/round4-t1-t3`） | `c090401` | ✅ 已完成（方案 A：`book_model` / `book_query` / `book_copy` / `book_import*`） |
 | T2 | Repository 抽象 | ✅ 可开工（T13 P0-2 已合） | `v2.2.1` | | 未开始 |
 | T3 | `md_` 硬编码修复 | ✅ 已做完 | `v2.2.1`（经 `feat/round4-t1-t3`） | `c090401` | ✅ 已完成（业务 raw SQL；`migrate/` 未改） |
-| T4 | zap + Lumberjack | ✅ 已做完 | `v2.2.1` | （本批） | ✅ 已完成（`internal/logging` + beego shim；stdio 禁 stdout） |
+| T4 | zap + Lumberjack | ✅ 已做完 | `v2.2.1` | `0a1df13` | ✅ 已完成（`internal/logging` + beego shim；stdio 禁 stdout） |
 | T5 | go-i18n/v2 | ✅ 可立刻 | `v2.2.1` | | 未开始 |
-| T6 | Session 只存 id + remember msgpack | ✅ 已做完 | `v2.2.1` | （本批） | ✅ 已完成（方案 B；**上线需清 session**） |
+| T6 | Session 只存 id + remember msgpack | ✅ 已做完 | `v2.2.1` | `4141346` | ✅ 已完成（方案 B；**上线需清 session**） |
 | T7 | 缓存评估报告 | ⚠️ 仅「维持 A」报告；实施暂缓 | `v2.2.1` | | 未开始 |
-| T8 | 前端 P1 | ✅ 已做完 | `v2.2.1` | （本批） | ✅ 已完成（去 IE shim；cdnjs `"version"`） |
+| T8 | 前端 P1 | ✅ 已做完 | `v2.2.1` | `98c8bb4` | ✅ 已完成（去 IE shim；cdnjs `"version"`） |
 | T9 | Vite 构建 (P2) | ⚠️ 建议 T8 后 | `v2.2.1` | | 未开始 |
 | T10 | 补测试 | ✅ pkg/errs/config 可立刻；Repo 等 T2 | `v2.2.1` | | 未开始 |
 | T11 | 搜索后端评估 | ❌ 等 2~4 周数据 | — | | 暂缓 |
