@@ -736,8 +736,9 @@ Round 4 结束前团队开会拍板：
 ### PR-6（gob→msgpack）单独强调
 
 - [ ] 现网 session 存储清空（同 Round 2 T9 SOP）
-- [ ] `cache/` 目录清空
-- [ ] CHANGELOG 显眼位置写"⚠️ Breaking：需清 session + cache/，用户需重新登录"
+- [ ] `cache/` 目录清空（若仍用 file session/cache）
+- [ ] CHANGELOG 显眼位置写"⚠️ Breaking：需清 session；用户需重新登录"（Round 4 T6：Session 仅存 member_id + remember msgpack）
+- [ ] 旧「记住我」cookie 会失效，属预期
 
 ### 常规
 
@@ -753,7 +754,7 @@ Round 4 结束前团队开会拍板：
 
 > 更新日期：**2026-08-03**。准入列见 [§二附](#二附开工准入2026-07-31-核查)。  
 > **合入分支：** 已完成项均已合入 **`v2.2.1`**；**后续 Round 4 改动一律在 `v2.2.1` 上直接推进**（不再为每项单开长期 feature 分支，除非破坏面大需隔离评审）。  
-> **进度摘要：** T13 P0 / T1 / T3 ✅；T2 前置（T13 P0-2）已解除；T4 前置（P0-1 stdout）已解除；T11 / T7 实施仍暂缓。
+> **进度摘要：** T13 P0 / T1 / T3 / **T4 / T6 / T8** ✅；T2/T5/T10/T12 可继续；T11 / T7 实施仍暂缓。
 
 
 | # | 任务 | 准入 | 分支 / PR | Commit | 状态 |
@@ -761,18 +762,18 @@ Round 4 结束前团队开会拍板：
 | T1 | `BookModel` 拆解 | ✅ 已做完 | `v2.2.1`（经 `feat/round4-t1-t3`） | `c090401` | ✅ 已完成（方案 A：`book_model` / `book_query` / `book_copy` / `book_import*`） |
 | T2 | Repository 抽象 | ✅ 可开工（T13 P0-2 已合） | `v2.2.1` | | 未开始 |
 | T3 | `md_` 硬编码修复 | ✅ 已做完 | `v2.2.1`（经 `feat/round4-t1-t3`） | `c090401` | ✅ 已完成（业务 raw SQL；`migrate/` 未改） |
-| T4 | zap + Lumberjack | ✅ 可开工（P0-1 已合；MCP stdio 仍禁 stdout） | `v2.2.1` | | 未开始 |
+| T4 | zap + Lumberjack | ✅ 已做完 | `v2.2.1` | （本批） | ✅ 已完成（`internal/logging` + beego shim；stdio 禁 stdout） |
 | T5 | go-i18n/v2 | ✅ 可立刻 | `v2.2.1` | | 未开始 |
-| T6 | gob→msgpack（**仅 session**；cache 已 msgpack） | ✅ 可立刻 | `v2.2.1` | | 未开始（上线需清 session） |
+| T6 | Session 只存 id + remember msgpack | ✅ 已做完 | `v2.2.1` | （本批） | ✅ 已完成（方案 B；**上线需清 session**） |
 | T7 | 缓存评估报告 | ⚠️ 仅「维持 A」报告；实施暂缓 | `v2.2.1` | | 未开始 |
-| T8 | 前端 P1 | ✅ 可立刻 | `v2.2.1` | | 未开始 |
+| T8 | 前端 P1 | ✅ 已做完 | `v2.2.1` | （本批） | ✅ 已完成（去 IE shim；cdnjs `"version"`） |
 | T9 | Vite 构建 (P2) | ⚠️ 建议 T8 后 | `v2.2.1` | | 未开始 |
 | T10 | 补测试 | ✅ pkg/errs/config 可立刻；Repo 等 T2 | `v2.2.1` | | 未开始 |
 | T11 | 搜索后端评估 | ❌ 等 2~4 周数据 | — | | 暂缓 |
 | T12 | ORM 迁移评估报告 | ✅ 可立刻 | `v2.2.1` | | 未开始 |
 | T13 | MCP 体验增强（§十七 **P0**） | ✅ 已做完 | `v2.2.1`（经 `feat/round4-t13-mcp-p0`） | `c70d4c1`（merge `92b4d08`） | ✅ 已完成（P0-1/2/3；**P1 未做**） |
 
-**建议下一批（仍在 `v2.2.1`）：** 按 §二附 → T4 / T6 / T8 / T5 / T10(pkg) 可并行；或 T2 → T10(repo)。开新项前仍按约定：有疑问先确认再改。
+**建议下一批（仍在 `v2.2.1`）：** T5 / T10(pkg) / T12 或 T2 → T10(repo)。开新项前仍按约定：有疑问先确认再改。
 
 ---
 

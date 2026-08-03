@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased / Round 4
+
+> ⚠️ **Breaking（T6 Session）**：升级后需**清空 session 存储**（file/redis 等 SessionProvider 目录或键），并视为旧「记住我」cookie 失效；用户需重新登录。  
+> Session 现仅存 `member_id`；cookie remember 改为 msgpack（`pkg/gob` 实现已换，包名保留）。
+
+### Changed
+
+- 日志：`uber-go/zap` + Lumberjack，经 beego/logs shim 转发；MCP stdio 仍禁 stdout（仅文件 / 可选 stderr）
+- Session：不再 gob 序列化整份 `Member`
+- 前端 P1：移除 IE shim / 条件注释；常用静态资源 `cdnjs` 补 `"version"`
+
 ## Unreleased / Round 2
 
 > ⚠️ **Breaking**：从旧版本升级到 Round 2 必须**清 session + 清 `runtime/cache/`（及旧 `cache/`）**，用户需重新登录。  

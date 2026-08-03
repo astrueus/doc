@@ -47,12 +47,14 @@ func (c *BaseController) Prepare() {
 	c.EnableAnonymous = false
 	c.EnableDocumentHistory = false
 
-	if member, ok := c.GetSession(config.LoginSessionName).(model.Member); ok && member.MemberId > 0 {
-		c.Member = &member
-		c.Data["Member"] = c.Member
+	if memberID, ok := sessionMemberID(c.GetSession(config.LoginSessionName)); ok && memberID > 0 {
+		if member, err := model.NewMember().Find(memberID); err == nil && member != nil && member.MemberId > 0 {
+			c.Member = member
+			c.Data["Member"] = c.Member
+		}
 	} else {
 		var remember CookieRemember
-		// //如果Cookie中存在登录信息，从cookie中获取用户信息
+		//如果Cookie中存在登录信息，从cookie中获取用户信息
 		if cookie, ok := c.GetSecureCookie(config.GetAppKey(), "login"); ok {
 			if err := gob.Decode(cookie, &remember); err == nil {
 				if member, err := model.NewMember().Find(remember.MemberId); err == nil {
@@ -86,7 +88,8 @@ func (c *BaseController) isUserLoggedIn() bool {
 	return c.Member != nil && c.Member.MemberId > 0
 }
 
-// SetMember 获取或设置当前登录用户信息,如果 MemberId 小于 0 则标识删除 Session
+// SetMember 获取或设置当前登录用户信息,如果 MemberId 小于 0 则标识删除 Session。
+// Session 只存 member_id（int），避免 gob 序列化结构体随包路径失效。
 func (c *BaseController) SetMember(member model.Member) {
 
 	if member.MemberId <= 0 {
@@ -94,9 +97,28 @@ func (c *BaseController) SetMember(member model.Member) {
 		c.DelSession("uid")
 		c.DestroySession()
 	} else {
-		c.SetSession(config.LoginSessionName, member)
+		c.SetSession(config.LoginSessionName, member.MemberId)
 		c.SetSession("uid", member.MemberId)
 	}
+}
+
+// sessionMemberID extracts member id from session value (int or legacy Member).
+func sessionMemberID(v any) (int, bool) {
+	switch id := v.(type) {
+	case int:
+		return id, id > 0
+	case int64:
+		return int(id), id > 0
+	case float64: // JSON/session providers sometimes store numbers as float64
+		return int(id), int(id) > 0
+	case model.Member:
+		return id.MemberId, id.MemberId > 0
+	case *model.Member:
+		if id != nil {
+			return id.MemberId, id.MemberId > 0
+		}
+	}
+	return 0, false
 }
 
 // JsonResult 响应 json 结果

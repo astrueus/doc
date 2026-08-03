@@ -1,30 +1,21 @@
+// Package gob provides Encode/Decode helpers for cookie remember tokens.
+// Implementation uses msgpack (not encoding/gob) so type names stay package-path independent.
 package gob
 
 import (
-	"bytes"
-	"encoding/gob"
+	"github.com/vmihailenco/msgpack/v5"
 )
 
-//解码
+// Decode unmarshals msgpack bytes from value into r.
 func Decode(value string, r any) error {
-
-	network := bytes.NewBuffer([]byte(value))
-
-	dec := gob.NewDecoder(network)
-
-	return dec.Decode(r)
+	return msgpack.Unmarshal([]byte(value), r)
 }
 
-//编码
+// Encode marshals value to a msgpack string.
 func Encode(value any) (string, error) {
-	network := bytes.NewBuffer(nil)
-
-	enc := gob.NewEncoder(network)
-
-	err := enc.Encode(value)
+	b, err := msgpack.Marshal(value)
 	if err != nil {
 		return "", err
 	}
-
-	return network.String(), nil
+	return string(b), nil
 }
