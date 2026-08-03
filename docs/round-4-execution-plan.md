@@ -1,10 +1,12 @@
 # Round 4 · 执行文档（模型 / 日志 / i18n / 前端现代化）
 
 > 本文是 [refactor-roadmap.md §五 Round 4](./refactor-roadmap.md#🏅-round-4模型--日志--前端现代化3~4-周按需推进) 的**可执行分解**。
-> 目标：把 Round 1~3 打好的目录/配置/MCP 基础之上，做**质量类**改造 — 大 Model 拆分、Repository 抽象、`md_` 硬编码修复、日志换 zap、i18n 换 go-i18n/v2、前端 Vite 构建。
+> 目标：把 Round 1~3 打好的目录/配置/MCP 基础之上，做**质量类**改造 — 大 Model 拆分、Repository 抽象、`md_` 硬编码修复、日志换 zap、i18n 现代化、前端静态资源治理（P1）与可选 Vite（P2）。
 > **按需推进：** 本轮所有子项**相互独立**，可以按团队精力挑做，不做也不阻塞其他轮次。
 >
-> **状态（2026-07-31）：** 前置核查完成；**技术硬前置已齐，时间窗口类与 Round 3 §十七 P0 未齐**。可按 [§二附](#二附开工准入2026-07-31-核查) 分批开工，**不宣称 Round 4 前置全部完成**。
+> **状态（2026-08-03 核查）：** 可立刻/有条件开工的代码项中，**T1–T6、T8、T10(pkg)、T13 P0、T2 初版、T5（internal/i18n）已合入 `v2.2.1`**。仍开放：T7「维持 A」报告、T9 Vite、T12 ORM 评估报告、T13 P1（按需）、T11（数据窗口）。详见 [§十六](#十六追踪表) / [§十六附](#十六附完成度核查2026-08-03)。
+>
+> **历史（2026-07-31）：** 前置核查完成；当时技术硬前置已齐，时间窗口类与 Round 3 §十七 P0 未齐。可按 [§二附](#二附开工准入2026-07-31-核查) 分批开工（§二附保留当日口径，完成态以 §十六为准）。
 
 ---
 
@@ -18,7 +20,7 @@
 | T2 | Repository 抽象（Book / Document / Member 三优先） | 3~5 天 | 否（渐进） |
 | T3 | `md_` 表前缀硬编码修复 | 0.5 天 | 否 |
 | T4 | 日志换 `uber-go/zap` + Lumberjack 轮转 | 2~3 天 | 否（保留 beego/logs 兼容 shim） |
-| T5 | `beego/i18n` → `nicksnyder/go-i18n/v2` | 2~3 天 | 否 |
+| T5 | `beego/i18n` → 自研 `internal/i18n`（保留 `.ini`；原计划 go-i18n/v2 见 §七落地说明） | 2~3 天 | 否 |
 | T6 | Session/gob 序列化换 msgpack（**根治** Round 2 风险 13） | 1~2 天 | 否 |
 | T7 | 缓存方案 B 评估 · 上 `gocache/v3` 或 singleflight + tag | 2~3 天 | 否 |
 | T8 | 前端 P1：静态资源版本号 + 删 IE 兼容 shim | 1~2 天 | 否 |
@@ -64,7 +66,7 @@
 | MCP 工具生产运行 ≥ 2 周 + 使用统计 | ❌ | 当天本地实测，无生产窗口 |
 | 是否上倒排索引（基于搜索质量反馈）的决策 | ❌ 尚早 | Round 3 T1 暂缓；缺召回/投诉数据；归 T11 |
 | `internal/dto/mcpdto/` 结构稳定 | ✅ | `book.go` / `document.go` / `search.go` 已落地 |
-| §十七 P0/P1 消化，或明确推迟到本轮 T13 | ⚠️ 半完成 | 追踪表仍「待做」；代码未做 P0；T13 可承接，但**尚未书面闭环「全部推迟」** |
+| §十七 P0/P1 消化，或明确推迟到本轮 T13 | ✅ P0 已合；P1 按需 | 2026-08-03：T13 P0-1/2/3 已合入；P1 仍可选未做 |
 
 ### 2.3 对开工的含义
 
@@ -230,10 +232,17 @@ func txOrm(ctx context.Context) orm.Ormer { ... }
 
 ### 验收
 
-- `internal/repository/` + `internal/service/` 存在
-- MCP 写工具走 Repository 层，测试通过
-- 至少给 `DocumentRepo` 补 3 个单元测试（用 sqlite 内存库）
-- 老 controller 一行未改（渐进原则）
+- [x] `internal/repository/` 存在（Document / Book / Member + tx 辅助）
+- [ ] `internal/service/` — **本轮未建**（MCP 直接调 Repository，属有意简化；若后续要统一业务编排可再加）
+- [x] MCP 写工具走 Repository 层（`UpdateMarkdownWithVersion` 等），单测通过
+- [x] `DocumentRepo` ≥ 3 个单元测试（sqlite 内存库）
+- [x] 老 controller 一行未改（渐进原则）
+
+### 落地说明（2026-08-03）
+
+- 路径：`internal/repository/*.go`，MCP 侧工厂 `internal/mcp/repo.go`
+- Book/Member Repo 已具备 `Find`；读路径 / 鉴权仍可直接调 `model`（渐进，不强制一次迁完）
+- UnitOfWork 为透传 stub，真事务可后续接入
 
 ---
 
@@ -635,8 +644,14 @@ go get github.com/stretchr/testify@latest
 
 ### 验收
 
-- `go test ./...` 无失败
-- coverage report 存到 `docs/round-4-coverage.md`
+- [x] `go test ./pkg/...` 相关包无失败（见 [round-4-coverage.md](./round-4-coverage.md)）
+- [x] Repository 乐观锁等测随 T2（`internal/repository/document_repo_test.go`）
+- [ ] `scripts/test.sh` / CI job — **未加**（可后续补）
+- [ ] 全仓覆盖率门槛 — 仅基线快照，未设 CI 硬闸
+
+### 落地说明（2026-08-03）
+
+优先完成了计划中的 **`pkg/` + errs/auth/logging/i18n**；`internal/service/` 因本轮未建 Service 层而无对应测。controller 仍不测（与计划一致）。
 
 ---
 
@@ -712,8 +727,9 @@ Round 4 结束前团队开会拍板：
 
 ### 验收
 
-- 与 Round 3 §17.5 清单一致
-- 既有 10 工具回归通过；工具列表仍**不包含** Book 写工具
+- [x] 与 Round 3 §17.5 P0 清单一致（stdio / append / 长文约定）
+- [x] 既有工具回归通过；工具列表仍**不包含** Book 写工具
+- [ ] P1（upsert / get 截断 / search identify）— 按需，未做
 
 ### 预估
 
@@ -756,82 +772,143 @@ Round 4 结束前团队开会拍板：
 
 ### PR-6（gob→msgpack）单独强调
 
-- [ ] 现网 session 存储清空（同 Round 2 T9 SOP）
-- [ ] `cache/` 目录清空（若仍用 file session/cache）
-- [ ] CHANGELOG 显眼位置写"⚠️ Breaking：需清 session；用户需重新登录"（Round 4 T6：Session 仅存 member_id + remember msgpack）
-- [ ] 旧「记住我」cookie 会失效，属预期
+- [ ] 现网 session 存储清空（同 Round 2 T9 SOP）— **上线运维项**
+- [ ] `cache/` 目录清空（若仍用 file session/cache）— **上线运维项**
+- [x] CHANGELOG 显眼位置写 Breaking（Session 仅存 member_id + remember msgpack）
+- [x] 旧「记住我」cookie 会失效，属预期（已文档化）
 
 ### 常规
 
-- [ ] 冒烟测试全通（登录 / 上传 / 导出 / 后台）
-- [ ] 日志：JSON 格式正确、按天/大小轮转
-- [ ] i18n：中英切换正常，所有 label 全对
-- [ ] MCP 依赖的 Repository 层无回归（Round 3 的 10 个工具全测）
-- [ ] 前端：Chrome / Firefox / Edge 主流版本正常
+- [ ] 冒烟测试全通（登录 / 上传 / 导出 / 后台）— **上线前人工**
+- [x] 日志：文件默认 json + lumberjack；控制台可读（代码侧）
+- [ ] i18n：中英切换正常 — **建议冒烟确认**（`internal/i18n` 已切换）
+- [ ] MCP 依赖的 Repository 层无回归（10 个工具）— **建议冒烟**
+- [ ] 前端：Chrome / Firefox / Edge 主流版本正常 — **建议冒烟**
 
 ---
 
 ## 十六、追踪表
 
-> 更新日期：**2026-08-03**。准入列见 [§二附](#二附开工准入2026-07-31-核查)。  
-> **合入分支：** 已完成项均已合入 **`v2.2.1`**；**后续 Round 4 改动一律在 `v2.2.1` 上直接推进**（不再为每项单开长期 feature 分支，除非破坏面大需隔离评审）。  
-> **进度摘要：** T13 P0 / T1 / T3 / T4 / T5 / T6 / T8 / **T10(pkg)** / **T2(Repo 初版)** ✅；T9 / T12 / T13 P1 / T7 报告可继续；T11 / T7 实施仍暂缓。
+> 更新日期：**2026-08-03**（推送至 `db4bb2b`）。准入列见 [§二附](#二附开工准入2026-07-31-核查)（历史口径）；**完成态以本表与 §十六附为准**。  
+> **合入分支：** 已完成项均已合入 **`v2.2.1`**；后续 Round 4 改动一律在 `v2.2.1` 上直接推进。  
+> **进度摘要：** 代码主线 **T1–T6、T8、T10(pkg)、T2 初版、T5、T13 P0** ✅。仍开放：**T7 报告 / T9 / T12 / T13 P1 / T11**；T7 实施与 T11 仍暂缓拍板。
 
 
 | # | 任务 | 准入 | 分支 / PR | Commit | 状态 |
 |---|---|---|---|---|---|
 | T1 | `BookModel` 拆解 | ✅ 已做完 | `v2.2.1`（经 `feat/round4-t1-t3`） | `c090401` | ✅ 已完成（方案 A：`book_model` / `book_query` / `book_copy` / `book_import*`） |
-| T2 | Repository 抽象 | ✅ 已做完（初版） | `v2.2.1` | `cd8e446` | ✅ Document/Book/Member Repo；MCP 写工具走 `DocumentRepo`；controller 未改 |
+| T2 | Repository 抽象 | ✅ 已做完（初版） | `v2.2.1` | `cd8e446` | ✅ Document/Book/Member Repo；MCP 写工具走 `DocumentRepo`；**无** `internal/service/`（有意简化） |
 | T3 | `md_` 硬编码修复 | ✅ 已做完 | `v2.2.1`（经 `feat/round4-t1-t3`） | `c090401` | ✅ 已完成（业务 raw SQL；`migrate/` 未改） |
 | T4 | zap + Lumberjack | ✅ 已做完 | `v2.2.1` | `0a1df13` + `f9be16c` | ✅ 已完成；跟进：默认 Info、stderr 可读有色、文件 json 无 ANSI |
 | T5 | i18n 替换 | ✅ 已做完 | `v2.2.1` | `cd8e446` | ✅ 移除 `beego/i18n`；`internal/i18n` 读既有 `.ini`（未强绑 go-i18n/toml） |
 | T6 | Session 只存 id + remember msgpack | ✅ 已做完 | `v2.2.1` | `4141346` + `f9be16c` | ✅ 已完成；跟进：`FilterUser`/`Account` 改用 `auth.MemberIDFromSession` |
-| T7 | 缓存评估报告 | ⚠️ 仅「维持 A」报告；实施暂缓 | `v2.2.1` | | 未开始 |
-| T8 | 前端 P1 | ✅ 已做完 | `v2.2.1` | `98c8bb4` | ✅ 已完成（去 IE shim；cdnjs `"version"`） |
-| T9 | Vite 构建 (P2) | ⚠️ 建议 T8 后 | `v2.2.1` | | 未开始 |
-| T10 | 补测试 | ✅ pkg 已做；Repo 测随 T2 | `v2.2.1` | `cd8e446` | ✅ `pkg/*` + errs/auth/logging/i18n；见 `docs/round-4-coverage.md` |
-| T11 | 搜索后端评估 | ❌ 等 2~4 周数据 | — | | 暂缓 |
-| T12 | ORM 迁移评估报告 | ✅ 可立刻 | `v2.2.1` | | 未开始 |
-| T13 | MCP 体验增强（§十七 **P0**） | ✅ 已做完 | `v2.2.1`（经 `feat/round4-t13-mcp-p0`） | `c70d4c1`（merge `92b4d08`） | ✅ 已完成（P0-1/2/3；**P1 未做**） |
+| T7 | 缓存评估报告 | ⚠️ 仅「维持 A」报告；实施暂缓 | `v2.2.1` | | ⏳ **报告未写**（实施仍不宜拍板上 gocache） |
+| T8 | 前端 P1 | ✅ 已做完 | `v2.2.1` | `98c8bb4` | ✅ 模板去 IE 条件注释；cdnjs `"version"`；`web/static` 下仍可能残留 html5shiv 等文件（未引用即可） |
+| T9 | Vite 构建 (P2) | ⚠️ T8 后可开 | `v2.2.1` | | ⏳ **未开始**（体量大） |
+| T10 | 补测试 | ✅ pkg + Repo 测已做 | `v2.2.1` | `cd8e446` | ✅ 基线见 [round-4-coverage.md](./round-4-coverage.md)；无 `scripts/test.sh`/CI 硬闸 |
+| T11 | 搜索后端评估 | ❌ 等 2~4 周数据 | — | | ⏸ 暂缓 |
+| T12 | ORM 迁移评估报告 | ✅ 可立刻 | `v2.2.1` | | ⏳ **报告未写**（本轮只评估不实施） |
+| T13 | MCP 体验增强 | ✅ P0 已做完 | `v2.2.1` | `c70d4c1`（merge `92b4d08`） | ✅ P0-1/2/3；⏳ **P1 按需未做** |
 
-**建议下一批（仍在 `v2.2.1`）：** T12 评估报告 / T13 P1 / T9 Vite / T7「维持 A」报告。
+**建议下一批（仍在 `v2.2.1`）：**
+
+1. **轻量文档：** T7「维持 A」报告 或 T12 ORM 评估报告  
+2. **按需体验：** T13 P1（upsert / get 截断 / search identify）  
+3. **大块工程：** T9 Vite（单独 sprint）  
+4. **勿开：** T11、T7 上 gocache 实施（缺数据）
 
 ---
 
-## 十七、Round 4 完成后的项目状态
+## 十六附、完成度核查（2026-08-03）
 
-- 目录形态：`cmd/` + `internal/` + `pkg/` + `web/` + `conf/` + `deployments/`（Round 2 定型）
-- 配置：强类型 `config.Config`，`[section]` 分组，支持 `.env`
-- 缓存：抽象接口 + msgpack 序列化 + 可选分层
-- 日志：zap 结构化 + Lumberjack 轮转
-- i18n：go-i18n/v2 + toml/ini 双支持
-- Model：大文件拆解 + Repository 层 + 部分测试
-- MCP：稳定运行；体验项见 Round 3 §十七 / 本轮 T13；可挂搜索后端（T11）
-- 前端：Vite 构建，vendor 集中，为 Round 5+ 的 Bootstrap/Vue 升级铺路
+> 对照 §二附「可立刻 / 有条件开工」与仓库实态。结论：**当时能开工的代码项已基本收口**；剩余多为报告、可选增强或大体量前端。
+
+### 已处理完成（代码已合 `v2.2.1`）
+
+| 项 | 核查要点 | 结论 |
+|---|---|---|
+| T13 P0 | stdio 静默、`expect_version`/`auto_release`、长文文档 | ✅ |
+| T1 / T3 | BookModel 拆分；业务 SQL 去硬编码 `md_` | ✅ |
+| T4 | `internal/logging` + shim；stdio 禁 stdout；体验跟进 | ✅ |
+| T6 | Session 只存 id；remember msgpack；FilterUser 跟进 | ✅ |
+| T8 | 模板 IE shim / 条件注释；cdnjs version | ✅ |
+| T5 | `go.mod` 无 `beego/i18n`；`internal/i18n` + 调用方已切换 | ✅（方案偏离原 go-i18n，见 §七） |
+| T10(pkg) | 多包 `*_test.go` + coverage 文档 | ✅（CI 脚本未做） |
+| T2 初版 | `internal/repository`；MCP 写工具走 Repo；DocumentRepo 测 | ✅（无 Service 层） |
+
+### 仍可执行但未做（建议排期）
+
+| 项 | 阻塞？ | 说明 |
+|---|---|---|
+| **T7「维持 A」报告** | 无 | 纯文档；实施仍暂缓 |
+| **T12 ORM 评估报告** | 无 | 纯文档；不实施 |
+| **T13 P1** | 无（按需） | upsert / get 截断 / search 带 identify |
+| **T9 Vite** | 无硬阻塞 | 建议单独 sprint；T8 已完成前置 |
+
+### 明确不宜现在做
+
+| 项 | 原因 |
+|---|---|
+| T11 | 缺 2~4 周召回/投诉数据 |
+| T7 上 gocache **实施** | 缺压力数据；只允许「维持 A」结论 |
+
+### 有意未做 / 部分缺口（不算失败）
+
+| 缺口 | 说明 |
+|---|---|
+| `internal/service/` | T2 原验收写了 Service；落地改为 MCP→Repo，controller 渐进不变 |
+| `scripts/test.sh` / Actions | T10 可选 CI；未加 |
+| go-i18n/v2 + toml | T5 改为兼容层读 ini |
+| §十五上线勾选 | 多为**运维/冒烟**，非代码是否合并的判定 |
+
+### 一句话
+
+**「能立刻写代码推进」的 Round 4 项已完成；剩下是报告、按需 MCP P1、以及可选的 Vite 大改。**
+
+---
+
+## 十七、Round 4 目标态 vs 当前实态（2026-08-03）
+
+> 原「完成后状态」偏目标愿景。下表区分**已达成**与**仍属目标**。
+
+| 维度 | 当前实态 | 原目标 / 备注 |
+|---|---|---|
+| 目录 | `cmd/` + `internal/` + `pkg/` + `web/` + `conf/` + `deployments/` | ✅ Round 2 定型 |
+| 配置 | 强类型 `config.Config`，`[section]`，`.env` | ✅ |
+| 缓存 | 接口 + msgpack；方案仍为 A | ⏳ T7 报告未写；未上 gocache |
+| 日志 | zap + Lumberjack；stderr 有色 / 文件 json | ✅ |
+| i18n | `internal/i18n` + 既有 `.ini` | 原写 go-i18n/toml → **已偏离并文档化** |
+| Model | BookModel 已拆；Repo 初版 | ✅；Service 层未建 |
+| MCP | MVP + P0；写路径走 DocumentRepo | ⏳ P1 按需；T11 暂缓 |
+| 前端 | P1（去 IE / 版本号）✅ | ⏳ P2 Vite 未做 |
+| 测试 | pkg + errs/auth/logging/i18n/repository 基线 | ⏳ 无 CI 硬闸 / 全仓覆盖率门槛 |
+| AI 协作 | `AGENTS.md` / `CLAUDE.md` / Cursor 规则 | ✅ 中文约定 |
 
 ### Round 5+ 候选（本轮结束时再讨论）
 
-- ORM 迁移（gorm / ent / sqlc，选 1）
+- ORM 迁移（gorm / ent / sqlc，选 1）— 先看 T12 报告
 - 前端 P3：Bootstrap 3 → 5 或 Tailwind
 - 前端 P4：`web-ui/` Vue 3 + TS SPA
-- 倒排 / 向量检索独立服务
+- 倒排 / 向量检索独立服务（T11 触发后）
 - OTel 全链路追踪
 - CORS / CSP / HSTS 全局安全头 + secure middleware
 - 单元/集成测试覆盖率 ≥ 40%
+- 补 `internal/service/`、把更多读路径迁入 Repository
 
 ---
 
 ## 十八、参考
 
-- [§二附 开工准入（2026-07-31）](#二附开工准入2026-07-31-核查) — 本轮可开工 / 有条件 / 暂缓清单
+- [§十六附 完成度核查（2026-08-03）](#十六附完成度核查2026-08-03)
+- [round-4-coverage.md](./round-4-coverage.md) — T10 测试基线
+- [AGENTS.md](../AGENTS.md) — AI 协作 / 中文约定
+- [§二附 开工准入（2026-07-31）](#二附开工准入2026-07-31-核查) — 本轮可开工 / 有条件 / 暂缓清单（历史）
 - [round-3-execution-plan.md §十五](./round-3-execution-plan.md#十五round-4-前置产物) — Round 4 前置产物
 - [round-3-execution-plan.md §十七](./round-3-execution-plan.md#十七后续规划mcp-实测反馈与体验增强) — MCP P0/P1（由 T13 承接）
 - [refactor-roadmap.md §2.4](./refactor-roadmap.md#24-目标四缓存--模型组件升级) — 缓存/模型详述
 - [refactor-roadmap.md §三 支线](./refactor-roadmap.md#三支线其他技术债) — 日志/i18n/测试/main.go/gopool/requests
 - [refactor-roadmap.md §四](./refactor-roadmap.md#四支线前端与静态资源) — 前端分阶段方案
 - [uber-go/zap](https://github.com/uber-go/zap) + [natefinch/lumberjack](https://github.com/natefinch/lumberjack)
-- [nicksnyder/go-i18n](https://github.com/nicksnyder/go-i18n)
 - [vmihailenco/msgpack](https://github.com/vmihailenco/msgpack)
 - [eko/gocache](https://github.com/eko/gocache)
-- [testify](https://github.com/stretchr/testify)
 - [Vite](https://vitejs.dev/)

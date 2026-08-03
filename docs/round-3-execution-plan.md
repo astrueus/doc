@@ -4,7 +4,7 @@
 > 目标：让 AI 助手（Claude Desktop / Cursor / 其他 MCP 客户端）通过 MCP 协议对 doc 项目做**读 + 写**操作，含创建/更新/删除文档。**采用官方** `modelcontextprotocol/go-sdk` **v1.x**（非社区 `mark3labs/mcp-go`，见 [§八 决策 2026-07-23](./refactor-roadmap.md#八决策记录decision-log)）。
 > **代码直接落在 Round 2 完成的** `internal/mcp/` — 零重复搬迁。
 >
-> **进度标记（2026-07-31）：** T1 ⏸ 暂缓；T2–T7 ✅（MCP MVP 闭环）。`search_document` 过渡期使用 `LIKE`。  
+> **进度标记（2026-08-03）：** T1 ⏸ 暂缓；T2–T7 ✅（MCP MVP 闭环）。§十七 **P0 ✅**（经 Round 4 T13）；P1 按需。`search_document` 过渡期使用 `LIKE`。
 > **实测后续：** Cursor MCP 批量写入 `docs/` 后的体验缺口与是否做 Book 级工具，见 [§十七](#十七后续规划mcp-实测反馈与体验增强)。
 
 ---
@@ -872,10 +872,10 @@ T1 评估完成后再插回（可与 MCP 并行或作为独立 PR）。
 | T5  | MCP HTTP + Bearer + 限流           | `2fe3f6a`（以分支为准） | ✅     | `doc mcp --http` + `mcp_enable` 时挂 `/mcp`             |
 | T6  | `internal/dto/mcpdto/`           | `5b6ca51`        | ✅     | 随 T2/T3；jsonschema 标签已按 go-sdk 规范修正                   |
 | T7  | `docs/mcp-integration.md`        | `67b30d5`        | ✅     | Claude Desktop / Cursor / HTTP 接入 + 工具速查              |
-| —   | MCP 体验增强（P0/P1）                  | —                | 📋 规划 | 见 [§十七](#十七后续规划mcp-实测反馈与体验增强)；可收尾小 PR 或 Round 4 T13   |
+| —   | MCP 体验增强（P0/P1）                  | P0: `c70d4c1`（R4 T13） | ✅ P0 / ⏳ P1 | P0 已合入 `v2.2.1`；P1 按需见 Round 4 T13 |
 
 
-**合入进度：** T1 ⏭ → T2✅ → T3✅ → T4✅ → T5✅ → T6✅ → T7✅ → **§十七 体验项待做**
+**合入进度：** T1 ⏭ → T2✅ → T3✅ → T4✅ → T5✅ → T6✅ → T7✅ → **§十七 P0 ✅（R4 T13）→ P1 按需**
 
 ---
 
@@ -883,10 +883,10 @@ T1 评估完成后再插回（可与 MCP 并行或作为独立 PR）。
 
 ## 十五、Round 4 前置产物
 
-- MCP 工具已在生产运行 ≥ 2 周，收集使用统计
-- 决定：是否上倒排索引服务（bleve / meilisearch），基于 MCP 反馈的搜索质量数据
-- `internal/dto/mcpdto/` 结构稳定，可作为 Round 4 Repository/Service 分层的输出契约
-- 按 [§十七](#十七后续规划mcp-实测反馈与体验增强) 消化 P0/P1 体验项（或明确推迟到 Round 4 T13）
+- [ ] MCP 工具生产运行 ≥ 2 周并收集统计 — **时间窗口类，仍可能未齐**
+- [ ] 决定是否上倒排索引 — **归 Round 4 T11，等数据**
+- [x] `internal/dto/mcpdto/` 结构稳定
+- [x] §十七 **P0** 已消化（Round 4 T13）；P1 按需 / 可继续挂在 T13
 
 ---
 
@@ -993,12 +993,12 @@ T1 评估完成后再插回（可与 MCP 并行或作为独立 PR）。
 ```
 Round 3 MVP（T2–T7）✅
     │
-    ├─► §十七 P0（收尾小 PR，优先）
-    ├─► §十七 P1（可选同 PR 或紧随）
+    ├─► §十七 P0 ✅（Round 4 T13 / `c70d4c1`）
+    ├─► §十七 P1（按需，未做）
     │
-    └─► Round 4
-            ├─ T11  搜索后端（LIKE 不够时）
-            └─ T13  MCP 体验增强（承接未做完的 P0/P1；不含 Book 写工具）
+    └─► Round 4（代码主线 ✅，见 round-4 §十六）
+            ├─ T11  搜索后端（LIKE 不够时，等数据）
+            └─ T13  MCP 体验（P0 已完成；P1 按需；不含 Book 写工具）
 ```
 
 
