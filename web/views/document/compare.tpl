@@ -13,14 +13,14 @@
     <link type="text/css" rel="stylesheet" href="{{cdncss "/static/mergely/lib/mergely.css"}}" />
     <link type='text/css' rel='stylesheet' href="{{cdncss "/static/mergely/editor/editor.css"}}" />
 
-    <script type="text/javascript" src="{{cdnjs "/static/jquery/1.12.4/jquery.min.js"}}"></script>
-    <script type="text/javascript" src="{{cdnjs "/static/mergely/editor/lib/wicked-ui.js"}}"></script>
-    <script type="text/javascript" src="{{cdnjs "/static/mergely/editor/lib/tipsy/jquery.tipsy.js"}}"></script>
-    <script type="text/javascript" src="{{cdnjs "/static/mergely/editor/lib/farbtastic/farbtastic.js"}}"></script>
-    <script type="text/javascript" src="{{cdnjs "/static/mergely/lib/codemirror.min.js"}}"></script>
-    <script type="text/javascript" src="{{cdnjs "/static/mergely/lib/mergely.min.js"}}"></script>
-    <script type="text/javascript" src="{{cdnjs "/static/mergely/editor/editor.js"}}"></script>
-    <script type="text/javascript" src="{{cdnjs "/static/mergely/lib/searchcursor.js"}}"></script>
+    <script type="text/javascript" src="{{cdnjs "/static/jquery/1.12.4/jquery.min.js" "version"}}"></script>
+    <script type="text/javascript" src="{{cdnjs "/static/mergely/editor/lib/wicked-ui.js" "version"}}"></script>
+    <script type="text/javascript" src="{{cdnjs "/static/mergely/editor/lib/tipsy/jquery.tipsy.js" "version"}}"></script>
+    <script type="text/javascript" src="{{cdnjs "/static/mergely/editor/lib/farbtastic/farbtastic.js" "version"}}"></script>
+    <script type="text/javascript" src="{{cdnjs "/static/mergely/lib/codemirror.min.js" "version"}}"></script>
+    <script type="text/javascript" src="{{cdnjs "/static/mergely/lib/mergely.min.js" "version"}}"></script>
+    <script type="text/javascript" src="{{cdnjs "/static/mergely/editor/editor.js" "version"}}"></script>
+    <script type="text/javascript" src="{{cdnjs "/static/mergely/lib/searchcursor.js" "version"}}"></script>
     <script type="text/javascript">
         var key = '';
        // var isSample = key === 'usaindep';
@@ -52,7 +52,7 @@
 </div>
 <template id="historyContent">{{.HistoryContent}}</template>
 <template id="documentContent">{{.Content}}</template>
-<script type="text/javascript" src="{{cdnjs "/static/layer/layer.js"}}"></script>
+<script type="text/javascript" src="{{cdnjs "/static/layer/layer.js" "version"}}"></script>
 
 </body>
 </html>

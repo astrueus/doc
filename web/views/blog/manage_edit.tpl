@@ -8,8 +8,8 @@
     <title>{{i18n .Lang "blog.edit_title"}} - Powered by MinDoc</title>
     <script type="text/javascript">
         window.baseUrl = "{{.BaseUrl}}";
-        window.katex = { js: "{{cdnjs "/static/katex/katex"}}",css: "{{cdncss "/static/katex/katex"}}",jsauto: "{{cdnjs "/static/katex/contrib/auto-render.min"}}"};
-        window.editormdLib = "{{cdnjs "/static/editor.md/lib/"}}";
+        window.katex = { js: "{{cdnjs "/static/katex/katex" "version"}}",css: "{{cdncss "/static/katex/katex"}}",jsauto: "{{cdnjs "/static/katex/contrib/auto-render.min" "version"}}"};
+        window.editormdLib = "{{cdnjs "/static/editor.md/lib/" "version"}}";
         window.editor = null;
         window.editURL = "{{urlfor "BlogController.ManageEdit" "blogId" .Model.BlogId}}";
         window.imageUploadURL = "{{urlfor "BlogController.Upload" "blogId" .Model.BlogId}}";
@@ -208,21 +208,21 @@
 <template id="template-code">
 {{template "document/template_code.tpl"}}
 </template>
-<script src="{{cdnjs "/static/jquery/1.12.4/jquery.min.js"}}"></script>
-<script src="{{cdnjs "/static/vuejs/vue.min.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/bootstrap/js/bootstrap.min.js"}}"></script>
-<script src="{{cdnjs "/static/webuploader/webuploader.min.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/jstree/3.3.4/jstree.min.js"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/jquery/1.12.4/jquery.min.js" "version"}}"></script>
+<script src="{{cdnjs "/static/vuejs/vue.min.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/bootstrap/js/bootstrap.min.js" "version"}}"></script>
+<script src="{{cdnjs "/static/webuploader/webuploader.min.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/jstree/3.3.4/jstree.min.js" "version"}}" type="text/javascript"></script>
 <script src="{{cdnjs "/static/editor.md/editormd.js" "version"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/editor.md/lib/mermaid/mermaid.min.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/layer/layer.js"}}" type="text/javascript" ></script>
-<script src="{{cdnjs "/static/js/jquery.form.js"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/editor.md/lib/mermaid/mermaid.min.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/layer/layer.js" "version"}}" type="text/javascript" ></script>
+<script src="{{cdnjs "/static/js/jquery.form.js" "version"}}" type="text/javascript"></script>
 <script src="{{cdnjs "/static/js/array.js" "version"}}" type="text/javascript"></script>
 <script src="{{cdnjs "/static/js/editor.js" "version"}}" type="text/javascript"></script>
 <script src="{{cdnjs "/static/js/blog.js" "version"}}" type="text/javascript"></script>
 <script type="text/javascript">
     $(function () {
-        editLangPath = {{cdnjs "/static/editor.md/languages/"}} + lang
+        editLangPath = {{cdnjs "/static/editor.md/languages/" "version"}} + lang
         if(lang != 'zh-CN') {
             editormd.loadScript(editLangPath, function(){
                 window.editor.lang = editormd.defaults.lang;

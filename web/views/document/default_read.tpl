@@ -240,14 +240,14 @@
     </div>
 </div>
 
-<script src="{{cdnjs "/static/jquery/1.12.4/jquery.min.js"}}"></script>
-<script src="{{cdnjs "/static/bootstrap/js/bootstrap.min.js"}}"></script>
-<script src="{{cdnjs "/static/js/jquery.form.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/layer/layer.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/jstree/3.3.4/jstree.min.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/nprogress/nprogress.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/editor.md/lib/highlight/highlight.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/js/jquery.highlight.js"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/jquery/1.12.4/jquery.min.js" "version"}}"></script>
+<script src="{{cdnjs "/static/bootstrap/js/bootstrap.min.js" "version"}}"></script>
+<script src="{{cdnjs "/static/js/jquery.form.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/layer/layer.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/jstree/3.3.4/jstree.min.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/nprogress/nprogress.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/editor.md/lib/highlight/highlight.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/js/jquery.highlight.js" "version"}}" type="text/javascript"></script>
 <script src="{{cdnjs "/static/js/kancloud.js" "version"}}" type="text/javascript"></script>
 <script src="{{cdnjs "/static/js/splitbar.js" "version"}}" type="text/javascript"></script>
 <script type="text/javascript">

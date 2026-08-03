@@ -47,11 +47,11 @@
 </div>
 
 
-<script src="{{cdnjs "/static/jquery/1.12.4/jquery.min.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/bootstrap/js/bootstrap.min.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/js/jquery.form.js"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/jquery/1.12.4/jquery.min.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/bootstrap/js/bootstrap.min.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/js/jquery.form.js" "version"}}" type="text/javascript"></script>
 <script src="{{cdnjs "/static/editor.md/editormd.js" "version"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/js/main.js"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/js/main.js" "version"}}" type="text/javascript"></script>
 <script type="text/javascript">
     $(function() {
         var configEditor = editormd("configFileContainer", {
@@ -63,7 +63,7 @@
             searchReplace    : true,
             placeholder      : "",
             mode             : "text/x-properties",
-            path             : "{{cdnjs "/static/editor.md/lib/"}}"
+            path             : "{{cdnjs "/static/editor.md/lib/" "version"}}"
         });
 
         $("#configFileContainerForm").ajaxForm({

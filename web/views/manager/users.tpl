@@ -12,13 +12,7 @@
     <link href="{{cdncss "/static/font-awesome/css/font-awesome.min.css"}}" rel="stylesheet">
 
     <link href="{{cdncss "/static/css/main.css" "version"}}" rel="stylesheet">
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-    <script src="/static/html5shiv/3.7.3/html5shiv.min.js"></script>
-    <script src="/static/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
-    <style type="text/css">
+<style type="text/css">
         .table>tbody>tr>td{vertical-align: middle;}
     </style>
 </head>
@@ -193,11 +187,11 @@
         </form>
     </div>
 </div><!--END Modal-->
-<script src="{{cdnjs "/static/jquery/1.12.4/jquery.min.js"}}"></script>
-<script src="{{cdnjs "/static/bootstrap/js/bootstrap.min.js"}}"></script>
-<script src="{{cdnjs "/static/vuejs/vue.min.js"}}"></script>
-<script src="{{cdnjs "/static/js/jquery.form.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/js/main.js"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/jquery/1.12.4/jquery.min.js" "version"}}"></script>
+<script src="{{cdnjs "/static/bootstrap/js/bootstrap.min.js" "version"}}"></script>
+<script src="{{cdnjs "/static/vuejs/vue.min.js" "version"}}"></script>
+<script src="{{cdnjs "/static/js/jquery.form.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/js/main.js" "version"}}" type="text/javascript"></script>
 <script type="text/javascript">
     $(function () {
         $("#addMemberDialogModal").on("show.bs.modal",function () {

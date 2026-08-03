@@ -138,13 +138,13 @@
 </div><!--END Modal-->
 
 
-<script src="{{cdnjs "/static/jquery/1.12.4/jquery.min.js"}}"></script>
+<script src="{{cdnjs "/static/jquery/1.12.4/jquery.min.js" "version"}}"></script>
 
 
-<script src="{{cdnjs "/static/bootstrap/js/bootstrap.min.js"}}"></script>
-<script src="{{cdnjs "/static/vuejs/vue.min.js"}}"></script>
-<script src="{{cdnjs "/static/js/jquery.form.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/js/main.js"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/bootstrap/js/bootstrap.min.js" "version"}}"></script>
+<script src="{{cdnjs "/static/vuejs/vue.min.js" "version"}}"></script>
+<script src="{{cdnjs "/static/js/jquery.form.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/js/main.js" "version"}}" type="text/javascript"></script>
 <script type="text/javascript">
     $(function () {
         var editTeamDialogModal = $("#editTeamDialogModal");

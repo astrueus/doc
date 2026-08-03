@@ -7,8 +7,8 @@
     <meta name="renderer" content="webkit" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{i18n .Lang "doc.input_pwd"}} - Powered by MinDoc</title>
-    <script src="{{cdnjs "static/jquery/1.12.4/jquery.min.js"}}"></script>
-    <script src="{{cdnjs "static/js/jquery.form.js"}}"></script>
+    <script src="{{cdnjs "static/jquery/1.12.4/jquery.min.js" "version"}}"></script>
+    <script src="{{cdnjs "static/js/jquery.form.js" "version"}}"></script>
     <style type="text/css">
     body{ background: #f2f2f2;}
     .d_button{ cursor: pointer;}
@@ -133,6 +133,6 @@ $("#auth_form").ajaxForm({
 });
 </script>
 
-        <script src="{{cdnjs "static/bootstrap/js/bootstrap.min.js"}}"></script>
+        <script src="{{cdnjs "static/bootstrap/js/bootstrap.min.js" "version"}}"></script>
 </body>
 </html>

@@ -12,15 +12,8 @@
 
     <!-- Bootstrap -->
     <link href="{{cdncss "/static/bootstrap/css/bootstrap.min.css"}}" rel="stylesheet">
-
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-    <script src="/static/html5shiv/3.7.3/html5shiv.min.js"></script>
-    <script src="/static/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="{{cdnjs "/static/jquery/1.12.4/jquery.min.js"}}"></script>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="{{cdnjs "/static/jquery/1.12.4/jquery.min.js" "version"}}"></script>
     <style type="text/css">
         .container{margin: 5px auto;}
     </style>
@@ -72,8 +65,8 @@
     </nav>
 </div>
 <!-- Include all compiled plugins (below), or include individual files as needed -->
-<script src="{{cdnjs "/static/bootstrap/js/bootstrap.min.js"}}"></script>
-<script src="{{cdnjs "/static/layer/layer.js"}}" type="text/javascript" ></script>
+<script src="{{cdnjs "/static/bootstrap/js/bootstrap.min.js" "version"}}"></script>
+<script src="{{cdnjs "/static/layer/layer.js" "version"}}" type="text/javascript" ></script>
 <script type="text/javascript">
     $(function () {
         $(".delete-btn").on("click",function () {

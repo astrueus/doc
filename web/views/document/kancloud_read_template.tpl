@@ -13,12 +13,6 @@
     <link href="{{cdncss "/static/jstree/3.3.4/themes/default/style.min.css"}}" rel="stylesheet">
     <link href="{{cdncss "/static/css/kancloud.css" "version"}}" rel="stylesheet">
     <link href="{{cdncss "/static/jquery/plugins/imgbox/imgbox.css" "version"}}" rel="stylesheet">
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-    <script src="/static/html5shiv/3.7.3/html5shiv.min.js"></script>
-    <script src="/static/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
 </head>
 <body>
 <div class="m-manual manual-reader">
@@ -169,10 +163,10 @@
         </div>
     </div>
 </div>
-<script src="{{cdnjs "/static/jquery/1.12.4/jquery.min.js"}}"></script>
-<script src="{{cdnjs "/static/bootstrap/js/bootstrap.min.js"}}"></script>
-<script src="{{cdnjs "/static/jstree/3.3.4/jstree.min.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/jquery/plugins/imgbox/jquery.imgbox.pack.js"}}"></script>
+<script src="{{cdnjs "/static/jquery/1.12.4/jquery.min.js" "version"}}"></script>
+<script src="{{cdnjs "/static/bootstrap/js/bootstrap.min.js" "version"}}"></script>
+<script src="{{cdnjs "/static/jstree/3.3.4/jstree.min.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/jquery/plugins/imgbox/jquery.imgbox.pack.js" "version"}}"></script>
 <script type="text/javascript">
     $(function () {
         $("#sidebar").jstree({

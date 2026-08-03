@@ -10,8 +10,8 @@
         window.treeCatalog = null;
         window.baseUrl = "{{.BaseUrl}}";
         window.saveing = false;
-        window.katex = { js: "{{cdnjs "/static/katex/katex"}}",css: "{{cdncss "/static/katex/katex"}}",jsauto: "{{cdnjs "/static/katex/contrib/auto-render.min"}}"};
-        window.editormdLib = "{{cdnjs "/static/editor.md/lib/"}}";
+        window.katex = { js: "{{cdnjs "/static/katex/katex" "version"}}",css: "{{cdncss "/static/katex/katex"}}",jsauto: "{{cdnjs "/static/katex/contrib/auto-render.min" "version"}}"};
+        window.editormdLib = "{{cdnjs "/static/editor.md/lib/" "version"}}";
         window.editor = null;
         window.imageUploadURL = "{{urlfor "DocumentController.Upload" "identify" .Model.Identify}}";
         window.fileUploadURL = "{{urlfor "DocumentController.Upload" "identify" .Model.Identify}}";
@@ -38,13 +38,7 @@
     <link href="{{cdncss "/static/webuploader/webuploader.css"}}" rel="stylesheet">
     <link href="{{cdncss "/static/css/markdown.css" "version"}}" rel="stylesheet">
     <link href="{{cdncss "/static/css/markdown.preview.css" "version"}}" rel="stylesheet">
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-    <script src="/static/html5shiv/3.7.3/html5shiv.min.js"></script>
-    <script src="/static/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
-    <style type="text/css">
+<style type="text/css">
         .text{
             font-size: 12px;
             color: #999999;
@@ -440,21 +434,21 @@
 {{end}}
 </template>
 <script src="{{cdnjs "/static/js/array.js" "version"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/jquery/1.12.4/jquery.min.js"}}"></script>
-<script src="{{cdnjs "/static/vuejs/vue.min.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/bootstrap/js/bootstrap.min.js"}}"></script>
-<script src="{{cdnjs "/static/webuploader/webuploader.min.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/jstree/3.3.4/jstree.min.js"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/jquery/1.12.4/jquery.min.js" "version"}}"></script>
+<script src="{{cdnjs "/static/vuejs/vue.min.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/bootstrap/js/bootstrap.min.js" "version"}}"></script>
+<script src="{{cdnjs "/static/webuploader/webuploader.min.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/jstree/3.3.4/jstree.min.js" "version"}}" type="text/javascript"></script>
 <script src="{{cdnjs "/static/editor.md/editormd.js" "version"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/editor.md/lib/mermaid/mermaid.min.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/layer/layer.js"}}" type="text/javascript" ></script>
-<script src="{{cdnjs "/static/js/jquery.form.js"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/editor.md/lib/mermaid/mermaid.min.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/layer/layer.js" "version"}}" type="text/javascript" ></script>
+<script src="{{cdnjs "/static/js/jquery.form.js" "version"}}" type="text/javascript"></script>
 <script src="{{cdnjs "/static/js/array.js" "version"}}" type="text/javascript"></script>
 <script src="{{cdnjs "/static/js/editor.js" "version"}}" type="text/javascript"></script>
 <script src="{{cdnjs "/static/js/markdown.js" "version"}}" type="text/javascript"></script>
 <script type="text/javascript">
     $(function () {
-        editLangPath = {{cdnjs "/static/editor.md/languages/"}} + lang
+        editLangPath = {{cdnjs "/static/editor.md/languages/" "version"}} + lang
         if(lang != 'zh-CN') {
             editormd.loadScript(editLangPath, function(){
                 window.editor.lang = editormd.defaults.lang;

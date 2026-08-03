@@ -39,12 +39,6 @@
 
     <link href="{{cdncss "/static/css/jstree.css"}}" rel="stylesheet">
     <link href="{{cdncss "/static/css/markdown.css"}}" rel="stylesheet">
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-    <script src="/static/html5shiv/3.7.3/html5shiv.min.js"></script>
-    <script src="/static/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
 </head>
 <body>
 
@@ -191,22 +185,22 @@
     </div>
 </div>
 
-<script src="{{cdnjs "/static/jquery/1.12.4/jquery.min.js"}}"></script>
-<script src="{{cdnjs "/static/bootstrap/js/bootstrap.min.js"}}"></script>
-<script src="{{cdnjs "/static/vuejs/vue.min.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/jstree/3.3.4/jstree.min.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/webuploader/webuploader.min.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/js/class2browser.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/wangEditor/wangEditor.min.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/js/wangEditor-plugins/save-menu.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/js/wangEditor-plugins/release-menu.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/js/wangEditor-plugins/attach-menu.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/js/wangEditor-plugins/history-menu.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/layer/layer.js"}}" type="text/javascript" ></script>
-<script src="{{cdnjs "/static/to-markdown/dist/to-markdown.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/js/jquery.form.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/js/editor.js"}}" type="text/javascript"></script>
-<script src="{{cdnjs "/static/js/html-editor.js"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/jquery/1.12.4/jquery.min.js" "version"}}"></script>
+<script src="{{cdnjs "/static/bootstrap/js/bootstrap.min.js" "version"}}"></script>
+<script src="{{cdnjs "/static/vuejs/vue.min.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/jstree/3.3.4/jstree.min.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/webuploader/webuploader.min.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/js/class2browser.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/wangEditor/wangEditor.min.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/js/wangEditor-plugins/save-menu.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/js/wangEditor-plugins/release-menu.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/js/wangEditor-plugins/attach-menu.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/js/wangEditor-plugins/history-menu.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/layer/layer.js" "version"}}" type="text/javascript" ></script>
+<script src="{{cdnjs "/static/to-markdown/dist/to-markdown.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/js/jquery.form.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/js/editor.js" "version"}}" type="text/javascript"></script>
+<script src="{{cdnjs "/static/js/html-editor.js" "version"}}" type="text/javascript"></script>
 <script type="text/javascript">
     $(function () {
         lang = {{i18n $.Lang "common.js_lang"}};
