@@ -184,7 +184,7 @@ curl -s https://docs.example.com/mcp \
 
 #### `search_document`
 
-当前搜索实现为 **SQL LIKE**（Round 3 T1 已📦移交 [Round 5 T3](./round-5-execution-plan.md)；FULLTEXT 尚未落地）。
+当前搜索实现为 **SQL LIKE**（FULLTEXT 旧方案在 Round 5 **⏸ 暂不实施**，见 [round-5 §一附](./round-5-execution-plan.md#一附2026-08-03-决策修订)）。
 
 ```json
 // In
@@ -362,7 +362,7 @@ stdio 模式 stdout 专供 MCP JSON-RPC。已在 bootstrap 前关闭 console log
 
 ### 搜索结果和网页不太一样？
 
-T1 FULLTEXT 已📦移交 Round 5 T3，`search_document` 现为 LIKE，与 Web 全局搜索策略接近但不保证排序完全一致。
+T1 FULLTEXT 已移交 Round 5 后 **⏸ 暂不实施**（等搜索方案重定义），`search_document` 现为 LIKE，与 Web 全局搜索策略接近但不保证排序完全一致。
 
 ---
 

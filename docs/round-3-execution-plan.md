@@ -5,7 +5,7 @@
 > **代码直接落在 Round 2 完成的** `internal/mcp/` — 零重复搬迁。
 >
 > **进度标记（2026-08-03）：** T2–T7 ✅（MCP MVP 闭环）。§十七 **P0 ✅**（经 Round 4 T13）。  
-> **已移交 Round 5：** T1 搜索 FULLTEXT/FTS5 → [R5 T3](./round-5-execution-plan.md#五t3--搜索最小方案-fulltext--fts52~4-天)；§十七 P1 → [R5 T5](./round-5-execution-plan.md#七t5--mcp-体验-p10.5~1-天)；倒排评估 → [R5 T4](./round-5-execution-plan.md#六t4--倒排--向量检索评估可选--数据闸门)。`search_document` 过渡期仍为 `LIKE`。
+> **已移交 Round 5：** T1 搜索 FULLTEXT/FTS5 → [R5 T3](./round-5-execution-plan.md#五t3--搜索最小方案-fulltext--fts5--⏸-暂不实施)（**R5 决策：⏸ 暂不实施，等重定义**）；§十七 P1 → [R5 T5](./round-5-execution-plan.md#七t5--mcp-体验-p10.5~1-天)；倒排评估 → [R5 T4](./round-5-execution-plan.md#六t4--倒排--向量检索评估--⏸-冻结)（随搜索冻结）。`search_document` 过渡期仍为 `LIKE`。
 > **实测后续：** Cursor MCP 批量写入 `docs/` 后的体验缺口与是否做 Book 级工具，见 [§十七](#十七后续规划mcp-实测反馈与体验增强)。
 
 ---
@@ -866,7 +866,7 @@ T1 评估完成后再插回（可与 MCP 并行或作为独立 PR）。
 
 | #   | 任务                               | Commit           | 状态    | 备注                                                    |
 | --- | -------------------------------- | ---------------- | ----- | ----------------------------------------------------- |
-| T1  | 搜索 FULLTEXT/FTS5 + Provider      | —                | 📦→R5 T3 | 原 ⏸；**已移交** [round-5 T3](./round-5-execution-plan.md)；过渡期 LIKE |
+| T1  | 搜索 FULLTEXT/FTS5 + Provider      | —                | 📦→R5 T3⏸ | 移交后 **R5 暂不实施**（等重定义）；过渡期 LIKE |
 | T2  | MCP stdio · 4 读工具                | `5b6ca51`        | ✅     | 与 T3/T6 同 commit                                      |
 | T3  | MCP stdio · 6 写工具（乐观锁 + confirm） | `5b6ca51`        | ✅     | 与 T2/T6 同 commit                                      |
 | T4  | `MemberApiToken` + 后台管理页         | `4c4f346`        | ✅     | 迁移 `202607301700`；页面 `/member/api-tokens`             |
