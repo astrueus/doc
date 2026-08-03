@@ -2,6 +2,7 @@ package model
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -171,12 +172,12 @@ func (m *BookResult) FindToPager(pageIndex, pageSize int) (books []*BookResult, 
 	}
 	totalCount = int(count)
 
-	sql := `SELECT
+	sql := fmt.Sprintf(`SELECT
 			book.*,rel.relationship_id,rel.role_id,m.account AS create_name,m.real_name
-		FROM md_books AS book
-			LEFT JOIN md_relationship AS rel ON rel.book_id = book.book_id AND rel.role_id = 0
-			LEFT JOIN md_members AS m ON rel.member_id = m.member_id
-		ORDER BY book.order_index DESC ,book.book_id DESC  LIMIT ?,?`
+		FROM %sbooks AS book
+			LEFT JOIN %srelationship AS rel ON rel.book_id = book.book_id AND rel.role_id = 0
+			LEFT JOIN %smembers AS m ON rel.member_id = m.member_id
+		ORDER BY book.order_index DESC ,book.book_id DESC  LIMIT ?,?`, config.GetDatabasePrefix(), config.GetDatabasePrefix(), config.GetDatabasePrefix())
 
 	offset := (pageIndex - 1) * pageSize
 

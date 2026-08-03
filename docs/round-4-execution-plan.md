@@ -756,9 +756,9 @@ Round 4 结束前团队开会拍板：
 
 | # | 任务 | 准入 | PR | Commit | 状态 |
 |---|---|---|---|---|---|
-| T1 | `BookModel` 拆解 | ✅ 可立刻 | | | 未开始 |
+| T1 | `BookModel` 拆解 | ✅ 可立刻 | `feat/round4-t1-t3` | | ✅ 已完成（方案 A：`book_*.go`） |
 | T2 | Repository 抽象 | ⚠️ 有条件（先 T13 P0-2） | | | 未开始 |
-| T3 | `md_` 硬编码修复 | ✅ 可立刻（跟 T1） | | | 未开始 |
+| T3 | `md_` 硬编码修复 | ✅ 可立刻（跟 T1） | `feat/round4-t1-t3` | | ✅ 已完成（业务 raw SQL；migrate 未改） |
 | T4 | zap + Lumberjack | ⚠️ 有条件（先 P0-1 / 禁 stdout） | | | 未开始 |
 | T5 | go-i18n/v2 | ✅ 可立刻 | | | 未开始 |
 | T6 | gob→msgpack（**仅 session**；cache 已 msgpack） | ✅ 可立刻 | | | 未开始 |

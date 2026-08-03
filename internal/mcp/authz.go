@@ -2,6 +2,7 @@ package mcp
 
 import (
 	"context"
+	"fmt"
 
 	"git.itopcms.com/jackliu/doc/internal/config"
 	"git.itopcms.com/jackliu/doc/internal/errs"
@@ -108,20 +109,21 @@ func visibleBookIDs(m *model.Member, filterBookID int) ([]int, error) {
 	}
 	o := orm.NewOrm()
 	var ids []int
-	_, err := o.Raw(`SELECT DISTINCT book.book_id
-FROM md_books AS book
-  LEFT JOIN md_relationship AS rel1 ON book.book_id = rel1.book_id AND rel1.member_id = ?
+	p := config.GetDatabasePrefix()
+	_, err := o.Raw(fmt.Sprintf(`SELECT DISTINCT book.book_id
+FROM %sbooks AS book
+  LEFT JOIN %srelationship AS rel1 ON book.book_id = rel1.book_id AND rel1.member_id = ?
   LEFT JOIN (
     SELECT book_id, team_member_id
     FROM (
       SELECT book_id, team_member_id, role_id
-      FROM md_team_relationship AS mtr
-        LEFT JOIN md_team_member AS mtm ON mtm.team_id = mtr.team_id AND mtm.member_id = ?
+      FROM %steam_relationship AS mtr
+        LEFT JOIN %steam_member AS mtm ON mtm.team_id = mtr.team_id AND mtm.member_id = ?
       ORDER BY role_id DESC
     ) AS t
     GROUP BY t.role_id, t.team_member_id, t.book_id
   ) AS team ON team.book_id = book.book_id
-WHERE book.privately_owned = 0 OR rel1.relationship_id > 0 OR team.team_member_id > 0`).QueryRows(&ids)
+WHERE book.privately_owned = 0 OR rel1.relationship_id > 0 OR team.team_member_id > 0`, p, p, p, p)).QueryRows(&ids)
 	if err != nil {
 		return nil, errs.Wrap(errs.CodeInternal, "list visible books failed", err)
 	}
@@ -131,7 +133,7 @@ WHERE book.privately_owned = 0 OR rel1.relationship_id > 0 OR team.team_member_i
 func allBookIDs() ([]int, error) {
 	o := orm.NewOrm()
 	var ids []int
-	_, err := o.Raw("SELECT book_id FROM md_books ORDER BY book_id").QueryRows(&ids)
+	_, err := o.Raw(fmt.Sprintf("SELECT book_id FROM %s ORDER BY book_id", model.NewBook().TableNameWithPrefix())).QueryRows(&ids)
 	if err != nil {
 		return nil, errs.Wrap(errs.CodeInternal, "list books failed", err)
 	}

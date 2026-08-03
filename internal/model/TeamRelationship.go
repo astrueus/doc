@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"git.itopcms.com/jackliu/doc/internal/config"
@@ -179,10 +180,10 @@ func (m *TeamRelationship) FindNotJoinBookByName(teamId int, bookName string, li
 	}
 	o := orm.NewOrm()
 
-	sql := `select book.book_id,book.book_name
-from  md_books as book
-where book.book_id not in (select team.book_id from md_team_relationship as team where team_id=?)
-and book.book_name like ? order by book_id desc limit ?;`
+	sql := fmt.Sprintf(`select book.book_id,book.book_name
+from  %sbooks as book
+where book.book_id not in (select team.book_id from %steam_relationship as team where team_id=?)
+and book.book_name like ? order by book_id desc limit ?;`, config.GetDatabasePrefix(), config.GetDatabasePrefix())
 
 	books := make([]*Book, 0)
 
@@ -214,11 +215,11 @@ func (m *TeamRelationship) FindNotJoinBookByBookIdentify(bookId int, teamName st
 	}
 
 	o := orm.NewOrm()
-	sql := `select *
-from md_teams as team
-where team.team_id not in (select rel.team_id from md_team_relationship as rel where rel.book_id = ?) 
+	sql := fmt.Sprintf(`select *
+from %steams as team
+where team.team_id not in (select rel.team_id from %steam_relationship as rel where rel.book_id = ?) 
 and team.team_name like ? 
-order by team.team_id desc limit ?;`
+order by team.team_id desc limit ?;`, config.GetDatabasePrefix(), config.GetDatabasePrefix())
 	teams := make([]*Team, 0)
 
 	_, err := o.Raw(sql, bookId, "%"+teamName+"%", limit).QueryRows(&teams)

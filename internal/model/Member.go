@@ -73,7 +73,7 @@ func (m *Member) Login(account string, password string) (*Member, error) {
 	member := &Member{}
 
 	//err := o.QueryTable(m.TableNameWithPrefix()).Filter("account", account).Filter("status", 0).One(member)
-	err := o.Raw("select * from md_members where (account = ? or email = ?) and status = 0 limit 1;", account, account).QueryRow(member)
+	err := o.Raw(fmt.Sprintf("select * from %s where (account = ? or email = ?) and status = 0 limit 1;", m.TableNameWithPrefix()), account, account).QueryRow(member)
 
 	if err != nil {
 		g := config.MustGlobal()
@@ -112,7 +112,7 @@ func (m *Member) Login(account string, password string) (*Member, error) {
 func (m *Member) TmpLogin(account string) (*Member, error) {
 	o := orm.NewOrm()
 	member := &Member{}
-	err := o.Raw("select * from md_members where account = ? and status = 0 limit 1;", account).QueryRow(member)
+	err := o.Raw(fmt.Sprintf("select * from %s where account = ? and status = 0 limit 1;", m.TableNameWithPrefix()), account).QueryRow(member)
 	if err != nil {
 		return member, ErrorMemberPasswordError
 	}
@@ -472,62 +472,62 @@ func (m *Member) Delete(oldId int, newId int) error {
 		return err
 	}
 
-	_, err = o.Raw("DELETE FROM md_members WHERE member_id = ?", oldId).Exec()
+	_, err = o.Raw(fmt.Sprintf("DELETE FROM %s WHERE member_id = ?", m.TableNameWithPrefix()), oldId).Exec()
 	if err != nil {
 		o.Rollback()
 		return err
 	}
-	_, err = o.Raw("UPDATE md_attachment SET `create_at` = ? WHERE `create_at` = ?", newId, oldId).Exec()
+	_, err = o.Raw(fmt.Sprintf("UPDATE %s SET `create_at` = ? WHERE `create_at` = ?", NewAttachment().TableNameWithPrefix()), newId, oldId).Exec()
 
 	if err != nil {
 		o.Rollback()
 		return err
 	}
 
-	_, err = o.Raw("UPDATE md_books SET member_id = ? WHERE member_id = ?", newId, oldId).Exec()
+	_, err = o.Raw(fmt.Sprintf("UPDATE %s SET member_id = ? WHERE member_id = ?", NewBook().TableNameWithPrefix()), newId, oldId).Exec()
 	if err != nil {
 		o.Rollback()
 		return err
 	}
-	_, err = o.Raw("UPDATE md_document_history SET member_id=? WHERE member_id = ?", newId, oldId).Exec()
+	_, err = o.Raw(fmt.Sprintf("UPDATE %s SET member_id=? WHERE member_id = ?", NewDocumentHistory().TableNameWithPrefix()), newId, oldId).Exec()
 	if err != nil {
 		o.Rollback()
 		return err
 	}
-	_, err = o.Raw("UPDATE md_document_history SET modify_at=? WHERE modify_at = ?", newId, oldId).Exec()
+	_, err = o.Raw(fmt.Sprintf("UPDATE %s SET modify_at=? WHERE modify_at = ?", NewDocumentHistory().TableNameWithPrefix()), newId, oldId).Exec()
 	if err != nil {
 		o.Rollback()
 		return err
 	}
-	_, err = o.Raw("UPDATE md_documents SET member_id = ? WHERE member_id = ?;", newId, oldId).Exec()
+	_, err = o.Raw(fmt.Sprintf("UPDATE %s SET member_id = ? WHERE member_id = ?;", NewDocument().TableNameWithPrefix()), newId, oldId).Exec()
 	if err != nil {
 		o.Rollback()
 		return err
 	}
-	_, err = o.Raw("UPDATE md_documents SET modify_at = ? WHERE modify_at = ?", newId, oldId).Exec()
+	_, err = o.Raw(fmt.Sprintf("UPDATE %s SET modify_at = ? WHERE modify_at = ?", NewDocument().TableNameWithPrefix()), newId, oldId).Exec()
 	if err != nil {
 		o.Rollback()
 		return err
 	}
-	_, err = o.Raw("UPDATE md_blogs SET member_id = ? WHERE member_id = ?;", newId, oldId).Exec()
+	_, err = o.Raw(fmt.Sprintf("UPDATE %s SET member_id = ? WHERE member_id = ?;", NewBlog().TableNameWithPrefix()), newId, oldId).Exec()
 
 	if err != nil {
 		o.Rollback()
 		return err
 	}
-	_, err = o.Raw("UPDATE md_blogs SET modify_at = ? WHERE modify_at = ?", newId, oldId).Exec()
+	_, err = o.Raw(fmt.Sprintf("UPDATE %s SET modify_at = ? WHERE modify_at = ?", NewBlog().TableNameWithPrefix()), newId, oldId).Exec()
 	if err != nil {
 		o.Rollback()
 		return err
 	}
 
-	_, err = o.Raw("UPDATE md_templates SET modify_at = ? WHERE modify_at = ?", newId, oldId).Exec()
+	_, err = o.Raw(fmt.Sprintf("UPDATE %s SET modify_at = ? WHERE modify_at = ?", NewTemplate().TableNameWithPrefix()), newId, oldId).Exec()
 	if err != nil {
 		o.Rollback()
 		return err
 	}
 
-	_, err = o.Raw("UPDATE md_templates SET member_id = ? WHERE member_id = ?", newId, oldId).Exec()
+	_, err = o.Raw(fmt.Sprintf("UPDATE %s SET member_id = ? WHERE member_id = ?", NewTemplate().TableNameWithPrefix()), newId, oldId).Exec()
 	if err != nil {
 		o.Rollback()
 		return err
@@ -539,7 +539,7 @@ func (m *Member) Delete(oldId int, newId int) error {
 		return err
 	}
 
-	//_,err = o.Raw("UPDATE md_relationship SET member_id = ? WHERE member_id = ?",newId,oldId).Exec()
+	//_,err = o.Raw(fmt.Sprintf("UPDATE %s SET member_id = ? WHERE member_id = ?", NewRelationship().TableNameWithPrefix()), newId, oldId).Exec()
 	//if err != nil {
 	//
 	//	if err != nil {

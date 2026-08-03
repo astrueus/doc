@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"fmt"
 	"git.itopcms.com/jackliu/doc/pkg/htmlutil"
 	"strings"
 	"time"
@@ -123,7 +124,7 @@ func (item *Itemsets) Delete(itemId int) (err error) {
 		logs.Error("删除项目空间失败 -> item_id=", itemId, err)
 		o.Rollback()
 	}
-	_, err = o.Raw("update md_books set item_id=1 where item_id=?;", itemId).Exec()
+	_, err = o.Raw(fmt.Sprintf("update %s set item_id=1 where item_id=?;", NewBook().TableNameWithPrefix()), itemId).Exec()
 	if err != nil {
 		logs.Error("删除项目空间失败 -> item_id=", itemId, err)
 		o.Rollback()
@@ -219,34 +220,35 @@ func (item *Itemsets) FindItemsetsByItemKey(key string, pageIndex, pageSize, mem
 		return nil, 0, err
 	}
 	offset := (pageIndex - 1) * pageSize
+	p := config.GetDatabasePrefix()
 	//如果是登录用户
 	if memberId > 0 {
-		sql1 := `SELECT COUNT(*)
-FROM md_books AS book
-  LEFT JOIN md_relationship AS rel ON rel.book_id = book.book_id AND rel.member_id = ?
+		sql1 := fmt.Sprintf(`SELECT COUNT(*)
+FROM %sbooks AS book
+  LEFT JOIN %srelationship AS rel ON rel.book_id = book.book_id AND rel.member_id = ?
   left join (select book_id,min(role_id) as role_id
              from (select book_id,role_id
-                   from md_team_relationship as mtr
-                     left join md_team_member as mtm on mtm.team_id=mtr.team_id and mtm.member_id=? order by role_id desc )
+                   from %steam_relationship as mtr
+                     left join %steam_member as mtm on mtm.team_id=mtr.team_id and mtm.member_id=? order by role_id desc )
 as t group by book_id) as team on team.book_id = book.book_id
-WHERE book.item_id = ? AND (book.privately_owned = 0 or rel.role_id >= 0 or team.role_id >= 0)`
+WHERE book.item_id = ? AND (book.privately_owned = 0 or rel.role_id >= 0 or team.role_id >= 0)`, p, p, p, p)
 
 		err = o.Raw(sql1, memberId, memberId, item.ItemId).QueryRow(&totalCount)
 		if err != nil {
 			logs.Error("查询项目空间时出错 ->", key, err)
 			return
 		}
-		sql2 := `SELECT book.*,rel1.*,member.account AS create_name FROM md_books AS book
-			LEFT JOIN md_relationship AS rel ON rel.book_id = book.book_id AND rel.member_id = ?
+		sql2 := fmt.Sprintf(`SELECT book.*,rel1.*,member.account AS create_name FROM %sbooks AS book
+			LEFT JOIN %srelationship AS rel ON rel.book_id = book.book_id AND rel.member_id = ?
 			left join (select book_id,min(role_id) as role_id from (select book_id,role_id
-                   	from md_team_relationship as mtr
-					left join md_team_member as mtm on mtm.team_id=mtr.team_id and mtm.member_id=? order by role_id desc )
+                   	from %steam_relationship as mtr
+					left join %steam_member as mtm on mtm.team_id=mtr.team_id and mtm.member_id=? order by role_id desc )
 as t group by book_id) as team 
 					on team.book_id = book.book_id
-			LEFT JOIN md_relationship AS rel1 ON rel1.book_id = book.book_id AND rel1.role_id = 0
-			LEFT JOIN md_members AS member ON rel1.member_id = member.member_id
+			LEFT JOIN %srelationship AS rel1 ON rel1.book_id = book.book_id AND rel1.role_id = 0
+			LEFT JOIN %smembers AS member ON rel1.member_id = member.member_id
 			WHERE book.item_id = ? AND (book.privately_owned = 0 or rel.role_id >= 0 or team.role_id >= 0) 
-			ORDER BY order_index desc,book.book_id DESC LIMIT ?,?`
+			ORDER BY order_index desc,book.book_id DESC LIMIT ?,?`, p, p, p, p, p, p)
 
 		_, err = o.Raw(sql2, memberId, memberId, item.ItemId, offset, pageSize).QueryRows(&books)
 
@@ -261,10 +263,10 @@ as t group by book_id) as team
 		}
 		totalCount = int(count)
 
-		sql := `SELECT book.*,rel.*,member.account AS create_name FROM md_books AS book
-			LEFT JOIN md_relationship AS rel ON rel.book_id = book.book_id AND rel.role_id = 0
-			LEFT JOIN md_members AS member ON rel.member_id = member.member_id
-			WHERE book.item_id = ? AND book.privately_owned = 0 ORDER BY order_index desc,book.book_id DESC LIMIT ?,?`
+		sql := fmt.Sprintf(`SELECT book.*,rel.*,member.account AS create_name FROM %sbooks AS book
+			LEFT JOIN %srelationship AS rel ON rel.book_id = book.book_id AND rel.role_id = 0
+			LEFT JOIN %smembers AS member ON rel.member_id = member.member_id
+			WHERE book.item_id = ? AND book.privately_owned = 0 ORDER BY order_index desc,book.book_id DESC LIMIT ?,?`, p, p, p)
 
 		_, err = o.Raw(sql, item.ItemId, offset, pageSize).QueryRows(&books)
 

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"time"
 
 	"git.itopcms.com/jackliu/doc/internal/config"
@@ -72,9 +73,10 @@ func (m *MemberRelationshipResult) FindForUsersByBookId(lang string, bookId, pag
 
 	var members []*MemberRelationshipResult
 
-	sql1 := "SELECT * FROM md_relationship AS rel LEFT JOIN md_members as member ON rel.member_id = member.member_id WHERE rel.book_id = ? ORDER BY rel.relationship_id DESC  LIMIT ?,?"
+	p := config.GetDatabasePrefix()
+	sql1 := fmt.Sprintf("SELECT * FROM %srelationship AS rel LEFT JOIN %smembers as member ON rel.member_id = member.member_id WHERE rel.book_id = ? ORDER BY rel.relationship_id DESC  LIMIT ?,?", p, p)
 
-	sql2 := "SELECT count(*) AS total_count FROM md_relationship AS rel LEFT JOIN md_members as member ON rel.member_id = member.member_id WHERE rel.book_id = ?"
+	sql2 := fmt.Sprintf("SELECT count(*) AS total_count FROM %srelationship AS rel LEFT JOIN %smembers as member ON rel.member_id = member.member_id WHERE rel.book_id = ?", p, p)
 
 	var total_count int
 
@@ -102,7 +104,7 @@ func (m *MemberRelationshipResult) FindForUsersByBookId(lang string, bookId, pag
 func (m *MemberRelationshipResult) FindNotJoinUsersByAccount(bookId, limit int, account string) ([]*Member, error) {
 	o := orm.NewOrm()
 
-	sql := "SELECT m.* FROM md_members as m LEFT JOIN md_relationship as rel ON m.member_id=rel.member_id AND rel.book_id = ? WHERE rel.relationship_id IS NULL AND m.account LIKE ? LIMIT 0,?;"
+	sql := fmt.Sprintf("SELECT m.* FROM %smembers as m LEFT JOIN %srelationship as rel ON m.member_id=rel.member_id AND rel.book_id = ? WHERE rel.relationship_id IS NULL AND m.account LIKE ? LIMIT 0,?;", config.GetDatabasePrefix(), config.GetDatabasePrefix())
 
 	var members []*Member
 
@@ -115,7 +117,7 @@ func (m *MemberRelationshipResult) FindNotJoinUsersByAccount(bookId, limit int, 
 func (m *MemberRelationshipResult) FindNotJoinUsersByAccountOrRealName(bookId, limit int, keyWord string) ([]*Member, error) {
 	o := orm.NewOrm()
 
-	sql := "SELECT m.* FROM md_members as m LEFT JOIN md_relationship as rel ON rel.member_id = m.member_id AND rel.book_id = ? WHERE rel.relationship_id IS NULL AND (m.real_name LIKE ? OR m.account LIKE ?) LIMIT 0,?;"
+	sql := fmt.Sprintf("SELECT m.* FROM %smembers as m LEFT JOIN %srelationship as rel ON rel.member_id = m.member_id AND rel.book_id = ? WHERE rel.relationship_id IS NULL AND (m.real_name LIKE ? OR m.account LIKE ?) LIMIT 0,?;", config.GetDatabasePrefix(), config.GetDatabasePrefix())
 
 	var members []*Member
 

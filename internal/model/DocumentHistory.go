@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"time"
 
 	"git.itopcms.com/jackliu/doc/internal/config"
@@ -68,7 +69,7 @@ func (m *DocumentHistory) Find(id int) (*DocumentHistory, error) {
 func (m *DocumentHistory) Clear(docId int) error {
 	o := orm.NewOrm()
 
-	_, err := o.Raw("DELETE md_document_history WHERE document_id = ?", docId).Exec()
+	_, err := o.Raw(fmt.Sprintf("DELETE %s WHERE document_id = ?", m.TableNameWithPrefix()), docId).Exec()
 
 	return err
 }
@@ -166,11 +167,12 @@ func (m *DocumentHistory) FindToPager(docId, pageIndex, pageSize int) (docs []*D
 
 	totalCount = 0
 
-	sql := `SELECT history.*,m1.account,m2.account as modify_name
-FROM md_document_history AS history
-LEFT JOIN md_members AS m1 ON history.member_id = m1.member_id
-LEFT JOIN md_members AS m2 ON history.modify_at = m2.member_id
-WHERE history.document_id = ? ORDER BY history.history_id DESC LIMIT ?,?;`
+	p := config.GetDatabasePrefix()
+	sql := fmt.Sprintf(`SELECT history.*,m1.account,m2.account as modify_name
+FROM %sdocument_history AS history
+LEFT JOIN %smembers AS m1 ON history.member_id = m1.member_id
+LEFT JOIN %smembers AS m2 ON history.modify_at = m2.member_id
+WHERE history.document_id = ? ORDER BY history.history_id DESC LIMIT ?,?;`, p, p, p)
 
 	_, err = o.Raw(sql, docId, offset, pageSize).QueryRows(&docs)
 

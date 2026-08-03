@@ -1,6 +1,11 @@
 package model
 
-import "github.com/beego/beego/v2/client/orm"
+import (
+	"fmt"
+
+	"git.itopcms.com/jackliu/doc/internal/config"
+	"github.com/beego/beego/v2/client/orm"
+)
 
 type CommentResult struct {
 	Comment
@@ -12,18 +17,19 @@ func (m *CommentResult) FindForDocumentToPager(doc_id, page_index, page_size int
 
 	o := orm.NewOrm()
 
-	sql1 := `
+	p := config.GetDatabasePrefix()
+	sql1 := fmt.Sprintf(`
 SELECT
   comment.* ,
   parent.* ,
   member.account AS author,
   p_member.account AS reply_account
-FROM md_comments AS comment
-  LEFT JOIN md_members AS member ON comment.member_id = member.member_id
-  LEFT JOIN md_comments AS parent ON comment.parent_id = parent.comment_id
-  LEFT JOIN md_members AS p_member ON p_member.member_id = parent.member_id
+FROM %scomments AS comment
+  LEFT JOIN %smembers AS member ON comment.member_id = member.member_id
+  LEFT JOIN %scomments AS parent ON comment.parent_id = parent.comment_id
+  LEFT JOIN %smembers AS p_member ON p_member.member_id = parent.member_id
 
-WHERE comment.document_id = ? ORDER BY comment.comment_id DESC LIMIT 0,10`
+WHERE comment.document_id = ? ORDER BY comment.comment_id DESC LIMIT 0,10`, p, p, p, p)
 
 	offset := (page_index - 1) * page_size
 

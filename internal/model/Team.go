@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"git.itopcms.com/jackliu/doc/internal/config"
@@ -75,7 +76,7 @@ func (t *Team) Delete(id int) (err error) {
 		return
 	}
 
-	_, err = o.Raw("delete from md_team_member where team_id=?;", id).Exec()
+	_, err = o.Raw(fmt.Sprintf("delete from %s where team_id=?;", NewTeamMember().TableNameWithPrefix()), id).Exec()
 
 	if err != nil {
 		logs.Error("删除团队成员时出错 ->", err)
@@ -83,7 +84,7 @@ func (t *Team) Delete(id int) (err error) {
 		return
 	}
 
-	_, err = o.Raw("delete from md_team_relationship where team_id=?;", id).Exec()
+	_, err = o.Raw(fmt.Sprintf("delete from %s where team_id=?;", NewTeamRelationship().TableNameWithPrefix()), id).Exec()
 
 	if err != nil {
 		logs.Error("删除团队项目时出错 ->", err)
