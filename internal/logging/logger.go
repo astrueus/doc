@@ -13,17 +13,17 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-// Options configures NewLogger.
+// Options 配置 NewLogger。
 type Options struct {
-	// SuppressConsole skips stderr console core (MCP stdio).
+	// SuppressConsole 跳过 stderr 控制台 core（MCP stdio 用）。
 	SuppressConsole bool
-	// LogDir is the directory for log.log (already resolved by caller).
+	// LogDir 为 log.log 所在目录（由调用方解析好）。
 	LogDir string
 }
 
-// NewLogger builds a zap logger with lumberjack file rotation.
-// File format follows sec.Format (default json); ANSI is stripped on the file path.
-// Console (stderr), when enabled, keeps colors — never stdout.
+// NewLogger 构建带 lumberjack 轮转的 zap logger。
+// 文件格式跟随 sec.Format（默认 json），写入前剥离 ANSI。
+// 启用控制台时输出到 stderr 并保留颜色，绝不写 stdout。
 func NewLogger(sec config.LogSection, opts Options) (*zap.Logger, error) {
 	dir := opts.LogDir
 	if dir == "" {
@@ -72,7 +72,7 @@ func NewLogger(sec config.LogSection, opts Options) (*zap.Logger, error) {
 		cores = append(cores, zapcore.NewCore(buildConsoleEncoder(true), zapcore.AddSync(os.Stderr), level))
 	}
 
-	// Caller comes from beego LogMsg (shim), not zap stack — avoid misleading shim path.
+	// caller 由 beego LogMsg（shim）提供，不用 zap 栈，避免误导为 shim 路径。
 	logger := zap.New(zapcore.NewTee(cores...), zap.AddStacktrace(zapcore.ErrorLevel))
 	return logger, nil
 }
@@ -84,7 +84,7 @@ func buildFileEncoder(format string) zapcore.Encoder {
 	}
 	cfg := zap.NewProductionEncoderConfig()
 	cfg.EncodeTime = zapcore.ISO8601TimeEncoder
-	cfg.CallerKey = "" // beego shim embeds [file:line] in msg
+	cfg.CallerKey = "" // shim 已把 [file:line] 写入 msg
 	return zapcore.NewJSONEncoder(cfg)
 }
 
@@ -93,7 +93,7 @@ func buildConsoleEncoder(color bool) zapcore.Encoder {
 		TimeKey:          "ts",
 		LevelKey:         "level",
 		NameKey:          "logger",
-		CallerKey:        "", // beego shim embeds [file:line] in msg
+		CallerKey:        "", // shim 已把 [file:line] 写入 msg
 		MessageKey:       "msg",
 		StacktraceKey:    "stacktrace",
 		LineEnding:       zapcore.DefaultLineEnding,
@@ -130,9 +130,9 @@ func beegoLevelEncoder(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
 	enc.AppendString(levelTag(l))
 }
 
-// coloredBeegoLevelEncoder matches beego/core/logs console brush codes:
+// coloredBeegoLevelEncoder 对齐 beego/core/logs 控制台 brush 色码：
 // Emergency 1;37, Alert 1;36, Critical 1;35, Error 1;31, Warning 1;33,
-// Notice 1;32, Informational 1;34, Debug 1;44.
+// Notice 1;32, Informational 1;34, Debug 1;44。
 func coloredBeegoLevelEncoder(l zapcore.Level, enc zapcore.PrimitiveArrayEncoder) {
 	var color string
 	switch l {

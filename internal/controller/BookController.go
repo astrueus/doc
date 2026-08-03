@@ -1,4 +1,4 @@
-package controller
+﻿package controller
 
 import (
 	"context"
@@ -15,7 +15,7 @@ import (
 
 	"git.itopcms.com/jackliu/doc/pkg/htmlutil"
 	"git.itopcms.com/jackliu/doc/pkg/sqltil"
-	"github.com/beego/i18n"
+	"git.itopcms.com/jackliu/doc/internal/i18n"
 
 	"net/http"
 

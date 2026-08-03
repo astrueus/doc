@@ -1,4 +1,4 @@
-package app
+﻿package app
 
 import (
 	"flag"
@@ -26,7 +26,7 @@ import (
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
-	"github.com/beego/i18n"
+	"git.itopcms.com/jackliu/doc/internal/i18n"
 	"github.com/fsnotify/fsnotify"
 	"github.com/lifei6671/gocaptcha"
 	"go.uber.org/zap"
@@ -116,11 +116,10 @@ func RegisterModel() {
 	//migrate.RegisterMigration()
 }
 
-// suppressConsoleLogger skips the beego console adapter so MCP stdio
-// stdout stays clean for the JSON-RPC protocol.
+// suppressConsoleLogger 跳过 beego console 适配器，避免 MCP stdio 污染 stdout。
 var suppressConsoleLogger bool
 
-// SuppressConsoleLogger disables console logging (call before bootstrap for doc mcp stdio).
+// SuppressConsoleLogger 关闭控制台日志（须在 doc mcp stdio 的 bootstrap 之前调用）。
 func SuppressConsoleLogger() {
 	suppressConsoleLogger = true
 	_ = logs.GetBeeLogger().DelLogger("console")
@@ -300,7 +299,7 @@ func ResolveCommand(args []string) {
 			cfg.LogFile = cfg.WorkingDir("runtime", "logs")
 		}
 	}
-	// Register as early as possible so bootstrap Info/Debug share one format.
+	// 尽早注册，使 bootstrap 的 Info/Debug 统一格式。
 	RegisterLogger(cfg.LogFile)
 
 	logs.Info("工作目录 ->", cfg.WorkingDirectory)

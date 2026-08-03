@@ -1,4 +1,4 @@
-package controller
+﻿package controller
 
 import (
 	"bytes"
@@ -18,7 +18,7 @@ import (
 	"git.itopcms.com/jackliu/doc/pkg/gob"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
-	"github.com/beego/i18n"
+	"git.itopcms.com/jackliu/doc/internal/i18n"
 )
 
 type BaseController struct {

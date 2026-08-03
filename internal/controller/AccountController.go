@@ -1,4 +1,4 @@
-package controller
+﻿package controller
 
 import (
 	"net/url"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/beego/i18n"
+	"git.itopcms.com/jackliu/doc/internal/i18n"
 
 	"html/template"
 

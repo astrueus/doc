@@ -8,12 +8,12 @@ import (
 
 type ctxKey struct{}
 
-// WithLogger stores logger in context.
+// WithLogger 将 logger 存入 context。
 func WithLogger(ctx context.Context, logger *zap.Logger) context.Context {
 	return context.WithValue(ctx, ctxKey{}, logger)
 }
 
-// LoggerFromCtx returns logger from context, or zap.L() if missing.
+// LoggerFromCtx 从 context 取 logger；不存在则返回 zap.L()。
 func LoggerFromCtx(ctx context.Context) *zap.Logger {
 	if ctx == nil {
 		return zap.L()

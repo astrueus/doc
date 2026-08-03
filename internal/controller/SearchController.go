@@ -1,4 +1,4 @@
-package controller
+﻿package controller
 
 import (
 	"git.itopcms.com/jackliu/doc/pkg/htmlutil"
@@ -11,7 +11,7 @@ import (
 	"git.itopcms.com/jackliu/doc/pkg/pagination"
 	"git.itopcms.com/jackliu/doc/pkg/sqltil"
 	"github.com/beego/beego/v2/core/logs"
-	"github.com/beego/i18n"
+	"git.itopcms.com/jackliu/doc/internal/i18n"
 )
 
 type SearchController struct {

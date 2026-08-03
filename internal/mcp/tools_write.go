@@ -37,7 +37,7 @@ func handleCreateDocument(ctx context.Context, _ *sdkmcp.CallToolRequest, in mcp
 	doc.ModifyAt = m.MemberId
 	doc.Version = time.Now().Unix()
 
-	if err := doc.InsertOrUpdate(); err != nil {
+	if err := documentRepo().Save(ctx, doc); err != nil {
 		return toolBizErrorOut[mcpdto.CreateDocumentOut](errs.Wrap(errs.CodeInternal, "create document failed", err))
 	}
 	return nil, mcpdto.CreateDocumentOut{DocumentID: doc.DocumentId, Version: doc.Version}, nil
@@ -52,7 +52,8 @@ func handleUpdateDocumentContent(ctx context.Context, _ *sdkmcp.CallToolRequest,
 		return toolBizErrorOut[mcpdto.UpdateDocumentContentOut](errs.New(errs.CodeInvalidParam, "document_id required"))
 	}
 
-	doc, err := model.NewDocument().Find(in.DocumentID)
+	repo := documentRepo()
+	doc, err := repo.Find(ctx, in.DocumentID)
 	if err != nil {
 		return toolBizErrorOut[mcpdto.UpdateDocumentContentOut](errs.Wrap(errs.CodeNotFound, "document not found", err))
 	}
@@ -61,15 +62,7 @@ func handleUpdateDocumentContent(ctx context.Context, _ *sdkmcp.CallToolRequest,
 	}
 
 	newVersion := time.Now().Unix()
-	o := orm.NewOrm()
-	aff, err := o.QueryTable(doc.TableNameWithPrefix()).
-		Filter("document_id", in.DocumentID).
-		Filter("version", in.ExpectVersion).
-		Update(orm.Params{
-			"markdown":  in.Markdown,
-			"version":   newVersion,
-			"modify_at": m.MemberId,
-		})
+	aff, err := repo.UpdateMarkdownWithVersion(ctx, in.DocumentID, in.ExpectVersion, in.Markdown, m.MemberId, newVersion)
 	if err != nil {
 		return toolBizErrorOut[mcpdto.UpdateDocumentContentOut](errs.Wrap(errs.CodeInternal, "db error", err))
 	}
@@ -78,7 +71,7 @@ func handleUpdateDocumentContent(ctx context.Context, _ *sdkmcp.CallToolRequest,
 	}
 
 	if in.AutoRelease {
-		if err := releaseOneDocument(in.DocumentID); err != nil {
+		if err := releaseOneDocument(ctx, in.DocumentID); err != nil {
 			logs.Warning("auto_release failed for doc %d: %v", in.DocumentID, err)
 		}
 	}
@@ -99,7 +92,8 @@ func handleAppendDocumentContent(ctx context.Context, _ *sdkmcp.CallToolRequest,
 		return toolBizErrorOut[mcpdto.AppendDocumentContentOut](errs.New(errs.CodeInvalidParam, "document_id required"))
 	}
 
-	doc, err := model.NewDocument().Find(in.DocumentID)
+	repo := documentRepo()
+	doc, err := repo.Find(ctx, in.DocumentID)
 	if err != nil {
 		return toolBizErrorOut[mcpdto.AppendDocumentContentOut](errs.Wrap(errs.CodeNotFound, "document not found", err))
 	}
@@ -109,15 +103,7 @@ func handleAppendDocumentContent(ctx context.Context, _ *sdkmcp.CallToolRequest,
 
 	newVersion := time.Now().Unix()
 	newMarkdown := doc.Markdown + in.MarkdownAppend
-	o := orm.NewOrm()
-	aff, err := o.QueryTable(doc.TableNameWithPrefix()).
-		Filter("document_id", in.DocumentID).
-		Filter("version", in.ExpectVersion).
-		Update(orm.Params{
-			"markdown":  newMarkdown,
-			"version":   newVersion,
-			"modify_at": m.MemberId,
-		})
+	aff, err := repo.UpdateMarkdownWithVersion(ctx, in.DocumentID, in.ExpectVersion, newMarkdown, m.MemberId, newVersion)
 	if err != nil {
 		return toolBizErrorOut[mcpdto.AppendDocumentContentOut](errs.Wrap(errs.CodeInternal, "append failed", err))
 	}
@@ -126,7 +112,7 @@ func handleAppendDocumentContent(ctx context.Context, _ *sdkmcp.CallToolRequest,
 	}
 
 	if in.AutoRelease {
-		if err := releaseOneDocument(in.DocumentID); err != nil {
+		if err := releaseOneDocument(ctx, in.DocumentID); err != nil {
 			logs.Warning("auto_release failed for doc %d: %v", in.DocumentID, err)
 		}
 	}
@@ -143,7 +129,7 @@ func handleUpdateDocumentMeta(ctx context.Context, _ *sdkmcp.CallToolRequest, in
 		return toolBizErrorOut[mcpdto.UpdateDocumentMetaOut](errs.New(errs.CodeInvalidParam, "document_id required"))
 	}
 
-	doc, err := model.NewDocument().Find(in.DocumentID)
+	doc, err := documentRepo().Find(ctx, in.DocumentID)
 	if err != nil {
 		return toolBizErrorOut[mcpdto.UpdateDocumentMetaOut](errs.Wrap(errs.CodeNotFound, "document not found", err))
 	}
@@ -186,14 +172,14 @@ func handleReleaseDocument(ctx context.Context, _ *sdkmcp.CallToolRequest, in mc
 	}
 
 	if in.DocumentID > 0 {
-		doc, err := model.NewDocument().Find(in.DocumentID)
+		doc, err := documentRepo().Find(ctx, in.DocumentID)
 		if err != nil {
 			return toolBizErrorOut[mcpdto.ReleaseDocumentOut](errs.Wrap(errs.CodeNotFound, "document not found", err))
 		}
 		if err := ensureWritable(m, doc.BookId); err != nil {
 			return toolBizErrorOut[mcpdto.ReleaseDocumentOut](err)
 		}
-		if err := releaseOneDocument(in.DocumentID); err != nil {
+		if err := releaseOneDocument(ctx, in.DocumentID); err != nil {
 			return toolBizErrorOut[mcpdto.ReleaseDocumentOut](errs.Wrap(errs.CodeInternal, "release failed", err))
 		}
 		return nil, mcpdto.ReleaseDocumentOut{ReleasedCount: 1}, nil
@@ -202,13 +188,13 @@ func handleReleaseDocument(ctx context.Context, _ *sdkmcp.CallToolRequest, in mc
 	if err := ensureWritable(m, in.BookID); err != nil {
 		return toolBizErrorOut[mcpdto.ReleaseDocumentOut](err)
 	}
-	docs, err := model.NewDocument().FindListByBookId(in.BookID)
+	docs, err := documentRepo().FindListByBookID(ctx, in.BookID)
 	if err != nil {
 		return toolBizErrorOut[mcpdto.ReleaseDocumentOut](errs.Wrap(errs.CodeInternal, "list documents failed", err))
 	}
 	count := 0
 	for _, d := range docs {
-		if err := releaseOneDocument(d.DocumentId); err != nil {
+		if err := releaseOneDocument(ctx, d.DocumentId); err != nil {
 			logs.Warning("release doc %d failed: %v", d.DocumentId, err)
 			continue
 		}
@@ -229,7 +215,7 @@ func handleDeleteDocument(ctx context.Context, _ *sdkmcp.CallToolRequest, in mcp
 		return toolBizErrorOut[mcpdto.DeleteDocumentOut](errs.New(errs.CodeConfirmRequired, "confirm required: set confirm=true to delete"))
 	}
 
-	doc, err := model.NewDocument().Find(in.DocumentID)
+	doc, err := documentRepo().Find(ctx, in.DocumentID)
 	if err != nil {
 		return toolBizErrorOut[mcpdto.DeleteDocumentOut](errs.Wrap(errs.CodeNotFound, "document not found", err))
 	}
@@ -265,8 +251,8 @@ func handleDeleteDocument(ctx context.Context, _ *sdkmcp.CallToolRequest, in mcp
 	}, nil
 }
 
-func releaseOneDocument(documentID int) error {
-	doc, err := model.NewDocument().Find(documentID)
+func releaseOneDocument(ctx context.Context, documentID int) error {
+	doc, err := documentRepo().Find(ctx, documentID)
 	if err != nil {
 		return err
 	}
@@ -300,7 +286,7 @@ func recursiveDeleteKeepHistory(docID int) (int, error) {
 		count += n
 	}
 
-	if existing, err := model.NewDocument().Find(docID); err == nil {
+	if existing, err := documentRepo().Find(context.Background(), docID); err == nil {
 		if _, err := o.Delete(existing); err != nil {
 			return count, err
 		}

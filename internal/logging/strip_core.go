@@ -2,8 +2,8 @@ package logging
 
 import "go.uber.org/zap/zapcore"
 
-// stripANSICore wraps a core and strips ANSI escapes from the message before write.
-// Used for the file sink so JSON/plain files stay clean while stderr keeps colors.
+// stripANSICore 包装底层 core，写入前剥离消息中的 ANSI 转义。
+// 用于文件 sink，保证 JSON/纯文本干净，同时 stderr 仍可保留颜色。
 type stripANSICore struct {
 	zapcore.Core
 }

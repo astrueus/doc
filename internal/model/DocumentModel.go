@@ -1,4 +1,4 @@
-package model
+﻿package model
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"git.itopcms.com/jackliu/doc/pkg/urlutil"
 	"time"
 
-	"github.com/beego/i18n"
+	"git.itopcms.com/jackliu/doc/internal/i18n"
 
 	"fmt"
 	"strconv"

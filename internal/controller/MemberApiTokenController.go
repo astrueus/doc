@@ -1,4 +1,4 @@
-package controller
+﻿package controller
 
 import (
 	"crypto/rand"
@@ -9,7 +9,7 @@ import (
 
 	"git.itopcms.com/jackliu/doc/internal/mcp"
 	"git.itopcms.com/jackliu/doc/internal/model"
-	"github.com/beego/i18n"
+	"git.itopcms.com/jackliu/doc/internal/i18n"
 )
 
 type MemberApiTokenController struct {

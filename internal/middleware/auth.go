@@ -10,7 +10,7 @@ import (
 	"github.com/beego/beego/v2/server/web/context"
 )
 
-// FilterUser requires a logged-in member; redirects to login with ?url= for return.
+// FilterUser 要求已登录；未登录时带 ?url= 回跳登录页。
 func FilterUser(ctx *context.Context) {
 	if id, ok := auth.MemberIDFromSession(ctx.Input.Session(config.LoginSessionName)); ok && id > 0 {
 		return

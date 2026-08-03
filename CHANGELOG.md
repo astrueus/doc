@@ -12,6 +12,9 @@
 - Session：不再 gob 序列化整份 `Member`
 - 修复：`FilterUser` / 登录页仍按 `model.Member` 断言 Session，T6 只存 `member_id` 后编辑等操作会误跳登录；统一用 `auth.MemberIDFromSession`
 - 前端 P1：移除 IE shim / 条件注释；常用静态资源 `cdnjs` 补 `"version"`
+- 测试（T10）：补 `pkg/*`、`internal/errs`/`auth`/`logging`/`i18n` 单测；见 `docs/round-4-coverage.md`
+- i18n（T5）：移除 `beego/i18n`，新增 `internal/i18n`（保留 `conf/lang/*.ini` 与 `Tr`/`IsExist`/`SetMessage` API）
+- Repository（T2）：新增 `internal/repository`（Document/Book/Member）；MCP 写工具乐观锁改走 `DocumentRepo`
 
 ## Unreleased / Round 2
 

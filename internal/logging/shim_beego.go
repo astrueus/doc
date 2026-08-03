@@ -12,7 +12,7 @@ import (
 
 var registerOnce sync.Once
 
-// RegisterBeeLoggerAdapter registers the "zap" beego logs adapter once.
+// RegisterBeeLoggerAdapter 注册 beego logs 的 "zap" 适配器（仅一次）。
 func RegisterBeeLoggerAdapter() {
 	registerOnce.Do(func() {
 		logs.Register("zap", func() logs.Logger {
@@ -21,8 +21,8 @@ func RegisterBeeLoggerAdapter() {
 	})
 }
 
-// SetAdapterLogger updates the logger used by subsequent adapter instances
-// created via SetLogger("zap"). Call after zap.ReplaceGlobals.
+// SetAdapterLogger 更新后续 SetLogger("zap") 创建的适配器所用 logger。
+// 请在 zap.ReplaceGlobals 之后调用。
 func SetAdapterLogger(logger *zap.Logger) {
 	if logger == nil {
 		return
@@ -77,7 +77,7 @@ func (a *zapAdapter) WriteMsg(lm *logs.LogMsg) error {
 	if lm.Prefix != "" {
 		msg = lm.Prefix + " " + msg
 	}
-	// Keep ANSI for stderr (access-log colors); file core strips via stripANSICore.
+	// 保留 ANSI 供 stderr（访问日志颜色）；文件路径由 stripANSICore 剥离。
 	if lm.FilePath != "" {
 		msg = fmt.Sprintf("[%s:%d] %s", filepath.Base(lm.FilePath), lm.LineNumber, msg)
 	}

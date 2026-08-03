@@ -1,4 +1,4 @@
-package pagination
+﻿package pagination
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"git.itopcms.com/jackliu/doc/internal/config"
-	"github.com/beego/i18n"
+	"git.itopcms.com/jackliu/doc/internal/i18n"
 )
 
 //Pagination 分页器

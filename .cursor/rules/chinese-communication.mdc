@@ -1,0 +1,14 @@
+---
+description: 文档、代码注释与 Git 提交说明默认使用简体中文（详见 AGENTS.md）
+alwaysApply: true
+---
+
+# 中文表达约定
+
+**权威全文见仓库根目录 [AGENTS.md](../../AGENTS.md)。** 本规则仅作 Cursor 常驻摘要，修改约定时先改 AGENTS.md。
+
+- 文档、`docs/**`、CHANGELOG、注释、`git commit` 说明 → **简体中文**
+- 标识符、包路径、配置键、协议字段、第三方库名 → 可保留英文
+- 与周围已有中文风格保持一致；不要把注释改回英文
+
+示例见 AGENTS.md「语言：简体中文」。
