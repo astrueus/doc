@@ -19,7 +19,7 @@ flowchart LR
     C --> D[Act Runner 领取 Job]
     D --> E[checkout + setup-go]
     E --> F[scripts/build.sh --mode=release]
-    F --> G[zip 打包]
+    F --> G[打包 tar.gz / zip]
     G --> H[gitea-release-action 上传]
     H --> I[Gitea Releases 页可见]
 ```
@@ -34,7 +34,7 @@ flowchart LR
 | Actions 开关 | 站点管理 → 配置 → Actions 已启用；仓库设置中 Actions 已勾选 |
 | Runner | 至少一台 Act Runner，标签包含 `ubuntu-latest`（或自定义） |
 | 网络 | Runner 能访问 Gitea API（公网或内网均可） |
-| 工具链 | Runner 镜像或宿主机有 Go ≥ 1.25、`gcc`、`zip`；若交叉编译 Windows 需 Zig / MinGW-w64 |
+| 工具链 | Runner 镜像或宿主机有 Go ≥ 1.25、`gcc`、`tar`；打 Windows zip 需 `zip`；若交叉编译 Windows 需 Zig / MinGW-w64 |
 
 ---
 
@@ -134,9 +134,9 @@ jobs:
       - name: Install build deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential zip curl
+          sudo apt-get install -y build-essential tar curl
 
-      # 若需交叉编译 Windows，取消下面注释
+      # 若需交叉编译 Windows，取消下面注释（并安装 zip）
       # - name: Install Zig
       #   run: |
       #     ZIG_VER=0.13.0
@@ -164,11 +164,25 @@ jobs:
           ./dist/doc_linux_amd64 version
           rm conf/app.conf
 
-      - name: Package zip
+      # 包结构与 scripts/release.* 一致：
+      #   doc_<version>_linux_amd64.tar.gz
+      #   根目录 doc + conf/{lang,app.conf.example} + web/ + uploads/ + deployments/{spug,systemd}/ + LICENSE.md
+      - name: Package tar.gz
         run: |
-          zip -r doc_linux_amd64.zip \
-            dist/doc_linux_amd64 \
-            conf static views uploads favicon.ico LICENSE.md
+          VERSION="${{ steps.ver.outputs.version }}"
+          STAGE=$(mktemp -d)
+          cp dist/doc_linux_amd64 "$STAGE/doc"
+          chmod 755 "$STAGE/doc"
+          mkdir -p "$STAGE/conf" "$STAGE/uploads" "$STAGE/deployments"
+          cp -a conf/lang "$STAGE/conf/"
+          cp conf/app.conf.example "$STAGE/conf/"
+          cp -a web "$STAGE/"
+          cp -a deployments/spug "$STAGE/deployments/"
+          cp -a deployments/systemd "$STAGE/deployments/"
+          [ -f LICENSE.md ] && cp LICENSE.md "$STAGE/"
+          tar -C "$STAGE" -czf "doc_${VERSION}_linux_amd64.tar.gz" .
+          rm -rf "$STAGE"
+          ls -al "doc_${VERSION}_linux_amd64.tar.gz"
 
       - name: Publish to Gitea Release
         uses: akkuman/gitea-release-action@v1
@@ -181,7 +195,7 @@ jobs:
             Auto release ${{ steps.ver.outputs.tag }}
             - Linux amd64
           files: |
-            doc_linux_amd64.zip
+            doc_${{ steps.ver.outputs.version }}_linux_amd64.tar.gz
           sha256sum: true
 ```
 
@@ -223,9 +237,9 @@ jobs:
       - name: Install deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential zip
+          sudo apt-get install -y build-essential tar curl
           if [ "${{ matrix.target }}" = "windows" ]; then
-            sudo apt-get install -y mingw-w64
+            sudo apt-get install -y mingw-w64 zip
           fi
 
       - name: Build
@@ -240,17 +254,32 @@ jobs:
 
       - name: Package
         run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          STAGE=$(mktemp -d)
+          mkdir -p "$STAGE/conf" "$STAGE/uploads" "$STAGE/deployments"
+          cp -a conf/lang "$STAGE/conf/"
+          cp conf/app.conf.example "$STAGE/conf/"
+          cp -a web "$STAGE/"
+          cp -a deployments/spug "$STAGE/deployments/"
+          cp -a deployments/systemd "$STAGE/deployments/"
+          [ -f LICENSE.md ] && cp LICENSE.md "$STAGE/"
           if [ "${{ matrix.target }}" = "windows" ]; then
-            zip -r doc_windows_amd64.zip dist/doc_windows_amd64.exe conf static views uploads favicon.ico LICENSE.md
+            cp dist/doc_windows_amd64.exe "$STAGE/doc.exe"
+            (cd "$STAGE" && zip -qr "$GITHUB_WORKSPACE/doc_${VERSION}_windows_amd64.zip" .)
           else
-            zip -r doc_linux_amd64.zip dist/doc_linux_amd64 conf static views uploads favicon.ico LICENSE.md
+            cp dist/doc_linux_amd64 "$STAGE/doc"
+            chmod 755 "$STAGE/doc"
+            tar -C "$STAGE" -czf "$GITHUB_WORKSPACE/doc_${VERSION}_linux_amd64.tar.gz" .
           fi
+          rm -rf "$STAGE"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: pkg-${{ matrix.target }}
-          path: doc_${{ matrix.target }}_amd64.zip
+          path: |
+            doc_*_amd64.zip
+            doc_*_amd64.tar.gz
           retention-days: 1
 
   release:
@@ -266,7 +295,7 @@ jobs:
       - name: Flatten
         run: |
           mkdir -p out
-          find pkgs -name '*.zip' -exec mv {} out/ \;
+          find pkgs \( -name '*.zip' -o -name '*.tar.gz' \) -exec mv {} out/ \;
           ls -al out/
 
       - uses: akkuman/gitea-release-action@v1
@@ -276,7 +305,7 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: Doc ${{ github.ref_name }}
           files: |
-            out/*.zip
+            out/*
           sha256sum: true
 ```
 
@@ -329,7 +358,7 @@ workflow 内 `build.sh` 已通过 `-ldflags -X conf.VERSION=...` 注入。验证
 # 期望输出包含 1.0.0
 ```
 
-如未注入，检查 `scripts/build.sh` 的 `LDFLAGS_COMMON` 和 `conf/enumerate.go` 中 `VERSION` 变量名是否一致。
+如未注入，检查 `scripts/build.sh` 的 `LDFLAGS_COMMON` 和 `internal/config` 中 `VERSION` 变量名是否一致。
 
 ---
 
@@ -378,8 +407,10 @@ on:
           tag_name: ${{ github.ref_name }}
           body_path: CHANGELOG.md
           files: |
-            doc_linux_amd64.zip
+            doc_${{ github.ref_name }}_linux_amd64.tar.gz
 ```
+
+> 注意：`github.ref_name` 为 `v1.0.0`，而附件名版本段不含 `v`。changelog 步骤里应用 `${GITHUB_REF_NAME#v}` 拼出 `doc_1.0.0_linux_amd64.tar.gz`。
 
 ### Q6：Runner 磁盘膨胀
 - 定期清理：`docker system prune -af`
@@ -389,7 +420,7 @@ on:
 
 ## 十一、与 Spug 协同
 
-Actions 把 zip 发布到 Gitea Release 后，Spug 拉取并部署到目标服务器。详见 [`deploy-spug-actions.md`](./deploy-spug-actions.md)。
+Actions 把 `doc_<version>_linux_amd64.tar.gz` 发布到 Gitea Release 后，Spug 拉取并部署到目标服务器。详见 [`deploy-spug-actions.md`](./deploy-spug-actions.md)。包结构与 [`release-local.md`](./release-local.md) 一致。
 
 ---
 
@@ -403,5 +434,5 @@ Actions 把 zip 发布到 Gitea Release 后，Spug 拉取并部署到目标服�
      git tag -a v1.0.0 -m "Release v1.0.0"
      git push origin v1.0.0
 5. Gitea Actions 页面观察 Run
-6. Releases 页面看到 v1.0.0 与 doc_linux_amd64.zip
+6. Releases 页面看到 v1.0.0 与 doc_1.0.0_linux_amd64.tar.gz
 ```

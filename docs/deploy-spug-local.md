@@ -1,6 +1,6 @@
 # 本地发版 + Spug 上线
 
-> 配合 [`release-local.md`](./release-local.md)。本地脚本把 zip 推到 Gitea Release，Spug 从 Gitea 拉取并部署到生产服务器。
+> 配合 [`release-local.md`](./release-local.md)。本地脚本把发布包推到 Gitea Release，Spug 从 Gitea 拉取并部署到生产服务器。
 
 ## 适用场景
 
@@ -14,7 +14,7 @@
 
 ```mermaid
 flowchart LR
-    A[开发者本机<br/>scripts/release.ps1] --> B[Gitea Release<br/>doc_linux_amd64.zip]
+    A[开发者本机<br/>scripts/release.*] --> B[Gitea Release<br/>doc_VERSION_linux_amd64.tar.gz]
     B --> C[Spug 发布任务<br/>下载 + 解压]
     C --> D[Spug 前置脚本<br/>spug_pre.sh]
     D --> E[Spug 后置脚本<br/>deployments/spug/spug_run.sh]
@@ -24,10 +24,10 @@ flowchart LR
 
 | 节点 | 负责人 | 工件 |
 |------|--------|------|
-| 编译/发版 | 开发者本机 | `doc_linux_amd64.zip` 上传到 Gitea Release |
-| 拉取/部署 | Spug | 把 zip 解压到 `WWW` |
+| 编译/发版 | 开发者本机 | `doc_<version>_linux_amd64.tar.gz` 上传到 Gitea Release（tag 为 `v<version>`） |
+| 拉取/部署 | Spug | 把 tar.gz 解压到 `WWW` |
 | 软链/服务 | `deployments/spug/spug_run.sh` | 持久化目录、`app.conf`、systemd |
-| 运行 | `doc.service` | 启动 `doc` |
+| 运行 | `doc.service` | 启动根目录 `doc` |
 
 ---
 
@@ -35,16 +35,16 @@ flowchart LR
 
 ```text
 /data/wwwroot/doc.itopcms.com/         ← WWW：每次发布覆盖
-  doc                                  ← 可执行文件（必须叫 doc）
+  doc                                  ← 可执行文件（包根目录，已命名为 doc）
   conf/app.conf                        ← 每次从 REPO 覆盖
   conf/app.conf.example                ← 仓库自带
+  conf/lang/                           ← 语言包
   web/static/  web/views/              ← 静态资源与模板（Round 2）
   uploads -> /data/repos/.../uploads   ← 软链
   runtime -> /data/repos/.../runtime   ← 软链
   deployments/
     spug/spug_run.sh                   ← Spug 后置脚本
     systemd/doc.service                ← systemd unit 源文件
-  dist/doc_linux_amd64                 ← 解压时存在；前置脚本会拷成 doc
 
 /data/repos/doc.itopcms.com/resource/  ← REPO：持久化数据，不随发布覆盖
   app.conf                             ← 权威配置（运维维护）
@@ -77,8 +77,8 @@ vi /data/repos/doc.itopcms.com/resource/app.conf
 #   db_host/db_user/db_password/db_database
 #   site_name / app_key 等
 
-# 3. 必要工具
-yum install -y unzip curl   # 或 apt install -y unzip curl
+# 3. 必要工具（Linux 包为 tar.gz，不再依赖 unzip）
+yum install -y curl tar   # 或 apt install -y curl tar
 ```
 
 ### Spug 端
@@ -90,21 +90,21 @@ yum install -y unzip curl   # 或 apt install -y unzip curl
 
 ---
 
-## 四、Spug 前置脚本：`scripts/spug_pre.sh`
+## 四、Spug 前置脚本：`spug_pre.sh`
 
-> **职责**：从 Gitea Release 下载 zip，解压到 `WWW`，把 `dist/doc_linux_amd64` 复制为 `WWW/doc`。
->
+> **职责**：从 Gitea Release 下载 `doc_<version>_linux_amd64.tar.gz`，解压到 `WWW`。  
+> 当前发布包内二进制已在根目录名为 `doc`，无需再从 `dist/` 拷贝。  
 > 解决 `spug_run.sh` 中 `chmod 755 "$WWW/doc"` 必须先有 `doc` 文件的前提。
 
-将以下内容保存为 `scripts/spug_pre.sh`（与 `spug_run.sh` 同目录）：
+将以下内容保存为服务器脚本，或直接粘贴到 Spug「自定义命令」：
 
 ```bash
 #!/bin/bash
 # spug_pre.sh — 部署前置脚本
-# 由 spug 在文件分发前/后执行，从 Gitea Release 下载对应版本的 zip 并解压到 WWW。
+# 由 Spug 执行：从 Gitea Release 下载对应版本的 tar.gz 并解压到 WWW。
 #
 # 期望环境变量（在 Spug 应用变量中配置）：
-#   TAG          发布的 tag，例如 v1.0.0
+#   TAG          发布的 tag，例如 v1.0.0（带 v）
 #   GITEA_OWNER  默认 jackliu
 #   GITEA_REPO   默认 doc
 #   GITEA_URL    默认 https://git.itopcms.com
@@ -119,13 +119,16 @@ REPO="${GITEA_REPO:-doc}"
 BASE="${GITEA_URL:-https://git.itopcms.com}"
 TOKEN="${GITEA_TOKEN:-}"
 
-PKG_NAME=doc_linux_amd64.zip
+# v1.0.0 -> 1.0.0（与 release 脚本文件名一致）
+VERSION="${TAG#v}"
+PKG_NAME="doc_${VERSION}_linux_amd64.tar.gz"
 PKG_URL="$BASE/$OWNER/$REPO/releases/download/$TAG/$PKG_NAME"
 PKG_FILE="/tmp/${REPO}_${TAG}_${PKG_NAME}"
 
 log() { echo "[spug-pre] $*"; }
 
-log "TAG=$TAG, 下载 $PKG_URL"
+log "TAG=$TAG VERSION=$VERSION"
+log "下载 $PKG_URL"
 mkdir -p "$WWW"
 
 CURL_OPTS=(-fL --retry 3 --retry-delay 2)
@@ -135,22 +138,21 @@ fi
 
 curl "${CURL_OPTS[@]}" "$PKG_URL" -o "$PKG_FILE"
 
-log "解压到 $WWW"
-unzip -oq "$PKG_FILE" -d "$WWW"
+# 可选：备份旧二进制
+if [ -f "$WWW/doc" ]; then
+  cp -f "$WWW/doc" "/tmp/doc.bak.$(date +%s)" || true
+fi
 
-# build.sh --mode=release 产物路径：dist/doc_linux_amd64
-if [ -f "$WWW/dist/doc_linux_amd64" ]; then
-  cp -f "$WWW/dist/doc_linux_amd64" "$WWW/doc"
-elif [ -f "$WWW/doc_linux_amd64" ]; then
-  cp -f "$WWW/doc_linux_amd64" "$WWW/doc"
-else
-  log "找不到 doc_linux_amd64，请检查 zip 内容"
+log "解压到 $WWW"
+tar -xzf "$PKG_FILE" -C "$WWW"
+
+if [ ! -f "$WWW/doc" ]; then
+  log "解压后找不到 $WWW/doc，请检查包内容"
   exit 1
 fi
 
 chmod 755 "$WWW/doc"
 
-# 自检版本号
 log "二进制自检"
 "$WWW/doc" version || { log "doc version 执行失败"; exit 1; }
 
@@ -242,18 +244,18 @@ WantedBy=multi-user.target
 
 | 变量 | 示例 | 说明 |
 |------|------|------|
-| `TAG` | `v1.0.0` | 必填，要部署的 Release tag |
+| `TAG` | `v1.0.0` | 必填，要部署的 Release tag（带 `v`） |
 | `GITEA_TOKEN` | （Spug 应用密文） | 私有仓库下载使用 |
 
 ### 发布步骤（按顺序）
 
 1. **前置（在目标主机执行）**
    ```bash
-   bash /data/wwwroot/doc.itopcms.com/scripts/spug_pre.sh
+   bash /data/wwwroot/doc.itopcms.com/deployments/spug/spug_pre.sh
    ```
-   > 首次发布时 `WWW` 还没有 `spug_pre.sh`。两种做法：
-   > - **方案A**：把 `spug_pre.sh` 内容直接粘贴到 Spug 「自定义命令」里执行（不依赖文件存在）
-   > - **方案B**：首次手工 scp 一份到服务器，后续每次发布由 `spug_pre.sh` 解压时一并覆盖
+   > 首次发布时 `WWW` 还没有前置脚本。两种做法：
+   > - **方案A**：把上面 `spug_pre.sh` 内容直接粘贴到 Spug 「自定义命令」里执行（不依赖文件存在）
+   > - **方案B**：首次手工 scp 一份到服务器；后续可由发布包内 `deployments/spug/` 覆盖
 
 2. **后置（在目标主机执行）**
    ```bash
@@ -263,24 +265,25 @@ WantedBy=multi-user.target
 ### 推荐：直接在 Spug「自定义命令」里串成一条
 
 ```bash
-set -e
-export TAG="$SPUG_VERSION"          # 或者发布参数里直接取
-export GITEA_OWNER=jackliu
-export GITEA_REPO=doc
-export GITEA_URL=https://git.itopcms.com
+set -euo pipefail
+export TAG="${TAG:?TAG 未设置，例如 v1.0.0}"
+export GITEA_OWNER="${GITEA_OWNER:-jackliu}"
+export GITEA_REPO="${GITEA_REPO:-doc}"
+export GITEA_URL="${GITEA_URL:-https://git.itopcms.com}"
 # export GITEA_TOKEN=...            # 若仓库为私有，从 Spug 密文注入
 
-# 1) 拉包（脚本内联，不依赖远端文件）
 WWW=/data/wwwroot/doc.itopcms.com
+VERSION="${TAG#v}"
+PKG="doc_${VERSION}_linux_amd64.tar.gz"
+URL="$GITEA_URL/$GITEA_OWNER/$GITEA_REPO/releases/download/$TAG/$PKG"
+
 mkdir -p "$WWW"
 curl -fL ${GITEA_TOKEN:+-H "Authorization: token $GITEA_TOKEN"} \
-  "$GITEA_URL/$GITEA_OWNER/$GITEA_REPO/releases/download/$TAG/doc_linux_amd64.zip" \
-  -o /tmp/doc.zip
-unzip -oq /tmp/doc.zip -d "$WWW"
-[ -f "$WWW/dist/doc_linux_amd64" ] && cp -f "$WWW/dist/doc_linux_amd64" "$WWW/doc"
+  "$URL" -o "/tmp/$PKG"
+tar -xzf "/tmp/$PKG" -C "$WWW"
 chmod 755 "$WWW/doc"
+"$WWW/doc" version
 
-# 2) 后置（仓库自带）
 bash "$WWW/deployments/spug/spug_run.sh"
 ```
 
@@ -290,14 +293,15 @@ bash "$WWW/deployments/spug/spug_run.sh"
 
 ```text
 本机：
-  scripts\release.bat 1.0.0      # 编译 + 上传 Gitea Release
+  scripts\release.bat 1.0.0 linux   # 或 ./scripts/release.sh 1.0.0 linux
+  # 产物：doc_1.0.0_linux_amd64.tar.gz，tag：v1.0.0
 
 Spug：
   打开应用 → 新建发布
   发布参数：TAG = v1.0.0
   点击发布 → 选目标主机 → 执行
   日志中观察：
-    [spug-pre] TAG=v1.0.0, 下载 ...
+    [spug-pre] TAG=v1.0.0 VERSION=1.0.0
     [spug-pre] 解压到 /data/wwwroot/doc.itopcms.com
     [spug-pre] 二进制自检
     [spug]    重新加载并重启 doc.service
@@ -315,11 +319,11 @@ Spug：
 Spug 发布参数 TAG = v0.9.9 → 重新发布即可
 ```
 
-`spug_pre.sh` 会下载 v0.9.9 的 zip 覆盖；`spug_run.sh` 重启服务；数据目录（`uploads`/`runtime`/`app.conf`）持久化不变。
+`spug_pre.sh` 会下载 `doc_0.9.9_linux_amd64.tar.gz` 覆盖；`spug_run.sh` 重启服务；数据目录（`uploads`/`runtime`/`app.conf`）持久化不变。
 
 ### 方案 B：用本地备份的二进制（快速回退，但仅回退可执行文件）
 
-`scripts/spug_rollback.sh`（手工执行）：
+`spug_rollback.sh`（手工执行）：
 
 ```bash
 #!/bin/bash
@@ -344,7 +348,7 @@ echo "rolled back to $TAG"
 bash /data/repos/doc.itopcms.com/resource/scripts/spug_rollback.sh v0.9.9
 ```
 
-> 注意：方案 B 只回滚可执行文件；若新版本改动了 `static`/`views`，需用方案 A 才能完整回退。
+> 注意：方案 B 只回滚可执行文件；若新版本改动了 `web/`，需用方案 A 才能完整回退。
 
 ---
 
@@ -379,9 +383,9 @@ ls -1dt "$BAK_ROOT"/*/ 2>/dev/null | tail -n +11 | xargs -r rm -rf
 
 ## 十一、常见问题
 
-### Q1：`spug_run.sh` 第 54 行 `chmod 755 "$WWW/doc"` 报「No such file」
-- `spug_pre.sh` 没跑 / zip 内可执行文件未复制为 `doc`
-- 检查 `dist/doc_linux_amd64` 是否在 zip 中
+### Q1：`spug_run.sh` `chmod 755 "$WWW/doc"` 报「No such file」
+- 前置脚本没跑 / 下载的不是当前格式的包
+- 确认附件名为 `doc_<version>_linux_amd64.tar.gz`，解压后根目录有 `doc`
 
 ### Q2：systemd 报「指向 X 与本项目 Y 不一致」
 - 服务器上之前手动装过 `doc.service` 指向别的路径
@@ -398,14 +402,17 @@ ls -1dt "$BAK_ROOT"/*/ 2>/dev/null | tail -n +11 | xargs -r rm -rf
 
 ### Q5：app.conf 改了不生效
 - 改的应该是 `$REPO/app.conf`（权威配置），不是 `$WWW/conf/app.conf`
-- 改后需要再 spug 发布一次或手工 `cp -f` 再 `systemctl restart`
+- 改后需要再 Spug 发布一次或手工 `cp -f` 再 `systemctl restart`
 
 ### Q6：私有仓库下载 401
 - 在 Spug 应用密文中加 `GITEA_TOKEN`
-- 确认 token 有 `read:repository` 权限
+- 确认 token 有仓库读权限
 
 ### Q7：Spug 显示成功但服务异常
-- 当前 `spug_run.sh` 没做健康检查；按第五节追加 `curl 自检` 段落
+- 当前 `spug_run.sh` 没做健康检查；按第五节追加 `curl` 自检段落
+
+### Q8：仍按旧文档找 `doc_linux_amd64.zip` / `dist/doc_linux_amd64`
+- 已废弃。以 [`release-local.md`](./release-local.md) 当前包约定为准：`doc_<version>_linux_amd64.tar.gz`，包内根目录 `doc`
 
 ---
 
@@ -415,7 +422,7 @@ ls -1dt "$BAK_ROOT"/*/ 2>/dev/null | tail -n +11 | xargs -r rm -rf
 
 - [ ] `systemctl is-active doc.service` 输出 `active`
 - [ ] `curl -fsS http://127.0.0.1:8181/` 返回 200
-- [ ] `/data/wwwroot/doc.itopcms.com/doc version` 与 TAG 一致
+- [ ] `/data/wwwroot/doc.itopcms.com/doc version` 与 TAG（去掉 `v`）一致
 - [ ] 浏览器登录后台，新建/查看文档正常
 - [ ] `ls -l /data/wwwroot/doc.itopcms.com/uploads` 为软链
 - [ ] `journalctl -u doc.service` 没有报错堆栈
@@ -425,5 +432,5 @@ ls -1dt "$BAK_ROOT"/*/ 2>/dev/null | tail -n +11 | xargs -r rm -rf
 
 ## 十三、相关文档
 
-- [release-local.md](./release-local.md)：本地发版脚本
+- [release-local.md](./release-local.md)：本地发版脚本与包结构
 - [deploy-spug-actions.md](./deploy-spug-actions.md)：如果改用 Gitea Actions 自动发版，再走 Spug 部署

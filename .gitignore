@@ -21,6 +21,8 @@ _testmain.go
 
 *.exe
 /dist
+/release/
+.release_stage_*
 database
 *.test
 *.prof

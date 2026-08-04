@@ -16,21 +16,21 @@
 flowchart LR
     A[开发者<br/>git push tag v*] --> B[Gitea Server]
     B --> C[Act Runner<br/>执行 release.yml]
-    C --> D[产物：Gitea Release<br/>doc_linux_amd64.zip]
+    C --> D[产物：Gitea Release<br/>doc_VERSION_linux_amd64.tar.gz]
     D -.手动触发.-> E[Spug 发布任务<br/>下载 + 部署]
     D -.可选 webhook.-> E
-    E --> F[spug_pre 内联命令<br/>下载 + 重命名 doc]
+    E --> F[spug_pre 内联命令<br/>下载 + 解压]
     F --> G[spug_run.sh<br/>软链 + 配置 + systemd]
     G --> H[健康检查 :8181]
 ```
 
 | 阶段 | 触发者 | 工件位置 |
 |------|--------|----------|
-| 构建 | Gitea Actions | `doc_linux_amd64.zip` 在 Gitea Releases |
+| 构建 | Gitea Actions | `doc_<version>_linux_amd64.tar.gz` 在 Gitea Releases |
 | 部署 | Spug（手动或 webhook） | 目标服务器 `/data/wwwroot/doc.itopcms.com` |
 | 运行 | systemd | `doc.service` |
 
-> 本方案与 [`deploy-spug-local.md`](./deploy-spug-local.md) 的服务器侧脚本（`spug_pre.sh` / `spug_run.sh`）完全一致，区别仅在 zip 是 **Actions 产出** 而非 **开发者本机产出**。
+> 本方案与 [`deploy-spug-local.md`](./deploy-spug-local.md) 的服务器侧脚本完全一致，区别仅在发布包是 **Actions 产出** 而非 **开发者本机产出**。
 
 ---
 
@@ -50,11 +50,11 @@ flowchart LR
 直接复用：
 
 - 目录约定：见 [deploy-spug-local.md 第二节](./deploy-spug-local.md#二服务器目录约定与现有-spug_runsh-一致)
-- `scripts/spug_pre.sh`：见 [deploy-spug-local.md 第四节](./deploy-spug-local.md#四spug-前置脚本scriptsspug_presh)
-- `scripts/spug_run.sh`：仓库已有
-- `scripts/doc.service`：仓库已有（调整建议见 [deploy-spug-local.md 第六节](./deploy-spug-local.md#六docservice-调整建议)）
+- 前置脚本：见 [deploy-spug-local.md 第四节](./deploy-spug-local.md#四spug-前置脚本spug_presh)
+- `deployments/spug/spug_run.sh`：仓库已有
+- `deployments/systemd/doc.service`：仓库已有（调整建议见 [deploy-spug-local.md 第六节](./deploy-spug-local.md#六docservice-调整建议)）
 
-> 因为两个方案的服务器侧逻辑相同，**`scripts/spug_pre.sh` 创建一份即可两种方案共用**。
+> 两个方案的服务器侧逻辑相同，**前置脚本创建一份即可两种方案共用**。
 
 ---
 
@@ -62,7 +62,7 @@ flowchart LR
 
 | 维度 | 本地脚本发版 | Actions 自动发版 |
 |------|--------------|-----------------|
-| 谁产出 zip | 开发者本机 `release.{ps1\|sh}` | Gitea Actions Runner |
+| 谁产出包 | 开发者本机 `release.{ps1\|bat\|sh}` | Gitea Actions Runner |
 | 触发点 | 本机命令 | `git push origin v*` |
 | Spug 发布触发 | 手动选 TAG | 手动选 TAG / webhook 自动触发 |
 | 失败排查 | 本机日志 | Gitea Actions Run 日志 |
@@ -78,7 +78,7 @@ Spug 应用「Doc 文档系统」中新建发布配置：
 
 | 变量 | 示例 | 说明 |
 |------|------|------|
-| `TAG` | `v1.0.0` | 必填，要部署的 Release tag |
+| `TAG` | `v1.0.0` | 必填，要部署的 Release tag（带 `v`） |
 | `GITEA_OWNER` | `jackliu` | 仓库 owner |
 | `GITEA_REPO` | `doc` | 仓库名 |
 | `GITEA_URL` | `https://git.itopcms.com` | Gitea 站点 |
@@ -91,7 +91,6 @@ Spug 应用「Doc 文档系统」中新建发布配置：
 ```bash
 set -euo pipefail
 
-# ===== Spug 注入的发布参数 =====
 TAG="${TAG:?TAG 未设置，例如 v1.0.0}"
 OWNER="${GITEA_OWNER:-jackliu}"
 REPO="${GITEA_REPO:-doc}"
@@ -99,44 +98,33 @@ BASE="${GITEA_URL:-https://git.itopcms.com}"
 TOKEN="${GITEA_TOKEN:-}"
 
 WWW=/data/wwwroot/doc.itopcms.com
-PKG=doc_linux_amd64.zip
+VERSION="${TAG#v}"
+PKG="doc_${VERSION}_linux_amd64.tar.gz"
 URL="$BASE/$OWNER/$REPO/releases/download/$TAG/$PKG"
 
 echo "[1/4] 下载 $URL"
 mkdir -p "$WWW"
 CURL_OPTS=(-fL --retry 3 --retry-delay 2)
 [ -n "$TOKEN" ] && CURL_OPTS+=(-H "Authorization: token $TOKEN")
-curl "${CURL_OPTS[@]}" "$URL" -o /tmp/doc.zip
+curl "${CURL_OPTS[@]}" "$URL" -o "/tmp/$PKG"
 
 echo "[2/4] 解压到 $WWW"
-unzip -oq /tmp/doc.zip -d "$WWW"
-
-# Actions 产物路径与本地一致：dist/doc_linux_amd64
-if [ -f "$WWW/dist/doc_linux_amd64" ]; then
-  cp -f "$WWW/dist/doc_linux_amd64" "$WWW/doc"
-elif [ -f "$WWW/doc_linux_amd64" ]; then
-  cp -f "$WWW/doc_linux_amd64" "$WWW/doc"
-else
-  echo "找不到 doc_linux_amd64"; exit 1
-fi
+tar -xzf "/tmp/$PKG" -C "$WWW"
 chmod 755 "$WWW/doc"
 
 echo "[3/4] 二进制自检"
 "$WWW/doc" version
 
 echo "[4/4] 后置脚本"
-# 把 TAG 传给 spug_run.sh，用于备份目录命名
 export TAG
-bash "$WWW/scripts/spug_run.sh"
+bash "$WWW/deployments/spug/spug_run.sh"
 ```
 
-> 这段命令与 [`deploy-spug-local.md`](./deploy-spug-local.md#七spug-控制台配置示例) 中的「推荐：直接在 Spug 自定义命令里串成一条」基本一致，区别只在「zip 是谁产出」。
+> 与 [`deploy-spug-local.md`](./deploy-spug-local.md#七spug-控制台配置示例) 中的「推荐：直接在 Spug 自定义命令里串成一条」一致，区别只在「包是谁产出」。
 
 ---
 
 ## 六、完整自动化路径（push tag 即生效）
-
-下面给出两种「自动化程度」，按团队需要选：
 
 ### 方案 A：半自动（推荐起步）
 
@@ -152,10 +140,7 @@ Gitea Actions：
   Spug 控制台 → 发布 → 选 TAG=v1.0.0 → 选目标主机 → 执行
 ```
 
-优点：
-
-- 上线节奏可控（生产/灰度分开）
-- 失败时可在 Spug 单独重试
+优点：上线节奏可控；失败时可在 Spug 单独重试。
 
 ### 方案 B：全自动（Actions 直接通知 Spug）
 
@@ -175,10 +160,7 @@ Gitea Actions：
             -d "{\"app\": \"doc\", \"tag\": \"${GITHUB_REF_NAME}\"}"
 ```
 
-需要在 Spug 上：
-
-1. 配置应用 webhook / API token（不同版本接口不同，参考你部署的 Spug 文档）
-2. 在仓库 Secrets 添加 `SPUG_DEPLOY_URL`、`SPUG_TOKEN`
+需要在 Spug 上配置 webhook / API token，并在仓库 Secrets 添加 `SPUG_DEPLOY_URL`、`SPUG_TOKEN`。
 
 > 全自动模式建议**仅用于测试环境**，生产环境保留人工审核更稳妥。
 
@@ -188,49 +170,34 @@ Gitea Actions：
 
 如果 Spug 已纳管多台主机，可分组上线：
 
-1. 第一批：1 台 canary
-   ```text
-   发布参数：TAG=v1.0.0
-   发布主机：canary-01
-   ```
-2. 验证 5~10 分钟（看监控、日志、关键功能）
+1. 第一批：1 台 canary（`TAG=v1.0.0`）
+2. 验证 5~10 分钟
 3. 第二批：剩余主机
 
-`spug_run.sh` 与 `doc.service` 不需要为灰度做修改，只要 Spug 端选择不同的主机分组即可。
+`spug_run.sh` 与 `doc.service` 不需要为灰度做修改。
 
 ---
 
 ## 八、回滚
 
-回滚方式与 [`deploy-spug-local.md` 第九节](./deploy-spug-local.md#九回滚) 完全一致：
+与 [`deploy-spug-local.md` 第九节](./deploy-spug-local.md#九回滚) 完全一致：
 
-### 方案 A：发布旧 TAG（推荐）
+- **方案 A**：Spug 发布旧 `TAG=v0.9.9`（下载旧 `doc_0.9.9_linux_amd64.tar.gz`）
+- **方案 B**：用本地备份二进制（见本地方案 `spug_rollback.sh`）
 
-```text
-Spug 发布参数 TAG = v0.9.9 → 重新发布
-```
-
-服务器侧 `spug_pre.sh` / `spug_run.sh` 会去 Gitea 下载旧版本 zip（前提：旧版 Release 还在）。
-
-### 方案 B：用本地备份的二进制
-
-参考 [`deploy-spug-local.md`](./deploy-spug-local.md#方案-b用本地备份的二进制快速回退但仅回退可执行文件) 的 `spug_rollback.sh`。
-
-> Actions 模式下，建议每次发版 Actions 把 zip 留档（Gitea Release 默认保留），不要主动删除旧 Release，否则将无法靠方案 A 回滚。
+> 不要主动删除旧 Release，否则无法靠方案 A 回滚。
 
 ---
 
 ## 九、与「本地脚本发版」并存
 
-两种发版方式**不冲突**：
-
 | 情形 | 推荐发版方式 |
 |------|--------------|
 | 日常 / 多人协作 | Actions（push tag 即可） |
 | Runner 故障 / 紧急修复 | 临时切到本地脚本发版 |
-| 实验性大改 | 本地脚本（不打 tag，不创建 Release） |
+| 实验性大改 | 本地脚本（`--dry-run` / 草稿，不污染生产 tag） |
 
-服务器侧 `spug_pre.sh` + `spug_run.sh` 完全相同。
+服务器侧前置 + `spug_run.sh` 完全相同。
 
 ---
 
@@ -242,25 +209,11 @@ Spug 发布参数 TAG = v0.9.9 → 重新发布
 
 ### Q2：Spug 拉包 404
 - Release 未生成完成；等 Actions Run 结束再发布
-- 附件文件名是否为 `doc_linux_amd64.zip`，与 workflow 中 `files:` 一致
+- 附件文件名应为 `doc_<version>_linux_amd64.tar.gz`（`TAG=v1.0.0` → `doc_1.0.0_linux_amd64.tar.gz`），与 workflow 中产物一致
 
-### Q3：Actions 出来的 zip 在 Spug 解压后没有 `dist/doc_linux_amd64`
-- 检查 workflow `Package zip` 步骤路径是否包含 `dist/doc_linux_amd64`
-- 也可在 workflow 里改为直接打包到 zip 根：
-
-  ```yaml
-  - name: Package zip
-    run: |
-      mkdir -p _pkg && cp dist/doc_linux_amd64 _pkg/
-      cd _pkg && zip -r ../doc_linux_amd64.zip doc_linux_amd64
-      cd .. && zip -ur doc_linux_amd64.zip conf static views uploads favicon.ico LICENSE.md
-  ```
-
-  对应 Spug 命令里：
-
-  ```bash
-  cp -f "$WWW/doc_linux_amd64" "$WWW/doc"
-  ```
+### Q3：解压后找不到 `WWW/doc`
+- 检查 workflow 打包步骤是否把二进制放在包根并命名为 `doc`（见 [release-gitea-actions.md](./release-gitea-actions.md)）
+- 旧文档里的 `dist/doc_linux_amd64` / `doc_linux_amd64.zip` 已废弃
 
 ### Q4：Actions 跑通但 Spug 发布失败 / 服务起不来
 - 看 `systemctl status doc.service` 与 `journalctl -u doc.service`
@@ -268,24 +221,21 @@ Spug 发布参数 TAG = v0.9.9 → 重新发布
 
 ### Q5：私有仓库的 Release 附件不能匿名下载
 - Spug 必须带 `GITEA_TOKEN`（应用密文）
-- 也可改用仓库部署密钥（Deploy Key），但 Release 附件下载用 HTTP Token 更直接
 
 ### Q6：想限制只有特定分支打的 tag 才发布
-- 在 workflow 起始加判断：
 
-  ```yaml
+```yaml
   - name: Ensure tag from main
     run: |
       git fetch origin main
       if ! git merge-base --is-ancestor $GITHUB_SHA origin/main; then
         echo "tag 不在 main 链路上，拒绝发布"; exit 1
       fi
-  ```
+```
 
 ### Q7：想要 Actions 完成后自动通知群（钉钉/企微）
-- 在 workflow 最后加一步 webhook：
 
-  ```yaml
+```yaml
   - name: Notify
     if: always()
     run: |
@@ -294,14 +244,14 @@ Spug 发布参数 TAG = v0.9.9 → 重新发布
         -d "{\"msgtype\":\"text\",\"text\":{\"content\":\"Doc ${{ github.ref_name }} 构建 ${{ job.status }}\"}}"
     env:
       WEBHOOK_URL: ${{ secrets.NOTIFY_WEBHOOK }}
-  ```
+```
 
 ---
 
 ## 十一、上线验证清单（与本地方案一致）
 
 - [ ] Actions Run 状态 `success`
-- [ ] Gitea Releases 页可下载 `doc_linux_amd64.zip`
+- [ ] Gitea Releases 页可下载 `doc_<version>_linux_amd64.tar.gz`
 - [ ] Spug 发布日志最后输出「服务就绪」
 - [ ] `systemctl is-active doc.service` = active
 - [ ] `curl -fsS http://127.0.0.1:8181/` 返回 200
