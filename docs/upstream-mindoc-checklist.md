@@ -515,13 +515,12 @@ Day 1 下午    : 回归（编辑/阅读/Blog/PDF）
 | 是否必跟  | 仅当 SSO 有问题或要加企微时                                      |
 
 
-**本地最小升级方案**
+**本地升级方案（已修订 · Round 5 T16）**
 
-- **核心思路**：保留现有钉钉登录（`AccountController` + `utils/dingtalk`），不重写公共 OAuth 框架。若要新增企业微信，单独新增 `utils/wework/` 与 `controllers/WeWorkController.go`，与钉钉并行；`AccountController` 仅在登录页加一个企微入口按钮。
-- **改动文件**：`utils/wework/`（新建）、`controllers/WeWorkController.go`（新建）、`routers/router.go`（路由）、`views/account/login.tpl`（登录按钮）、`conf/app.conf.example`（`wework_corp_id` 等配置项）。
-- **放弃的上游能力**：统一 OAuth 接口抽象、provider 抽象层、钉钉登录的连带优化。
-- **工作量**：1~2 天（仅添加企微时）。
-- **验证**：钉钉登录回归通过；企微扫码可走完登录流程；两套登录互不影响。
+- **原最小方案**（并行加企微、不重写公共 OAuth）**已废弃为默认路径**。  
+- **现行：** 见 [round-5-t16-oauth2.md](./round-5-t16-oauth2.md) / [round-5-execution-plan.md T16](./round-5-execution-plan.md) —— 统一 Provider 抽象，钉钉迁入，新增企业微信。  
+- **工作量：** 3~5 天。  
+- **验证：** 钉钉回归；企微可登录；LDAP/本地密码不回归。
 
 ---
 
@@ -752,7 +751,7 @@ Day 1 下午    : 回归（编辑/阅读/Blog/PDF）
 | 2.3 | URL 与编辑跳转               | 利用现有 `pushState`，编辑按钮带 `?doc_id`                                                              | 0.5 天     | 路由层 `editor/` 重排         |
 | 2.4 | 评论头像                    | 模板直渲染 `Member.Avatar`，CSS 圆形                                                                  | 1~2 小时    | 用户主页跳转                   |
 | 3.1 | 只读账号                    | 用 `app.conf` 开关禁普通用户建项目，复用观察者角色                                                               | 0.5 天     | `MemberReadOnlyRole` 全链路 |
-| 3.2 | OAuth2                  | 并行新增 `WeWorkController`，保留钉钉不重写                                                               | 1~2 天     | 统一 OAuth 抽象              |
+| 3.2 | OAuth2                  | Round 5 **T16 重写**（统一 Provider + 钉钉 + 企微）                                                         | 3~5 天     | 见 [round-5-t16-oauth2.md](./round-5-t16-oauth2.md) |
 | 3.3 | LDAPS                   | `utils/ldap.go` 加 `useTLS` 参数                                                                 | 2 小时      | mTLS、证书指纹                |
 | 4.1 | i18n                    | `app.conf` 加 `enabled_langs`，模板循环                                                             | 0.5 天     | 后台 UI、俄语翻译               |
 | 4.2 | MCP                     | **官方 `modelcontextprotocol/go-sdk`**，10 个工具（4 读 + 6 写），stdio + HTTP Bearer；详见 [refactor-roadmap.md §2.1](./refactor-roadmap.md#21-目标一mcp-serverai-接入) | 4~6 天    | 依赖倒排排序（Round 3 内一并做）    |
