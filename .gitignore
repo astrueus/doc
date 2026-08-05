@@ -20,6 +20,7 @@ _cgo_export.*
 _testmain.go
 
 *.exe
+/doc
 /dist
 /release/
 .release_stage_*
