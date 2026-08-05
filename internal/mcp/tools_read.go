@@ -3,10 +3,10 @@ package mcp
 import (
 	"context"
 
-	"git.itopcms.com/jackliu/doc/internal/config"
-	"git.itopcms.com/jackliu/doc/internal/dto/mcpdto"
-	"git.itopcms.com/jackliu/doc/internal/errs"
-	"git.itopcms.com/jackliu/doc/internal/model"
+	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/dto/mcpdto"
+	"git.itopcms.com/astrueus/doc/internal/errs"
+	"git.itopcms.com/astrueus/doc/internal/model"
 	sdkmcp "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 

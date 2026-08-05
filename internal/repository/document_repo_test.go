@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"git.itopcms.com/jackliu/doc/internal/config"
-	"git.itopcms.com/jackliu/doc/internal/model"
-	"git.itopcms.com/jackliu/doc/internal/repository"
+	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/model"
+	"git.itopcms.com/astrueus/doc/internal/repository"
 	"github.com/beego/beego/v2/client/orm"
 	_ "github.com/mattn/go-sqlite3"
 )

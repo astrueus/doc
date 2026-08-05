@@ -119,7 +119,7 @@ doc/
 1. `internal/controller/` 与 `internal/model/` **本轮只平搬**，按域拆子目录：BookModel 已在 Round 4；Controller / `*Result`→dto 📦 **Round 5 T8/T10**。**不允许**在本轮同时拆域，否则 diff 无法 review。
 2. `pkg/` 只放**没有业务耦合**的工具；如 `utils/gopool/` 被 model 用了但没耦合业务，也放 `pkg/`；`utils/dingtalk/` 是业务集成，放 `internal/thirdparty/dingtalk/`。
 3. `internal/` 天然阻止外部 module 误引，符合 Go 官方 layout 建议。
-4. 模块路径**保持** `git.itopcms.com/jackliu/doc`，只改子包 import。
+4. 模块路径**保持** `git.itopcms.com/astrueus/doc`，只改子包 import。
 5. **收尾定型（2026-07-30）：** 配置目录 = `conf/`；`*Result` 仍在 `model/`（B1⏭）；`app/bootstrap.go` 未拆（B2⏭）；`config` 包已拆 `enum`/`working_dir`/`getters`（B3✅）；业务侧不再直读 `web.AppConfig`（B4✅）。
 
 ---
@@ -278,20 +278,20 @@ git mv sync_host.sh deployments/sync_host.sh
 
 ```powershell
 $replacements = @(
-    @{ From = 'git.itopcms.com/jackliu/doc/conf';        To = 'git.itopcms.com/jackliu/doc/internal/config' },
-    @{ From = 'git.itopcms.com/jackliu/doc/controllers'; To = 'git.itopcms.com/jackliu/doc/internal/controller' },
-    @{ From = 'git.itopcms.com/jackliu/doc/models';      To = 'git.itopcms.com/jackliu/doc/internal/model' },
-    @{ From = 'git.itopcms.com/jackliu/doc/routers';     To = 'git.itopcms.com/jackliu/doc/internal/router' },
-    @{ From = 'git.itopcms.com/jackliu/doc/middleware';  To = 'git.itopcms.com/jackliu/doc/internal/middleware' },
-    @{ From = 'git.itopcms.com/jackliu/doc/cache';       To = 'git.itopcms.com/jackliu/doc/internal/cache' },
-    @{ From = 'git.itopcms.com/jackliu/doc/commands';    To = 'git.itopcms.com/jackliu/doc/internal/cli' },
-    @{ From = 'git.itopcms.com/jackliu/doc/converter';  To = 'git.itopcms.com/jackliu/doc/internal/converter' },
-    @{ From = 'git.itopcms.com/jackliu/doc/graphics';   To = 'git.itopcms.com/jackliu/doc/pkg/graphics' },
-    @{ From = 'git.itopcms.com/jackliu/doc/mail';       To = 'git.itopcms.com/jackliu/doc/pkg/mail' },
-    @{ From = 'git.itopcms.com/jackliu/doc/utils/cryptil';    To = 'git.itopcms.com/jackliu/doc/pkg/cryptil' },
-    @{ From = 'git.itopcms.com/jackliu/doc/utils/filetil';    To = 'git.itopcms.com/jackliu/doc/pkg/filetil' },
+    @{ From = 'git.itopcms.com/astrueus/doc/conf';        To = 'git.itopcms.com/astrueus/doc/internal/config' },
+    @{ From = 'git.itopcms.com/astrueus/doc/controllers'; To = 'git.itopcms.com/astrueus/doc/internal/controller' },
+    @{ From = 'git.itopcms.com/astrueus/doc/models';      To = 'git.itopcms.com/astrueus/doc/internal/model' },
+    @{ From = 'git.itopcms.com/astrueus/doc/routers';     To = 'git.itopcms.com/astrueus/doc/internal/router' },
+    @{ From = 'git.itopcms.com/astrueus/doc/middleware';  To = 'git.itopcms.com/astrueus/doc/internal/middleware' },
+    @{ From = 'git.itopcms.com/astrueus/doc/cache';       To = 'git.itopcms.com/astrueus/doc/internal/cache' },
+    @{ From = 'git.itopcms.com/astrueus/doc/commands';    To = 'git.itopcms.com/astrueus/doc/internal/cli' },
+    @{ From = 'git.itopcms.com/astrueus/doc/converter';  To = 'git.itopcms.com/astrueus/doc/internal/converter' },
+    @{ From = 'git.itopcms.com/astrueus/doc/graphics';   To = 'git.itopcms.com/astrueus/doc/pkg/graphics' },
+    @{ From = 'git.itopcms.com/astrueus/doc/mail';       To = 'git.itopcms.com/astrueus/doc/pkg/mail' },
+    @{ From = 'git.itopcms.com/astrueus/doc/utils/cryptil';    To = 'git.itopcms.com/astrueus/doc/pkg/cryptil' },
+    @{ From = 'git.itopcms.com/astrueus/doc/utils/filetil';    To = 'git.itopcms.com/astrueus/doc/pkg/filetil' },
     # ... 其余 utils 子包同上
-    @{ From = 'git.itopcms.com/jackliu/doc/utils/dingtalk';   To = 'git.itopcms.com/jackliu/doc/internal/thirdparty/dingtalk' }
+    @{ From = 'git.itopcms.com/astrueus/doc/utils/dingtalk';   To = 'git.itopcms.com/astrueus/doc/internal/thirdparty/dingtalk' }
 )
 foreach ($r in $replacements) {
     Get-ChildItem -Recurse -Include *.go | ForEach-Object {

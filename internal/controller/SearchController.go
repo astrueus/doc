@@ -1,17 +1,17 @@
 ﻿package controller
 
 import (
-	"git.itopcms.com/jackliu/doc/pkg/htmlutil"
+	"git.itopcms.com/astrueus/doc/pkg/htmlutil"
 	"strconv"
 	"strings"
 
-	"git.itopcms.com/jackliu/doc/internal/config"
-	"git.itopcms.com/jackliu/doc/internal/errs"
-	"git.itopcms.com/jackliu/doc/internal/model"
-	"git.itopcms.com/jackliu/doc/pkg/pagination"
-	"git.itopcms.com/jackliu/doc/pkg/sqltil"
+	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/errs"
+	"git.itopcms.com/astrueus/doc/internal/model"
+	"git.itopcms.com/astrueus/doc/pkg/pagination"
+	"git.itopcms.com/astrueus/doc/pkg/sqltil"
 	"github.com/beego/beego/v2/core/logs"
-	"git.itopcms.com/jackliu/doc/internal/i18n"
+	"git.itopcms.com/astrueus/doc/internal/i18n"
 )
 
 type SearchController struct {

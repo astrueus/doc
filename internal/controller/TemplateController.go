@@ -4,10 +4,10 @@ import (
 	"errors"
 	"strings"
 
-	"git.itopcms.com/jackliu/doc/internal/config"
-	"git.itopcms.com/jackliu/doc/internal/model"
+	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/model"
 	"github.com/beego/beego/v2/client/orm"
-	"git.itopcms.com/jackliu/doc/internal/i18n"
+	"git.itopcms.com/astrueus/doc/internal/i18n"
 )
 
 type TemplateController struct {

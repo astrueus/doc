@@ -3,7 +3,7 @@ package model
 import (
 	"strings"
 
-	"git.itopcms.com/jackliu/doc/pkg/filetil"
+	"git.itopcms.com/astrueus/doc/pkg/filetil"
 	"github.com/beego/beego/v2/client/orm"
 )
 

@@ -44,9 +44,9 @@
 ## 上游关系
 
 - 上游项目：[mindoc-org/mindoc](https://github.com/mindoc-org/mindoc)
-- 本仓库：`git.itopcms.com/jackliu/doc`
+- 本仓库：`git.itopcms.com/astrueus/doc`
 - 可执行文件：`doc`（上游为 `mindoc`）
-- 模块路径：`git.itopcms.com/jackliu/doc`（上游为 `github.com/mindoc-org/mindoc`）
+- 模块路径：`git.itopcms.com/astrueus/doc`（上游为 `github.com/mindoc-org/mindoc`）
 
 ## 同步建议
 

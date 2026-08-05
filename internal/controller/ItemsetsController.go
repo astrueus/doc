@@ -1,9 +1,9 @@
 package controller
 
 import (
-	"git.itopcms.com/jackliu/doc/internal/config"
-	"git.itopcms.com/jackliu/doc/internal/model"
-	"git.itopcms.com/jackliu/doc/pkg/pagination"
+	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/model"
+	"git.itopcms.com/astrueus/doc/pkg/pagination"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
 )

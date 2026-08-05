@@ -79,7 +79,7 @@ Spug 应用「Doc 文档系统」中新建发布配置：
 | 变量 | 示例 | 说明 |
 |------|------|------|
 | `TAG` | `v1.0.0` | 必填，要部署的 Release tag（带 `v`） |
-| `GITEA_OWNER` | `jackliu` | 仓库 owner |
+| `GITEA_OWNER` | `astrueus` | 仓库 owner |
 | `GITEA_REPO` | `doc` | 仓库名 |
 | `GITEA_URL` | `https://git.itopcms.com` | Gitea 站点 |
 | `GITEA_TOKEN` | 密文 | 仅私有仓库需要 |
@@ -92,7 +92,7 @@ Spug 应用「Doc 文档系统」中新建发布配置：
 set -euo pipefail
 
 TAG="${TAG:?TAG 未设置，例如 v1.0.0}"
-OWNER="${GITEA_OWNER:-jackliu}"
+OWNER="${GITEA_OWNER:-astrueus}"
 REPO="${GITEA_REPO:-doc}"
 BASE="${GITEA_URL:-https://git.itopcms.com}"
 TOKEN="${GITEA_TOKEN:-}"

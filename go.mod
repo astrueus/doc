@@ -1,4 +1,4 @@
-module git.itopcms.com/jackliu/doc
+module git.itopcms.com/astrueus/doc
 
 go 1.25.0
 

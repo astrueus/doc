@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"git.itopcms.com/jackliu/doc/internal/app"
+	"git.itopcms.com/astrueus/doc/internal/app"
 	"github.com/spf13/cobra"
 )
 

@@ -1,9 +1,9 @@
 package router
 
 import (
-	"git.itopcms.com/jackliu/doc/internal/config"
-	"git.itopcms.com/jackliu/doc/internal/controller"
-	"git.itopcms.com/jackliu/doc/internal/mcp"
+	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/controller"
+	"git.itopcms.com/astrueus/doc/internal/mcp"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
 )

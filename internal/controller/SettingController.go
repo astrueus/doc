@@ -2,18 +2,18 @@
 
 import (
 	"fmt"
-	passutil "git.itopcms.com/jackliu/doc/pkg/password"
+	passutil "git.itopcms.com/astrueus/doc/pkg/password"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
-	"git.itopcms.com/jackliu/doc/pkg/graphics"
-	"git.itopcms.com/jackliu/doc/internal/config"
-	"git.itopcms.com/jackliu/doc/internal/model"
+	"git.itopcms.com/astrueus/doc/pkg/graphics"
+	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/model"
 	"github.com/beego/beego/v2/core/logs"
-	"git.itopcms.com/jackliu/doc/internal/i18n"
+	"git.itopcms.com/astrueus/doc/internal/i18n"
 )
 
 type SettingController struct {

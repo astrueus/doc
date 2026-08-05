@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"git.itopcms.com/jackliu/doc/internal/config"
-	"git.itopcms.com/jackliu/doc/internal/errs"
-	"git.itopcms.com/jackliu/doc/internal/model"
+	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/errs"
+	"git.itopcms.com/astrueus/doc/internal/model"
 	"github.com/beego/beego/v2/client/orm"
 )
 

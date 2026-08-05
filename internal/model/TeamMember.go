@@ -4,10 +4,10 @@ import (
 	"errors"
 	"fmt"
 
-	"git.itopcms.com/jackliu/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/config"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
-	"git.itopcms.com/jackliu/doc/internal/i18n"
+	"git.itopcms.com/astrueus/doc/internal/i18n"
 )
 
 type TeamMember struct {

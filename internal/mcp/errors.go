@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"strings"
 
-	"git.itopcms.com/jackliu/doc/internal/errs"
+	"git.itopcms.com/astrueus/doc/internal/errs"
 	sdkmcp "github.com/modelcontextprotocol/go-sdk/mcp"
 )
 

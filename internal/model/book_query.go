@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"git.itopcms.com/jackliu/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/config"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
-	"git.itopcms.com/jackliu/doc/internal/i18n"
+	"git.itopcms.com/astrueus/doc/internal/i18n"
 )
 // 根据指定字段查询结果集.
 func (book *Book) FindByField(field string, value any, cols ...string) ([]*Book, error) {

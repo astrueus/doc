@@ -3,7 +3,7 @@ package cli
 import (
 	"fmt"
 
-	"git.itopcms.com/jackliu/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/config"
 	"github.com/spf13/cobra"
 )
 

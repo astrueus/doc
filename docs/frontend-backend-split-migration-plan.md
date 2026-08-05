@@ -93,7 +93,7 @@ doc/
 
 `conf/` 目录**不能整体移动**，原因：
 - `conf/enumerate.go`、`conf/mail.go` 声明的是 `package conf`
-- 全仓库 30+ 文件都在 `import "git.itopcms.com/jackliu/doc/conf"`
+- 全仓库 30+ 文件都在 `import "git.itopcms.com/astrueus/doc/conf"`
 - `commands/install.go` 与 `commands/command.go` 中 `i18n.SetMessage(lang, "conf/lang/"+lang+".ini")` 硬编码了 `conf/lang/` 路径
 - `conf/enumerate.go` 中 `ConfigurationFile = "./conf/app.conf"` 硬编码了配置路径
 
@@ -405,7 +405,7 @@ docker run --rm -p 8181:8181 doc:test
 
 ### 6.1 风险评估
 
-- 改动大：所有 `import "git.itopcms.com/jackliu/doc/<pkg>"` 都要改为 `.../doc/server/<pkg>`
+- 改动大：所有 `import "git.itopcms.com/astrueus/doc/<pkg>"` 都要改为 `.../doc/server/<pkg>`
 - 影响 30+ 个 Go 文件
 - 影响 Dockerfile 中 `-ldflags` 的 `-X` 参数（仍是 `conf.VERSION`，因为 `conf/` 不迁）
 
@@ -425,7 +425,7 @@ git mv main.go     server/main.go
 
 ### 6.3 `go.mod` 不动
 
-`module git.itopcms.com/jackliu/doc` **保持不变**，因为子目录路径会自动拼接。
+`module git.itopcms.com/astrueus/doc` **保持不变**，因为子目录路径会自动拼接。
 
 ### 6.4 全局 import 替换
 
@@ -433,15 +433,15 @@ git mv main.go     server/main.go
 
 | 原 import | 新 import |
 |-----------|-----------|
-| `git.itopcms.com/jackliu/doc/controllers` | `git.itopcms.com/jackliu/doc/server/controllers` |
-| `git.itopcms.com/jackliu/doc/models`      | `git.itopcms.com/jackliu/doc/server/models` |
-| `git.itopcms.com/jackliu/doc/middleware`  | `git.itopcms.com/jackliu/doc/server/middleware` |
-| `git.itopcms.com/jackliu/doc/routers`     | `git.itopcms.com/jackliu/doc/server/routers` |
-| `git.itopcms.com/jackliu/doc/converter`   | `git.itopcms.com/jackliu/doc/server/converter` |
-| `git.itopcms.com/jackliu/doc/commands`    | `git.itopcms.com/jackliu/doc/server/commands` |
-| `git.itopcms.com/jackliu/doc/utils`       | `git.itopcms.com/jackliu/doc/server/utils` |
+| `git.itopcms.com/astrueus/doc/controllers` | `git.itopcms.com/astrueus/doc/server/controllers` |
+| `git.itopcms.com/astrueus/doc/models`      | `git.itopcms.com/astrueus/doc/server/models` |
+| `git.itopcms.com/astrueus/doc/middleware`  | `git.itopcms.com/astrueus/doc/server/middleware` |
+| `git.itopcms.com/astrueus/doc/routers`     | `git.itopcms.com/astrueus/doc/server/routers` |
+| `git.itopcms.com/astrueus/doc/converter`   | `git.itopcms.com/astrueus/doc/server/converter` |
+| `git.itopcms.com/astrueus/doc/commands`    | `git.itopcms.com/astrueus/doc/server/commands` |
+| `git.itopcms.com/astrueus/doc/utils`       | `git.itopcms.com/astrueus/doc/server/utils` |
 
-> `git.itopcms.com/jackliu/doc/conf` **不变**。
+> `git.itopcms.com/astrueus/doc/conf` **不变**。
 
 ### 6.5 `main.go` 同步
 
@@ -598,7 +598,7 @@ deploy/conf/           # 新位置，原 conf/app.conf*
 ### 8.3 全局 import 替换
 
 ```text
-git.itopcms.com/jackliu/doc/conf  →  git.itopcms.com/jackliu/doc/server/config
+git.itopcms.com/astrueus/doc/conf  →  git.itopcms.com/astrueus/doc/server/config
 ```
 
 ### 8.4 包名变更

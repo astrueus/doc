@@ -198,7 +198,7 @@ package repository
 
 import (
     "context"
-    "git.itopcms.com/jackliu/doc/internal/model"
+    "git.itopcms.com/astrueus/doc/internal/model"
 )
 
 type DocumentRepo interface {

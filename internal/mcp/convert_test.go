@@ -3,7 +3,7 @@ package mcp
 import (
 	"testing"
 
-	"git.itopcms.com/jackliu/doc/internal/model"
+	"git.itopcms.com/astrueus/doc/internal/model"
 )
 
 func TestDocumentSnippetMarkdown(t *testing.T) {

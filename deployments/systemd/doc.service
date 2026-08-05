@@ -20,6 +20,9 @@ WorkingDirectory=/data/wwwroot/doc.itopcms.com
 ExecStart=/data/wwwroot/doc.itopcms.com/doc
 Restart=always
 # Environment=DOC_HOME=/data/wwwroot/doc.itopcms.com
+# Environment=DOC_ADDR=0.0.0.0
+# Environment=DOC_PORT=8181
+# Environment=DOC_RUN_MODE=prod
 #Environment=USER=www HOME=/home/www
 
 # Some distributions may not support these hardening directives. If you cannot start the service due

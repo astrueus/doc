@@ -3,7 +3,7 @@ package auth
 import (
 	"testing"
 
-	"git.itopcms.com/jackliu/doc/internal/model"
+	"git.itopcms.com/astrueus/doc/internal/model"
 )
 
 func TestMemberIDFromSession(t *testing.T) {

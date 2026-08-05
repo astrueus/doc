@@ -1,7 +1,7 @@
 package model
 
 import (
-	"git.itopcms.com/jackliu/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/config"
 	"github.com/beego/beego/v2/client/orm"
 )
 

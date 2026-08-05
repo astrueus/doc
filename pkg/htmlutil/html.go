@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"git.itopcms.com/jackliu/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/config"
 	"github.com/PuerkitoBio/goquery"
 )
 

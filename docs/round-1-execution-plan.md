@@ -29,7 +29,7 @@
 ### 本轮**不做**（明确排除）
 
 - ❌ **不搬 Go 源码目录**：`conf/enumerate.go` / `conf/mail.go` 保留在 `conf/` 包，Round 2 再迁 `internal/config/`。
-- ❌ **不动** `import` **路径**：`git.itopcms.com/jackliu/doc/conf` 等 30+ import 保持不变。
+- ❌ **不动** `import` **路径**：`git.itopcms.com/astrueus/doc/conf` 等 30+ import 保持不变。
 - ❌ **不拆** `app.conf` **为多文件**：`[section]` 分组也留到 Round 2（配合强类型 Config struct 一起做）。
 - ~~❌ **不换 gob 序列化~~** → **实施时已变更决策**：T5 一并换成 `msgpack/v5`（见 [§十 偏差说明](#102-相对原文档的偏差与决策)）。`utils/gob.go`（cookie remember）与 `gob.Register(models.Member{})`（Beego session）**仍保留**。
 - ❌ **不改 Controller/Model 内部逻辑**（除 T5 caller 迁 ctx、T6/T7 明确点位）。

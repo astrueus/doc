@@ -476,7 +476,7 @@ CORS / CSP / HSTS（可关）；建议 T6 后再收紧 CSP。
 - [ ] `go test` / CI 绿  
 - [ ] 对象存储：业务无直写盘；MinIO + 预签名；全量 migrate/verify/rewrite  
 - [ ] OAuth2：钉钉回归；企微（若启用）登录成功  
-- [ ] 环境变量命名：硬切为 `DOC_*`（**不**再兼容 `MINDOC_*`），验证关键项（如 `DOC_HOME`）生效 — 见 [round-5-env-mindoc-to-doc.md](./round-5-env-mindoc-to-doc.md)  
+- [ ] 环境变量命名：硬切为 `DOC_*`（**不**再兼容 `MINDOC_*`；`DOC_ADDR`/`DOC_PORT`；默认 `app_key`/`sessionname`/redis 前缀已改 `doc*`），验证关键项（如 `DOC_HOME`）生效 — 见 [round-5-env-mindoc-to-doc.md](./round-5-env-mindoc-to-doc.md)  
 - [ ] 若动缓存：新前缀生效；压测击穿/穿透；指标可看；可回滚 `mode`  
 - [ ] **不做** FULLTEXT 升级步骤（本轮冻结）  
 

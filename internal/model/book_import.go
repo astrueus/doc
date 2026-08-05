@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"git.itopcms.com/jackliu/doc/pkg/filetil"
-	"git.itopcms.com/jackliu/doc/pkg/ziptil"
+	"git.itopcms.com/astrueus/doc/pkg/filetil"
+	"git.itopcms.com/astrueus/doc/pkg/ziptil"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/russross/blackfriday/v2"

@@ -1,6 +1,6 @@
 # Doc 文档管理系统
 
-Doc 是一款针对 IT 团队开发的简单好用的文档管理系统，基于 [MinDoc](https://github.com/mindoc-org/mindoc) 二次开发，由 [git.itopcms.com/jackliu/doc](https://git.itopcms.com/jackliu/doc) 自主维护。
+Doc 是一款针对 IT 团队开发的简单好用的文档管理系统，基于 [MinDoc](https://github.com/mindoc-org/mindoc) 二次开发，由 [git.itopcms.com/astrueus/doc](https://git.itopcms.com/astrueus/doc) 自主维护。
 
 MinDoc 的前身是 [SmartWiki](https://github.com/lifei6671/SmartWiki) 文档系统。SmartWiki 是基于 PHP 框架 Laravel 开发的一款文档管理系统。因 PHP 的部署对普通用户来说太复杂，原作者改用 Golang 重写了 MinDoc，方便部署和使用。
 
@@ -11,7 +11,7 @@ MinDoc 的前身是 [SmartWiki](https://github.com/lifei6671/SmartWiki) 文档�
 ### 开发 & 维护说明
 
 - 上游项目：[mindoc-org/mindoc](https://github.com/mindoc-org/mindoc)
-- 本仓库：`git.itopcms.com/jackliu/doc`（Go 模块路径与仓库地址一致）
+- 本仓库：`git.itopcms.com/astrueus/doc`（Go 模块路径与仓库地址一致）
 - 可执行文件统一为 **`doc`**
 
 感谢原作者 [lifei6671](https://github.com/lifei6671) 创造了 MinDoc 并持续维护。
@@ -84,7 +84,7 @@ scripts\build.bat --mode=release --version=1.0.0
 
 ```bash
 # 克隆源码
-git clone https://git.itopcms.com/jackliu/doc.git
+git clone https://git.itopcms.com/astrueus/doc.git
 cd doc
 
 # 安装依赖
@@ -178,7 +178,7 @@ export DOC=/home/ubuntu/doc-docker
 docker run -it --name=doc --restart=always \
   -v "${DOC}:/doc-sync-host" \
   -p 8181:8181 \
-  -e MINDOC_ENABLE_EXPORT=true \
+  -e DOC_ENABLE_EXPORT=true \
   -d doc:latest
 ```
 
@@ -186,23 +186,25 @@ Windows：
 
 ```powershell
 set DOC=//d/doc
-docker run -it --name=doc --restart=always -v "%DOC%":"/doc-sync-host" -p 8181:8181 -e MINDOC_ENABLE_EXPORT=true -d doc:latest
+docker run -it --name=doc --restart=always -v "%DOC%":"/doc-sync-host" -p 8181:8181 -e DOC_ENABLE_EXPORT=true -d doc:latest
 ```
 
-启动镜像时常用的环境变量（全部支持的环境变量请参考 [`conf/app.conf.example`](conf/app.conf.example)）：
+启动镜像时常用的环境变量（完整列表见 [`conf/app.conf.example`](conf/app.conf.example)；对照表见 [docs/round-5-env-mindoc-to-doc.md](docs/round-5-env-mindoc-to-doc.md)）：
 
 ```ini
-DB_ADAPTER                  指定 DB 类型（默认为 sqlite）
-MYSQL_PORT_3306_TCP_ADDR    MySQL 地址
-MYSQL_PORT_3306_TCP_PORT    MySQL 端口号
-MYSQL_INSTANCE_NAME         MySQL 数据库名称
-MYSQL_USERNAME              MySQL 账号
-MYSQL_PASSWORD              MySQL 密码
-HTTP_PORT                   程序监听的端口号
-MINDOC_ENABLE_EXPORT        开启导出（默认为 false）
+DOC_ADDR                    监听地址（容器内常用 0.0.0.0）
+DOC_PORT                    监听端口（默认 8181）
+DOC_DB_ADAPTER              数据库类型（mysql / sqlite3）
+DOC_DB_HOST                 MySQL 地址
+DOC_DB_PORT                 MySQL 端口
+DOC_DB_DATABASE             数据库名或 sqlite 文件路径
+DOC_DB_USERNAME             数据库账号
+DOC_DB_PASSWORD             数据库密码
+DOC_ENABLE_EXPORT           开启导出（默认 false）
+DOC_HOME                    工作目录（也可用启动参数 -dir）
 ```
 
-> 说明：环境变量前缀仍为 `MINDOC_*`，与上游 MinDoc 保持兼容。
+> 说明：环境变量前缀为 **`DOC_*`**；旧 `MINDOC_*` **不再读取**（Breaking）。
 
 ### docker-compose 一键安装
 

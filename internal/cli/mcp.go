@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"git.itopcms.com/jackliu/doc/internal/app"
-	"git.itopcms.com/jackliu/doc/internal/config"
-	"git.itopcms.com/jackliu/doc/internal/mcp"
+	"git.itopcms.com/astrueus/doc/internal/app"
+	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/mcp"
 	"github.com/spf13/cobra"
 )
 

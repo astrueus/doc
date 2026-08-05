@@ -105,7 +105,7 @@ yum install -y curl tar   # 或 apt install -y curl tar
 #
 # 期望环境变量（在 Spug 应用变量中配置）：
 #   TAG          发布的 tag，例如 v1.0.0（带 v）
-#   GITEA_OWNER  默认 jackliu
+#   GITEA_OWNER  默认 astrueus
 #   GITEA_REPO   默认 doc
 #   GITEA_URL    默认 https://git.itopcms.com
 #   GITEA_TOKEN  可选；私有仓库下载时需要
@@ -114,7 +114,7 @@ set -euo pipefail
 
 WWW=/data/wwwroot/doc.itopcms.com
 TAG="${TAG:?TAG 未设置，例如 v1.0.0}"
-OWNER="${GITEA_OWNER:-jackliu}"
+OWNER="${GITEA_OWNER:-astrueus}"
 REPO="${GITEA_REPO:-doc}"
 BASE="${GITEA_URL:-https://git.itopcms.com}"
 TOKEN="${GITEA_TOKEN:-}"
@@ -267,7 +267,7 @@ WantedBy=multi-user.target
 ```bash
 set -euo pipefail
 export TAG="${TAG:?TAG 未设置，例如 v1.0.0}"
-export GITEA_OWNER="${GITEA_OWNER:-jackliu}"
+export GITEA_OWNER="${GITEA_OWNER:-astrueus}"
 export GITEA_REPO="${GITEA_REPO:-doc}"
 export GITEA_URL="${GITEA_URL:-https://git.itopcms.com}"
 # export GITEA_TOKEN=...            # 若仓库为私有，从 Spug 密文注入

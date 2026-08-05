@@ -223,7 +223,7 @@ GO_VER="$(go version 2>/dev/null | awk '{print $3}')"
 
 BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%S 2>/dev/null || echo unknown)"
 
-LDFLAGS_COMMON="-X 'git.itopcms.com/jackliu/doc/internal/config.VERSION=${VERSION}' -X 'git.itopcms.com/jackliu/doc/internal/config.BUILD_TIME=${BUILD_TIME}' -X 'git.itopcms.com/jackliu/doc/internal/config.GO_VERSION=${GO_VER}'"
+LDFLAGS_COMMON="-X 'git.itopcms.com/astrueus/doc/internal/config.VERSION=${VERSION}' -X 'git.itopcms.com/astrueus/doc/internal/config.BUILD_TIME=${BUILD_TIME}' -X 'git.itopcms.com/astrueus/doc/internal/config.GO_VERSION=${GO_VER}'"
 
 if [[ "$MODE" == "release" ]]; then
     mkdir -p dist

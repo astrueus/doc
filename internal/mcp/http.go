@@ -8,7 +8,7 @@ import (
 	"strings"
 	"sync"
 
-	"git.itopcms.com/jackliu/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/config"
 	"github.com/beego/beego/v2/core/logs"
 	sdkmcp "github.com/modelcontextprotocol/go-sdk/mcp"
 )

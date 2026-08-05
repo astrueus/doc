@@ -204,7 +204,7 @@ func readFromAppConfig() *Config {
 		AutoLoadDelay: rootInt("config_auto_delay", 0),
 
 		App: AppSection{
-			Key:            secString("app", "app_key", "mindoc"),
+			Key:            secString("app", "app_key", "doc"),
 			HighlightStyle: secString("app", "highlight_style", "github"),
 			Cover:          secString("app", "cover", "/static/images/book.jpg"),
 			Avatar:         secString("app", "avatar", "/static/images/headimgurl.jpg"),
@@ -222,7 +222,7 @@ func readFromAppConfig() *Config {
 		},
 		Session: SessionSection{
 			On:             secBool("session", "sessionon", true),
-			Name:           secString("session", "sessionname", "mindoc_id"),
+			Name:           secString("session", "sessionname", "doc_id"),
 			ServerKey:      secString("session", "beegoserversessionkey", ""),
 			Provider:       secString("session", "sessionprovider", "file"),
 			ProviderConfig: secString("session", "sessionproviderconfig", "./runtime/session"),
@@ -249,7 +249,7 @@ func readFromAppConfig() *Config {
 			RedisHost:      secString("cache", "cache_redis_host", "127.0.0.1:6379"),
 			RedisDB:        secInt("cache", "cache_redis_db", 0),
 			RedisPassword:  secString("cache", "cache_redis_password", ""),
-			RedisPrefix:    secString("cache", "cache_redis_prefix", "mindoc::cache"),
+			RedisPrefix:    secString("cache", "cache_redis_prefix", "doc::cache"),
 		},
 		Log: LogSection{
 			Path:     secString("log", "log_path", "./runtime/logs"),

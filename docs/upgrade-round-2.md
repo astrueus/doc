@@ -8,7 +8,7 @@
 `encoding/gob` 把类型名写成 **`"包路径.类型名"`**。目录搬迁后例如：
 
 - `models.Member` → `internal/model.Member`
-- `git.itopcms.com/jackliu/doc/models` → `.../internal/model`
+- `git.itopcms.com/astrueus/doc/models` → `.../internal/model`
 
 旧 session、旧 file cache 无法再解码。
 

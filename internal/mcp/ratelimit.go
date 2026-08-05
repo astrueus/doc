@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"git.itopcms.com/jackliu/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/config"
 	"golang.org/x/time/rate"
 )
 

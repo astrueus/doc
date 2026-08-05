@@ -3,7 +3,7 @@ package mcp_test
 import (
 	"testing"
 
-	"git.itopcms.com/jackliu/doc/internal/dto/mcpdto"
+	"git.itopcms.com/astrueus/doc/internal/dto/mcpdto"
 	"github.com/google/jsonschema-go/jsonschema"
 )
 

@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"git.itopcms.com/jackliu/doc/internal/model"
-	passutil "git.itopcms.com/jackliu/doc/pkg/password"
+	"git.itopcms.com/astrueus/doc/internal/model"
+	passutil "git.itopcms.com/astrueus/doc/pkg/password"
 	"github.com/spf13/cobra"
 )
 

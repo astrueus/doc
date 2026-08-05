@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased / Round 5
+
+> ⚠️ **Breaking（环境变量硬切）**：`MINDOC_*` **不再兼容**，一律改为 `DOC_*`（监听为 `DOC_ADDR` / `DOC_PORT`；邮件过期为 `DOC_MAIL_EXPIRED`；部署同步为 `DOC_SYNC`）。完整对照见 [docs/round-5-env-mindoc-to-doc.md](docs/round-5-env-mindoc-to-doc.md)。  
+> ⚠️ **Breaking（默认标识）**：`app_key` 默认 `doc`、`sessionname` 默认 `doc_id`、`cache_redis_prefix` 默认 `doc::cache`。升级须**清空 session 存储**，并视为旧「记住我」cookie / 旧 Redis 前缀缓存失效。
+
+### Changed
+
+- 配置 example、docker-compose、sync 脚本、README：环境变量前缀切至 `DOC_*`
+- `internal/config` 默认 `app_key` / `sessionname` / Redis 前缀与 example 对齐为 `doc*`
+
 ## Unreleased / Round 4
 
 > ⚠️ **Breaking（T6 Session）**：升级后需**清空 session 存储**（file/redis 等 SessionProvider 目录或键），并视为旧「记住我」cookie 失效；用户需重新登录。  

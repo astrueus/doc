@@ -1,6 +1,6 @@
 package auth
 
-import "git.itopcms.com/jackliu/doc/internal/model"
+import "git.itopcms.com/astrueus/doc/internal/model"
 
 // MemberIDFromSession 从 session 值中解析成员 ID。
 // T6 起只存 int；旧 session 可能仍是 Member / *Member。

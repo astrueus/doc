@@ -77,7 +77,7 @@ func init() {
 package routers
 
 import (
-	"git.itopcms.com/jackliu/doc/controllers"
+	"git.itopcms.com/astrueus/doc/controllers"
 	"github.com/beego/beego/v2/server/web"
 )
 
@@ -121,7 +121,7 @@ func registerPageRoutes() {
 package routers
 
 import (
-	"git.itopcms.com/jackliu/doc/controllers"
+	"git.itopcms.com/astrueus/doc/controllers"
 	"github.com/beego/beego/v2/server/web"
 )
 

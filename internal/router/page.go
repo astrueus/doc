@@ -1,7 +1,7 @@
 package router
 
 import (
-	"git.itopcms.com/jackliu/doc/internal/controller"
+	"git.itopcms.com/astrueus/doc/internal/controller"
 	"github.com/beego/beego/v2/server/web"
 )
 

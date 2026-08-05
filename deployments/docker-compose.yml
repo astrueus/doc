@@ -24,15 +24,15 @@ services:
     environment:
       - DOC_HOME=/doc
       # 容器内监听所有网卡，便于宿主机通过端口映射访问
-      - MINDOC_ADDR=0.0.0.0
+      - DOC_ADDR=0.0.0.0
       # Beego / 业务环境变量按需覆盖 conf/app.conf 中的 ${VAR||default}
       # 本地 compose 默认用 sqlite，避免容器内连不上宿主机 MySQL
-      - MINDOC_DB_ADAPTER=sqlite3
-      - MINDOC_DB_DATABASE=./database/mindoc.db
-      # - MINDOC_RUN_MODE=prod
-      # - MINDOC_DB_ADAPTER=mysql
-      # - MINDOC_DB_HOST=host.docker.internal
-      # - MINDOC_DB_DATABASE=doc
+      - DOC_DB_ADAPTER=sqlite3
+      - DOC_DB_DATABASE=./database/doc.db
+      # - DOC_RUN_MODE=prod
+      # - DOC_DB_ADAPTER=mysql
+      # - DOC_DB_HOST=host.docker.internal
+      # - DOC_DB_DATABASE=doc
     # 默认入口是 deployments/start.sh；需要仅跑 web 时可改为:
     # command: ["/doc/doc", "web"]
 

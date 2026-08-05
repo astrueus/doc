@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"git.itopcms.com/jackliu/doc/internal/config"
-	"git.itopcms.com/jackliu/doc/pkg/cryptil"
-	"git.itopcms.com/jackliu/doc/pkg/filetil"
-	"git.itopcms.com/jackliu/doc/pkg/requests"
+	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/pkg/cryptil"
+	"git.itopcms.com/astrueus/doc/pkg/filetil"
+	"git.itopcms.com/astrueus/doc/pkg/requests"
 	"github.com/beego/beego/v2/core/logs"
 )
 

@@ -1,7 +1,7 @@
 package mcp
 
 import (
-	"git.itopcms.com/jackliu/doc/internal/repository"
+	"git.itopcms.com/astrueus/doc/internal/repository"
 	"github.com/beego/beego/v2/client/orm"
 )
 

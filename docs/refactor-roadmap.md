@@ -238,14 +238,14 @@ doc/
 2. `conf/` **彻底拆解**（激进方案必须一起做，否则「一步到位」不成立）：
   - `conf/enumerate.go` / `conf/mail.go`（Go 源码）→ `internal/config/`（`package config`）
   - 配置文件：中期曾迁 `configs/`；**Round 2 收尾 A 定型仍为根目录 `conf/`**（`app.conf` / `lang/`）
-  - 全仓 30+ 处 `import "git.itopcms.com/jackliu/doc/conf"` → `internal/config`
+  - 全仓 30+ 处 `import "git.itopcms.com/astrueus/doc/conf"` → `internal/config`
   - 硬编码路径最终对齐 `"./conf/app.conf"`、`"conf/lang/"+lang+".ini"`（勿再写回 `configs/`）
 3. **Controller 拆分**（可选，📦 **Round 5 T10**）：`DocumentController.go` 37KB 按方法组拆成 `internal/controller/document/read.go`、`edit.go`、`history.go`、`export.go`。**Round 2 只搬目录、不拆域**，减小 blast radius。
 4. `routers` **拆分**：见 [router-split-migration-plan.md](./router-split-migration-plan.md)，落到 `internal/router/`。
 5. **模板/静态资源路径**：`commands/command.go:311, 332, 334, 337, 342, 345-347` 的 `ViewsPath` / `StaticDir` / 字体路径全部同步；`BookResult.go` 里的导出资源拷贝路径也要一起改（详见 frontend-backend-split-migration-plan.md 附录 A）。
 6. **中间件合并**：原 `middleware/filter.go` + `routers/filter.go` 合到 `internal/middleware/`。
 7. `utils/` **拆分**：通用工具（`cryptil`、`filetil`、`pagination`、`requests` 等）→ `pkg/`；耦合业务的（如 `gopool` 若被 model 用）留 `internal/`。
-8. **模块路径不变**：`git.itopcms.com/jackliu/doc` 保持，只改子包 import。
+8. **模块路径不变**：`git.itopcms.com/astrueus/doc` 保持，只改子包 import。
 
 
 

@@ -8,7 +8,7 @@ else
 fi
 
 
-export MINDOC_SYNC="${MINDOC_SYNC:=}"
+export DOC_SYNC="${DOC_SYNC:=}"
 export SYNC_LIST="${SYNC_LIST:=}"
 export SYNC_ACTION="${SYNC_ACTION:=sync --dry-run}"
 export HOST_DIR=/doc-sync-host
@@ -22,7 +22,7 @@ function doSyncCopy() {
 }
 
 function doSync() {
-    case $MINDOC_SYNC in
+    case $DOC_SYNC in
         "docker2host")
             doSyncCopy "${DOCKER_DIR}/${1}" "${HOST_DIR}/${1}"
             ;;
@@ -30,7 +30,7 @@ function doSync() {
             doSyncCopy "${HOST_DIR}/${1}" "${DOCKER_DIR}/${1}"
             ;;
         *)
-            printenv | grep MINDOC_SYNC
+            printenv | grep DOC_SYNC
             ;;
     esac
 }

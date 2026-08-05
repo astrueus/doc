@@ -5,8 +5,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"git.itopcms.com/jackliu/doc/internal/dto/mcpdto"
-	"git.itopcms.com/jackliu/doc/internal/model"
+	"git.itopcms.com/astrueus/doc/internal/dto/mcpdto"
+	"git.itopcms.com/astrueus/doc/internal/model"
 )
 
 var htmlTagRe = regexp.MustCompile(`<[^>]*>`)

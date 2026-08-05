@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"git.itopcms.com/jackliu/doc/internal/config"
-	"git.itopcms.com/jackliu/doc/internal/i18n"
+	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/i18n"
 )
 
 //Pagination 分页器

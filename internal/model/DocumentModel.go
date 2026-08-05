@@ -2,11 +2,11 @@
 
 import (
 	"context"
-	"git.itopcms.com/jackliu/doc/pkg/htmlutil"
-	"git.itopcms.com/jackliu/doc/pkg/urlutil"
+	"git.itopcms.com/astrueus/doc/pkg/htmlutil"
+	"git.itopcms.com/astrueus/doc/pkg/urlutil"
 	"time"
 
-	"git.itopcms.com/jackliu/doc/internal/i18n"
+	"git.itopcms.com/astrueus/doc/internal/i18n"
 
 	"fmt"
 	"strconv"
@@ -16,8 +16,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"git.itopcms.com/jackliu/doc/internal/cache"
-	"git.itopcms.com/jackliu/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/cache"
+	"git.itopcms.com/astrueus/doc/internal/config"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"

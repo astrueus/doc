@@ -11,14 +11,14 @@ import (
 
 	"html/template"
 
-	"git.itopcms.com/jackliu/doc/internal/auth"
-	"git.itopcms.com/jackliu/doc/internal/config"
-	"git.itopcms.com/jackliu/doc/internal/errs"
-	"git.itopcms.com/jackliu/doc/internal/model"
-	"git.itopcms.com/jackliu/doc/pkg/gob"
+	"git.itopcms.com/astrueus/doc/internal/auth"
+	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/errs"
+	"git.itopcms.com/astrueus/doc/internal/model"
+	"git.itopcms.com/astrueus/doc/pkg/gob"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
-	"git.itopcms.com/jackliu/doc/internal/i18n"
+	"git.itopcms.com/astrueus/doc/internal/i18n"
 )
 
 type BaseController struct {

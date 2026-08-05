@@ -6,18 +6,18 @@ import (
 	"strings"
 	"time"
 
-	"git.itopcms.com/jackliu/doc/internal/i18n"
+	"git.itopcms.com/astrueus/doc/internal/i18n"
 
 	"html/template"
 
-	"git.itopcms.com/jackliu/doc/internal/auth"
-	"git.itopcms.com/jackliu/doc/internal/config"
-	"git.itopcms.com/jackliu/doc/internal/model"
-	"git.itopcms.com/jackliu/doc/internal/thirdparty/dingtalk"
-	"git.itopcms.com/jackliu/doc/pkg/mail"
-	"git.itopcms.com/jackliu/doc/pkg/gob"
-	"git.itopcms.com/jackliu/doc/pkg/krand"
-	passutil "git.itopcms.com/jackliu/doc/pkg/password"
+	"git.itopcms.com/astrueus/doc/internal/auth"
+	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/model"
+	"git.itopcms.com/astrueus/doc/internal/thirdparty/dingtalk"
+	"git.itopcms.com/astrueus/doc/pkg/mail"
+	"git.itopcms.com/astrueus/doc/pkg/gob"
+	"git.itopcms.com/astrueus/doc/pkg/krand"
+	passutil "git.itopcms.com/astrueus/doc/pkg/password"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/lifei6671/gocaptcha"
 )

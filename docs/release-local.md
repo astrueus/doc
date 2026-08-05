@@ -58,7 +58,7 @@
 
                         Gitea Releases 页
 
-                  https://git.itopcms.com/jackliu/doc/releases
+                  https://git.itopcms.com/astrueus/doc/releases
 
 ```
 
@@ -128,7 +128,7 @@ GITEA_URL=https://git.itopcms.com
 
 GITEA_TOKEN=你的PAT
 
-GITEA_OWNER=jackliu
+GITEA_OWNER=astrueus
 
 GITEA_REPO=doc
 
@@ -279,7 +279,7 @@ powershell -ExecutionPolicy Bypass -File scripts\release.ps1 `
 
 
 
-1. 打开 `https://git.itopcms.com/jackliu/doc/releases`
+1. 打开 `https://git.itopcms.com/astrueus/doc/releases`
 
 2. Windows：下载 zip，执行 `doc.exe version`
 

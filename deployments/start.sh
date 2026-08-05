@@ -8,8 +8,8 @@ set -eux
 mkdir -p /doc-sync-host
 if ! [ -f "/doc-sync-host/sync.sh" ]; then
     # 同步方向: docker->HOST 或 HOST -> docker
-    # echo "export MINDOC_SYNC=" >> /doc-sync-host/sync.sh # 不同步
-    echo "export MINDOC_SYNC=docker2host" >> /doc-sync-host/sync.sh # 默认 docker->HOST
+    # echo "export DOC_SYNC=" >> /doc-sync-host/sync.sh # 不同步
+    echo "export DOC_SYNC=docker2host" >> /doc-sync-host/sync.sh # 默认 docker->HOST
     
     # 同步内容（Round 2 收尾：配置目录为 conf/；static/views 位于 web/ 下）
     # conf: 配置

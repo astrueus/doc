@@ -149,7 +149,7 @@ for /f "tokens=2 delims==" %%I in ('wmic os get localdatetime /value 2^>nul ^| f
 if not defined DT set "DT=unknown"
 set "BUILD_TIME=!DT:~0,4!-!DT:~4,2!-!DT:~6,2!T!DT:~8,2!:!DT:~10,2!:!DT:~12,2!"
 
-set "LDFLAGS_COMMON=-X 'git.itopcms.com/jackliu/doc/internal/config.VERSION=!VERSION!' -X 'git.itopcms.com/jackliu/doc/internal/config.BUILD_TIME=!BUILD_TIME!' -X 'git.itopcms.com/jackliu/doc/internal/config.GO_VERSION=!GO_VER!'"
+set "LDFLAGS_COMMON=-X 'git.itopcms.com/astrueus/doc/internal/config.VERSION=!VERSION!' -X 'git.itopcms.com/astrueus/doc/internal/config.BUILD_TIME=!BUILD_TIME!' -X 'git.itopcms.com/astrueus/doc/internal/config.GO_VERSION=!GO_VER!'"
 
 if /i "%MODE%"=="release" (
     if not exist "dist" mkdir "dist"

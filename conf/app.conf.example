@@ -7,20 +7,20 @@
 # ---- 根配置（Beego / 进程级） ----
 appname = doc
 # 默认监听的网卡,为空则监听所有
-httpaddr = "${MINDOC_ADDR||127.0.0.1}"
-httpport = "${MINDOC_PORT||8181}"
-runmode = "${MINDOC_RUN_MODE||dev}"
+httpaddr = "${DOC_ADDR||127.0.0.1}"
+httpport = "${DOC_PORT||8181}"
+runmode = "${DOC_RUN_MODE||dev}"
 # 系统完整 URL (http://doc.example.com)；不设置则从请求头推断
-baseurl = "${MINDOC_BASE_URL}"
+baseurl = "${DOC_BASE_URL}"
 # 时区
 timezone = Asia/Shanghai
 # 配置文件自动热加载间隔（秒），>0 启用；监听端口与数据库变更不生效
-config_auto_delay = "${MINDOC_CONFIG_AUTO_DELAY||20}"
+config_auto_delay = "${DOC_CONFIG_AUTO_DELAY||20}"
 
 [app]
-app_key = mindoc
+app_key = doc
 # 代码高亮样式：https://highlightjs.org/static/demo/
-highlight_style = "${MINDOC_HIGHLIGHT_STYLE||github}"
+highlight_style = "${DOC_HIGHLIGHT_STYLE||github}"
 # 项目默认封面
 cover = /static/images/book.jpg
 # 默认头像
@@ -32,7 +32,7 @@ baidumapkey =
 
 [http]
 copyrequestbody = true
-enablexsrf = "${MINDOC_ENABLE_XSRF||false}"
+enablexsrf = "${DOC_ENABLE_XSRF||false}"
 # https 配置
 EnableHTTPS = false
 HTTPSAddr = ""
@@ -43,13 +43,13 @@ HTTPSKeyFile = "conf/ssl.key"
 ########Session储存方式##############
 [session]
 sessionon = true
-sessionname = mindoc_id
+sessionname = doc_id
 # 默认 Session 生成 Key 的秘钥
 beegoserversessionkey = NY1B$28pms12JM&c
-sessionprovider = "${MINDOC_SESSION_PROVIDER||file}"
-sessionproviderconfig = "${MINDOC_SESSION_PROVIDER_CONFIG||./runtime/session}"
+sessionprovider = "${DOC_SESSION_PROVIDER||file}"
+sessionproviderconfig = "${DOC_SESSION_PROVIDER_CONFIG||./runtime/session}"
 # 默认过期时间（秒）
-sessiongcmaxlifetime = "${MINDOC_SESSION_MAX_LIFETIME||3600}"
+sessiongcmaxlifetime = "${DOC_SESSION_MAX_LIFETIME||3600}"
 
 # 其它可选 provider 示例：
 #以文件方式储存
@@ -67,16 +67,16 @@ sessiongcmaxlifetime = "${MINDOC_SESSION_MAX_LIFETIME||3600}"
 ####################数据库配置###########################
 [database]
 # 支持 mysql / sqlite3；sqlite3 时 db_database 为库文件路径
-db_adapter = "${MINDOC_DB_ADAPTER||mysql}"
-db_host = "${MINDOC_DB_HOST||127.0.0.1}"
-db_port = "${MINDOC_DB_PORT||3306}"
-db_database = "${MINDOC_DB_DATABASE||doc}"
-db_username = "${MINDOC_DB_USERNAME||doc}"
-db_password = "${MINDOC_DB_PASSWORD||doc@123456}"
-db_prefix = "${MINDOC_DB_PREFIX||md_}"
+db_adapter = "${DOC_DB_ADAPTER||mysql}"
+db_host = "${DOC_DB_HOST||127.0.0.1}"
+db_port = "${DOC_DB_PORT||3306}"
+db_database = "${DOC_DB_DATABASE||doc}"
+db_username = "${DOC_DB_USERNAME||doc}"
+db_password = "${DOC_DB_PASSWORD||doc@123456}"
+db_prefix = "${DOC_DB_PREFIX||md_}"
 # sqlite3 示例：
 # db_adapter = sqlite3
-# db_database = ./database/mindoc.db
+# db_database = ./database/doc.db
 
 [upload]
 #上传文件的后缀,如果不限制后缀可以设置为 *
@@ -91,35 +91,35 @@ upload_max_memory = 64MB
 ####################邮件配置######################
 [mail]
 #是否启用邮件
-enable_mail = "${MINDOC_ENABLE_MAIL||false}"
+enable_mail = "${DOC_ENABLE_MAIL||false}"
 #每小时限制指定邮箱邮件发送次数
-mail_number = "${MINDOC_MAIL_NUMBER||5}"
+mail_number = "${DOC_MAIL_NUMBER||5}"
 #smtp服务用户名
-smtp_user_name = "${MINDOC_SMTP_USER_NAME||admin@admincms.top}"
+smtp_user_name = "${DOC_SMTP_USER_NAME||admin@admincms.top}"
 #smtp服务器地址
-smtp_host = "${MINDOC_SMTP_HOST||smtp.163.com}"
+smtp_host = "${DOC_SMTP_HOST||smtp.163.com}"
 #smtp密码
-smtp_password = "${MINDOC_SMTP_PASSWORD}"
+smtp_password = "${DOC_SMTP_PASSWORD}"
 #端口号
-smtp_port = "${MINDOC_SMTP_PORT||25}"
+smtp_port = "${DOC_SMTP_PORT||25}"
 #发送邮件的显示名称
-form_user_name = "${MINDOC_FORM_USERNAME||admin@iminho.me}"
+form_user_name = "${DOC_FORM_USERNAME||admin@iminho.me}"
 #邮件有效期30分钟
-mail_expired = "${MINDOC_EXPIRED||30}"
+mail_expired = "${DOC_MAIL_EXPIRED||30}"
 #加密类型NONE 无认证、SSL 加密、LOGIN 普通用户登录
-secure = "${MINDOC_MAIL_SECURE||LOGIN}"
+secure = "${DOC_MAIL_SECURE||LOGIN}"
 
 ###############配置导出项目###################
 [export]
-enable_export = "${MINDOC_ENABLE_EXPORT||false}"
+enable_export = "${DOC_ENABLE_EXPORT||false}"
 #同一个项目同时运行导出程序的并行数量，取值1-4之间，取值越大导出速度越快，越占用资源
-export_process_num = "${MINDOC_EXPORT_PROCESS_NUM||1}"
+export_process_num = "${DOC_EXPORT_PROCESS_NUM||1}"
 #并发导出的项目限制，指同一时间限制的导出项目数量，如果为0则不限制。设置的越大，越占用资源
-export_limit_num = "${MINDOC_EXPORT_LIMIT_NUM||5}"
+export_limit_num = "${DOC_EXPORT_LIMIT_NUM||5}"
 #指同时等待导出的任务数量
-export_queue_limit_num = "${MINDOC_EXPORT_QUEUE_LIMIT_NUM||100}"
+export_queue_limit_num = "${DOC_EXPORT_QUEUE_LIMIT_NUM||100}"
 #导出项目的缓存目录配置
-export_output_path = "${MINDOC_EXPORT_OUTPUT_PATH||./runtime/cache}"
+export_output_path = "${DOC_EXPORT_OUTPUT_PATH||./runtime/cache}"
 
 ################Active Directory/LDAP################
 [ldap]
@@ -150,55 +150,55 @@ http_login_secret = hzsp*THJUqwbCU%s
 
 ###############配置CDN加速##################
 [cdn]
-cdn = "${MINDOC_CDN_URL}"
-cdnjs = "${MINDOC_CDN_JS_URL}"
-cdncss = "${MINDOC_CDN_CSS_URL}"
-cdnimg = "${MINDOC_CDN_IMG_URL}"
+cdn = "${DOC_CDN_URL}"
+cdnjs = "${DOC_CDN_JS_URL}"
+cdncss = "${DOC_CDN_CSS_URL}"
+cdnimg = "${DOC_CDN_IMG_URL}"
 
 ######################缓存配置###############################
 [cache]
 #是否开启缓存，true 开启/false 不开启
-cache = "${MINDOC_CACHE||false}"
+cache = "${DOC_CACHE||false}"
 #缓存方式:memory/memcache/redis/file
-cache_provider = "${MINDOC_CACHE_PROVIDER||file}"
+cache_provider = "${DOC_CACHE_PROVIDER||file}"
 #当配置缓存方式为memory时,内存回收时间,单位是秒
-cache_memory_interval = "${MINDOC_CACHE_MEMORY_INTERVAL||120}"
+cache_memory_interval = "${DOC_CACHE_MEMORY_INTERVAL||120}"
 #当缓存方式配置为file时,缓存的储存目录
-cache_file_path = "${MINDOC_CACHE_FILE_PATH||./runtime/cache/}"
+cache_file_path = "${DOC_CACHE_FILE_PATH||./runtime/cache/}"
 #缓存文件后缀
-cache_file_suffix = "${MINDOC_CACHE_FILE_SUFFIX||.bin}"
+cache_file_suffix = "${DOC_CACHE_FILE_SUFFIX||.bin}"
 #文件缓存目录层级
-cache_file_dir_level = "${MINDOC_CACHE_FILE_DIR_LEVEL||2}"
+cache_file_dir_level = "${DOC_CACHE_FILE_DIR_LEVEL||2}"
 #文件缓存的默认过期时间
-cache_file_expiry = "${MINDOC_CACHE_FILE_EXPIRY||3600}"
+cache_file_expiry = "${DOC_CACHE_FILE_EXPIRY||3600}"
 #memcache缓存服务器地址
-cache_memcache_host = "${MINDOC_CACHE_MEMCACHE_HOST||127.0.0.1:11211}"
+cache_memcache_host = "${DOC_CACHE_MEMCACHE_HOST||127.0.0.1:11211}"
 #redis服务器地址
-cache_redis_host = "${MINDOC_CACHE_REDIS_HOST||127.0.0.1:6379}"
+cache_redis_host = "${DOC_CACHE_REDIS_HOST||127.0.0.1:6379}"
 #redis数据库索引
-cache_redis_db = "${MINDOC_CACHE_REDIS_DB||0}"
+cache_redis_db = "${DOC_CACHE_REDIS_DB||0}"
 #redis服务器密码
-cache_redis_password = "${MINDOC_CACHE_REDIS_PASSWORD}"
+cache_redis_password = "${DOC_CACHE_REDIS_PASSWORD}"
 #缓存键的前缀
-cache_redis_prefix = "${MINDOC_CACHE_REDIS_PREFIX||doc::cache}"
+cache_redis_prefix = "${DOC_CACHE_REDIS_PREFIX||doc::cache}"
 
 #########日志储存配置##############
 [log]
 #日志保存路径，在linux上，自动创建的日志文件请不要删除，否则将无法写入日志
-log_path = "${MINDOC_LOG_PATH||./runtime/logs}"
+log_path = "${DOC_LOG_PATH||./runtime/logs}"
 #每个文件保存的最大行数，默认值 1000000
-log_maxlines = "${MINDOC_LOG_MAX_LINES||1000000}"
+log_maxlines = "${DOC_LOG_MAX_LINES||1000000}"
 # 每个文件保存的最大尺寸，默认值是 1 << 28, //256 MB
-log_maxsize = "${MINDOC_LOG_MAX_SIZE}"
+log_maxsize = "${DOC_LOG_MAX_SIZE}"
 # 是否按照每天 logrotate，默认是 true
-log_daily = "${MINDOC_LOG_DAILY||true}"
+log_daily = "${DOC_LOG_DAILY||true}"
 # 文件最多保存多少天，默认保存 7 天
-log_maxdays = "${MINDOC_LOG_MAX_DAYS||30}"
+log_maxdays = "${DOC_LOG_MAX_DAYS||30}"
 # 日志级别（T4 起由 zap 严格执行）。默认 Info；生产可调为 Warning/Error。
 # 可选值： Emergency/Alert/Critical/Error/Warning/Notice/Informational/Debug/Trace
-log_level = "${MINDOC_LOG_LEVEL||Info}"
+log_level = "${DOC_LOG_LEVEL||Info}"
 # 是否异步生成日志，默认是 true
-log_is_async = "${MINDOC_LOG_IS_ASYNC||TRUE}"
+log_is_async = "${DOC_LOG_IS_ASYNC||TRUE}"
 # 文件日志格式：json（默认，便于采集）/ console（与 stderr 同风格）
 # 控制台（stderr）始终为人类可读格式，不受此项影响
 log_format = "${DOC_LOG_FORMAT||json}"
@@ -206,17 +206,17 @@ log_format = "${DOC_LOG_FORMAT||json}"
 ##########钉钉应用相关配置##############
 [dingtalk]
 # 企业钉钉ID
-dingtalk_corpid = "${MINDOC_DINGTALK_CORPID}"
+dingtalk_corpid = "${DOC_DINGTALK_CORPID}"
 # 钉钉AppKey
-dingtalk_app_key = "${MINDOC_DINGTALK_APPKEY}"
+dingtalk_app_key = "${DOC_DINGTALK_APPKEY}"
 # 钉钉AppSecret
-dingtalk_app_secret = "${MINDOC_DINGTALK_APPSECRET}"
+dingtalk_app_secret = "${DOC_DINGTALK_APPSECRET}"
 # 钉钉登录默认只读账号
-dingtalk_tmp_reader = "${MINDOC_DINGTALK_READER}"
+dingtalk_tmp_reader = "${DOC_DINGTALK_READER}"
 # 钉钉扫码登录Key
-dingtalk_qr_key = "${MINDOC_DINGTALK_QRKEY}"
+dingtalk_qr_key = "${DOC_DINGTALK_QRKEY}"
 # 钉钉扫码登录Secret
-dingtalk_qr_secret = "${MINDOC_DINGTALK_QRSECRET}"
+dingtalk_qr_secret = "${DOC_DINGTALK_QRSECRET}"
 
 [i18n]
 default_lang = "zh-cn"

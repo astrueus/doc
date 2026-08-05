@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"git.itopcms.com/jackliu/doc/internal/model"
+	"git.itopcms.com/astrueus/doc/internal/model"
 	"github.com/beego/beego/v2/client/orm"
 )
 

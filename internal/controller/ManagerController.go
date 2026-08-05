@@ -12,17 +12,17 @@ import (
 
 	"os"
 
-	"git.itopcms.com/jackliu/doc/internal/config"
-	"git.itopcms.com/jackliu/doc/internal/model"
-	"git.itopcms.com/jackliu/doc/pkg/filetil"
-	"git.itopcms.com/jackliu/doc/pkg/htmlutil"
-	"git.itopcms.com/jackliu/doc/pkg/krand"
-	"git.itopcms.com/jackliu/doc/pkg/pagination"
-	passutil "git.itopcms.com/jackliu/doc/pkg/password"
+	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/model"
+	"git.itopcms.com/astrueus/doc/pkg/filetil"
+	"git.itopcms.com/astrueus/doc/pkg/htmlutil"
+	"git.itopcms.com/astrueus/doc/pkg/krand"
+	"git.itopcms.com/astrueus/doc/pkg/pagination"
+	passutil "git.itopcms.com/astrueus/doc/pkg/password"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
-	"git.itopcms.com/jackliu/doc/internal/i18n"
+	"git.itopcms.com/astrueus/doc/internal/i18n"
 	"github.com/russross/blackfriday/v2"
 )
 

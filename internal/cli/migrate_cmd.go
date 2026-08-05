@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"git.itopcms.com/jackliu/doc/internal/migrate"
+	"git.itopcms.com/astrueus/doc/internal/migrate"
 	"github.com/spf13/cobra"
 )
 

@@ -19,7 +19,7 @@
 | MCP   | **已落地**：官方 go-sdk，约 10 工具，stdio + HTTP Bearer（`internal/mcp/`）            |
 | 分词/索引 | 无 `lib/jieba/`、倒排表                                                         |
 | 可执行名  | `doc`（上游为 `mindoc`）                                                        |
-| 模块路径  | `git.itopcms.com/jackliu/doc`（上游为 `github.com/mindoc-org/mindoc`）          |
+| 模块路径  | `git.itopcms.com/astrueus/doc`（上游为 `github.com/mindoc-org/mindoc`）          |
 | 工作目录  | **已落地** `-dir` > `DOC_HOME` > 可执行文件目录（`internal/config/working_dir.go`）   |
 
 
@@ -705,7 +705,7 @@ Day 1 下午    : 回归（编辑/阅读/Blog/PDF）
 
 | 项                                                                                                            | 原因                                    |
 | ------------------------------------------------------------------------------------------------------------ | ------------------------------------- |
-| [#1019](https://github.com/mindoc-org/mindoc/pull/1019) 官网链接                                                 | 品牌不同，保持 `git.itopcms.com/jackliu/doc` |
+| [#1019](https://github.com/mindoc-org/mindoc/pull/1019) 官网链接                                                 | 品牌不同，保持 `git.itopcms.com/astrueus/doc` |
 | [30a1e87](https://github.com/mindoc-org/mindoc/commit/30a1e87068052c4f1c0fe77f11e001b2843fed6a) Docker 镜像版本号 | 文档类，非代码                               |
 | [b9f1381](https://github.com/mindoc-org/mindoc/commit/b9f13815e81421d8bec677b36d850df5c130615b) login.tpl 小改 | 需对比本仓库登录页                             |
 | dependabot 依赖升级                                                                                              | 本仓库已 Go 1.25 + Beego v2，按需单独升         |
@@ -715,7 +715,7 @@ Day 1 下午    : 回归（编辑/阅读/Blog/PDF）
 
 ## 十一、每次 cherry-pick 的通用适配清单
 
-- [ ] import 路径：`github.com/mindoc-org/mindoc` → `git.itopcms.com/jackliu/doc`
+- [ ] import 路径：`github.com/mindoc-org/mindoc` → `git.itopcms.com/astrueus/doc`
 - [ ] CLI 帮助文案：`mindoc` → `doc`
 - [ ] 表前缀 `md_` 是否一致（使用 `GetDatabasePrefix()`，一般兼容）
 - [ ] Beego v2 API 差异（本仓库已迁 v2，比老 mindoc 冲突少）

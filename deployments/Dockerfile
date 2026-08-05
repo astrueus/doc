@@ -15,7 +15,7 @@ COPY . .
 # 编译
 RUN go env
 RUN go mod tidy -v
-RUN go build -o doc -ldflags "-w -s -X 'git.itopcms.com/jackliu/doc/internal/config.VERSION=$TAG' -X 'git.itopcms.com/jackliu/doc/internal/config.BUILD_TIME=`date`' -X 'git.itopcms.com/jackliu/doc/internal/config.GO_VERSION=`go version`'" ./cmd/doc
+RUN go build -o doc -ldflags "-w -s -X 'git.itopcms.com/astrueus/doc/internal/config.VERSION=$TAG' -X 'git.itopcms.com/astrueus/doc/internal/config.BUILD_TIME=`date`' -X 'git.itopcms.com/astrueus/doc/internal/config.GO_VERSION=`go version`'" ./cmd/doc
 RUN cp conf/app.conf.example conf/app.conf
 # 清理源码与构建脚手架；保留运行所需：conf/ web/ uploads/ 与二进制
 RUN rm -f appveyor.yml .travis.yml .gitattributes .gitignore go.mod go.sum README.md
