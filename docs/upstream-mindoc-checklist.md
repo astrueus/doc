@@ -2,7 +2,7 @@
 
 本文档基于 [mindoc-org/mindoc](https://github.com/mindoc-org/mindoc) 近期提交历史，对照当前 `doc` 项目整理，用于评估哪些上游改动值得跟进。
 
-**文档生成依据：** 上游 GitHub 提交记录 + 本仓库代码现状（2026-06）。
+**文档生成依据：** 上游 GitHub 提交记录 + 本仓库代码现状（2026-06 起；**实现对照见 [§一附](#一附本仓库实现情况对照表)，2026-08-05 核对**）。
 
 ---
 
@@ -11,16 +11,55 @@
 
 | 维度    | 当前 `doc` 状态                                                                |
 | ----- | -------------------------------------------------------------------------- |
-| 搜索    | SQL `LIKE`，见 `models/DocumentSearchResult.go`                              |
-| 编辑器   | editor.md + wangEditor，**无** Cherry / Draw.io                              |
-| 系统角色  | 3 种（超管/管理员/普通），见 `conf/enumerate.go`                                       |
+| 搜索    | SQL `LIKE`（FULLTEXT/FTS5 ⏸ 见 Round 5 T3），见 `internal/model/DocumentSearchResult.go` |
+| 编辑器   | editor.md + wangEditor + **已接** KaTeX / Mermaid；**无** Cherry / Draw.io     |
+| 系统角色  | 3 种（超管/管理员/普通），见 `internal/config` / 枚举                                     |
 | 数据库   | MySQL + SQLite，**无** PostgreSQL                                            |
-| CLI   | `install` / `version` / `password` / `migrate` / `service`，**无** `reindex` |
-| MCP   | 无                                                                          |
-| 分词/索引 | 无 `lib/jieba/`、`utils/segmenter/`                                          |
+| CLI   | `install` / `version` / `password` / `migrate` / `service` / **`mcp`** 等；**无** `reindex` |
+| MCP   | **已落地**：官方 go-sdk，约 10 工具，stdio + HTTP Bearer（`internal/mcp/`）            |
+| 分词/索引 | 无 `lib/jieba/`、倒排表                                                         |
 | 可执行名  | `doc`（上游为 `mindoc`）                                                        |
 | 模块路径  | `git.itopcms.com/jackliu/doc`（上游为 `github.com/mindoc-org/mindoc`）          |
+| 工作目录  | **已落地** `-dir` > `DOC_HOME` > 可执行文件目录（`internal/config/working_dir.go`）   |
 
+
+---
+
+## 一附、本仓库实现情况对照表
+
+> **核对日：** 2026-08-05（对照代码与 Round 1–5 计划，非 cherry-pick 上游全文）。  
+> **图例：** ✅ 已实现 · 🟡 部分实现 · ❌ 未做 · ⏸ 有意不做 / 延后（含 Round 5 冻结）
+
+| 小节 | 主题 | 实现情况 | 说明（证据 / 去向） |
+| --- | --- | --- | --- |
+| 0.1 | WorkingDirectory / `DOC_HOME` | ✅ | `internal/config/working_dir.go`：`-dir` > `DOC_HOME` > 可执行目录 |
+| 0.2 | 时区 | ✅ | `time/tzdata`；模型 `.In(time.Local)`；`date_format` 本地化 |
+| 0.3 | 大文件上传 | ✅ | `upload_max_size` / `upload_max_memory` → Beego MaxUploadSize |
+| 1.1 | 倒排 / FULLTEXT 搜索打底 | ⏸ | 仍为 `LIKE`；Round 5 **T3 暂不实施**，待搜索方案重定义 |
+| 1.2 | `doc reindex` | ⏸ | 无该命令；随 1.1 / T3 冻结 |
+| 1.3 | 全局搜索快捷键守卫 | ❌ | 未见 `shouldIgnoreShortcut` 等共享守卫 |
+| 2.1 | Editor.md + Mermaid + KaTeX | ✅ | `widgets/scripts.tpl` + katex/mermaid 静态资源 + 阅读页接线 |
+| 2.2 | Cherry Markdown 全家桶 | ⏸ | **有意不引入**（清单本地方案即不跟） |
+| 2.3 | 阅读页 URL / 编辑跳转 | 🟡 | 已有 `pushState`；编辑入口 `?doc_id` 等未按上游最小方案补齐 |
+| 2.4 | 评论头像 | ❌ | 评论结果侧未系统渲染 `Member.Avatar` |
+| 3.1 | 只读 / 禁普通用户建项目 | ❌ | 无 `member_general_can_create_book` 一类开关 |
+| 3.2 | OAuth2（钉钉/企微） | 🟡 | **仅钉钉**；统一 Provider + 企微 → Round 5 **T16** |
+| 3.3 | LDAPS | ❌ | LDAP 仍 `Dial`；无 `ldap_tls` / `useTLS` |
+| 4.1 | i18n `enabled_langs` | ❌ | 语言列表仍偏写死（如 en-us / zh-cn），无可配置启用列表 |
+| 4.2 | MCP Server | ✅ | `internal/mcp/`：官方 SDK，读写工具 + stdio/HTTP；P1/Book 写见 Round 5 T5 |
+| 5.1 | PostgreSQL / LIMIT 语法铺路 | ❌ | 无 PG；多处仍 `LIMIT ?, ?` |
+| 5.2 | Docker / PDF 字体与 TZ | 🟡 | Dockerfile 已有 `tzdata`；字体为文泉驿等，**非**清单写的 `fonts-noto-cjk` 全套 |
+
+### 汇总
+
+| 状态 | 小节 |
+| --- | --- |
+| ✅ 已实现 | **0.1、0.2、0.3、2.1、4.2** |
+| 🟡 部分实现 | **2.3、3.2、5.2** |
+| ❌ 未做 | **1.3、2.4、3.1、3.3、4.1、5.1** |
+| ⏸ 有意不做 / 延后 | **1.1、1.2、2.2**（另：完整 OAuth 重写 / 对象存储等见 Round 5，不在本表小节内） |
+
+> 本表只对照本文 **§三～§八** 各「本地最小升级」小节。Round 1–4 目录重构、zap、Repository、MCP P0 等工程化项不在上游清单编号内，故不列入。
 
 ---
 

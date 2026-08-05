@@ -15,7 +15,7 @@
 
 | 序号 | 任务 | 工作量 | 来源 | 阻塞其他吗 |
 |---|---|---|---|---|
-| T1 | 缓存方案评估报告（默认「维持 A」；有数据再议 gocache / singleflight） | 0.5~1 天 | Round 4 T7 | 否（T12 实施依赖本报告） |
+| T1 | 缓存**完全重构**评估（L1+L2 / 防击穿穿透雪崩 / Soft-TTL） | 0.5~1 天 | Round 4 T7 + 2026-08-05 决策 | 否（结论驱动 T12） |
 | T2 | ORM / 分层评估报告（**朝 kratos 分层靠拢**；模型可生成；本轮只评估不实施） | 2~4 天 | Round 4 T12 + 本轮决策 | 否（实施另立项） |
 | T3 | ~~搜索最小方案 FULLTEXT/FTS5~~ | — | Round 3 T1 | ⏸ **暂不实施**（见 §一附） |
 | T4 | （可选）倒排 / 向量检索评估 | 独立 | Round 4 T11 | ⏸ **随搜索方案冻结**（见 §一附） |
@@ -26,9 +26,9 @@
 | T9 | Repository 扩面 +（可选）`internal/service/` | 3~5 天 | Round 4 有意缺口 | 否（渐进；与 T2 方向对齐） |
 | T10 | （可选）Controller 按域拆分（优先 `DocumentController`） | — | Round 2 延后 | ⏸ **本轮暂不拆** |
 | T11 | （可选）安全头：CORS / CSP / HSTS + secure middleware | 1~2 天 | Round 4+ 候选 | 否 |
-| T12 | （闸门）缓存方案 B **实施** | 2~3 天 | Round 4 T7 | **依赖 T1 + 压力数据** |
+| T12 | 缓存**完全重构**实施（Facade + Ristretto + Redis） | 4~7 天 | T1 终裁 | 建议与 T9 协同 |
 | T13 | ~~拆 `bootstrap.go`~~ | — | Round 2 B2 | ⏸ **待定，暂时不拆**（见 §一附） |
-| **T14** | **对象存储：** 上传走 OSS/S3 兼容 + 本地 `uploads/` 旧数据迁移规划与落地 | 1~2 周 | **本轮新增** | 否（建议独立 sprint） |
+| **T14** | **对象存储完全重构（S3 API）+ 旧 `uploads/` 全量迁移** | 2~3 周 | **本轮新增** | 否（建议独立 sprint） |
 | **T15** | **`scripts/` → `deployments/scripts/`**（方案 A 全迁 + 根 Makefile/justfile） | 0.5~1 天 | **本轮新增** | 影响 T7 脚本落点 |
 | **T16** | **OAuth2 登录重写**：统一 Provider；钉钉迁入；新增企业微信 | 3~5 天 | upstream §3.2 / #851 | 否（建议独立切片） |
 
@@ -58,6 +58,7 @@
 | 6 | MCP Book 写工具（2026-08-04） | **本轮做最小集** `create_book` / `update_book`；**不做** `delete_book`（修订 Round 3 §17.3） | **T5** |
 | 7 | DocumentController 拆分（2026-08-04） | **本轮暂不拆**；解冻后用子包按域拆，**禁止平铺**多文件 | **T10** ⏸ |
 | 8 | OAuth2 登录重写（2026-08-04） | **本轮做**：统一 Provider + 钉钉迁移 + 企微；修订 upstream「仅并行加企微、不重写」 | **T16** |
+| 9 | 缓存完全重构（2026-08-05） | **不兼容旧 beego/cache**；L1 Ristretto + L2 Redis + Soft-TTL / 防护套件；见 T1/T12 细化 | **T1** ✅ 结论 · **T12** 实施 |
 
 已记入 [refactor-roadmap.md §八](./refactor-roadmap.md#八决策记录decision-log)。
 
@@ -71,7 +72,7 @@
 |---|---|---|
 | 搜索仍为 `LIKE`；FULLTEXT 未做 | Round 3 T1 | **T3 ⏸**（冻结，等新方案） |
 | MCP P1 | Round 3 §十七 / Round 4 T13 | **T5** |
-| 缓存报告 / gocache | Round 4 T7 | **T1** → 有条件 **T12** |
+| 缓存报告 / gocache | Round 4 T7 | **T1** ✅ 完全重构结论 → **T12** 实施 |
 | ORM 评估 | Round 4 T12 | **T2**（方向改为 kratos 分层） |
 | 倒排/向量 | Round 4 T11 | **T4 ⏸**（随搜索冻结） |
 | Vite P2 | Round 4 T9 | **T6** |
@@ -110,35 +111,35 @@
   T14 对象存储 + 旧数据迁移
   T16 OAuth2 登录重写（钉钉 + 企微）
 
-批次 D（闸门）
-  T12 仅当 T1 结论要上缓存 B
+批次 D（缓存重构 · 可与 B/C 交错）
+  T12 缓存完全重构（建议 T9 读路径就绪后或并行约定边界）
 
 冻结（本轮不开工）
   T3 搜索 FULLTEXT · T4 倒排 · T13 拆 bootstrap
 ```
 
-**一句话：** 报告与 CI、MCP P1、分层债、Vite、对象存储、OAuth2 可推进；**搜索旧方案、bootstrap、Controller 平铺拆分冻结**；ORM 只评估并朝 kratos 分层对齐。
+**一句话：** 报告与 CI、MCP P1、分层债、Vite、对象存储、OAuth2、**缓存完全重构**可推进；**搜索旧方案、bootstrap、Controller 平铺拆分冻结**；ORM 只评估并朝 kratos 分层对齐。
 
 ---
 
-## 三、T1 · 缓存方案评估报告（0.5~1 天）
+## 三、T1 · 缓存完全重构评估（0.5~1 天）
 
 > 承接 [round-4-execution-plan.md §九](./round-4-execution-plan.md#九t7--缓存方案-b-评估2~3-天)。  
-> **细化方案：** [round-5-cache-evaluation.md](./round-5-cache-evaluation.md)
+> **细化方案 / 终裁：** [round-5-cache-evaluation.md](./round-5-cache-evaluation.md)（**2026-08-05：完全重构，不兼容旧方案**）
 
 ### 输出
 
-`docs/round-5-cache-evaluation.md`，至少包含：
+已定稿，核心结论：
 
-1. **现状（方案 A）**：`internal/cache` + msgpack + 现有实现缺口  
-2. **候选 B**：`eko/gocache/v3` vs `singleflight` + tag  
-3. **观测建议**：拍板上 B 所需指标  
-4. **结论**：维持 A / 仅 singleflight / 上 gocache（附最小切片）
+1. 废弃业务路径上的 `beego/cache`  
+2. **L1 Ristretto + L2 Redis** + `GetOrLoad`  
+3. 防护：singleflight、负缓存、TTL jitter、Soft-TTL 自动重建、Tag + Pub/Sub  
+4. 可选引擎加速：jetcache-go（Facade 包装）  
 
 ### 验收
 
-- [ ] 报告合入；决策日志记一笔  
-- [ ] 「维持 A」则关闭或 ⏭ T12；「上 B」则写清 T12 范围且本任务不实施  
+- [x] 报告合入；决策写入 §一附 #9  
+- [x] T12 升格为实施项（非「维持 A 则关闭」）  
 
 ---
 
@@ -314,11 +315,19 @@ CORS / CSP / HSTS（可关）；建议 T6 后再收紧 CSP。
 
 ---
 
-## 十三附、T12 · 缓存 B 实施（闸门）
+## 十三附、T12 · 缓存完全重构实施（4~7 天）
 
-> **细化方案：** [round-5-t12-cache-impl.md](./round-5-t12-cache-impl.md)
+> **细化方案：** [round-5-t12-cache-impl.md](./round-5-t12-cache-impl.md)  
+> **不再**作为「维持 A 则跳过」的闸门项；上线前仍要压测与指标。
 
-仅当 T1 结论要求上 B 且有压力数据。否则 ⏭。
+### 做
+
+- Facade `Aside[T]` + Ristretto + Redis + Soft-TTL / 负缓存 / jitter / Tag / Pub/Sub  
+- Document / Blog / MCP Token 全量切换；旧 key 前缀废弃  
+
+### 验收
+
+- [ ] 见 T12 细化文档验收清单  
 
 ---
 
@@ -333,40 +342,29 @@ CORS / CSP / HSTS（可关）；建议 T6 后再收紧 CSP。
 
 ---
 
-## 十三丙、T14 · 对象存储上传 + 旧数据迁移（1~2 周）
+## 十三丙、T14 · 对象存储完全重构 + 全量迁移（2~3 周）
 
-> **细化方案：** [round-5-t14-object-storage.md](./round-5-t14-object-storage.md)
-
-### 背景
-
-当前附件/图片等多写本地 `WorkingDirectory/uploads/...`（如 `DocumentController.Upload`、头像、博客上传等），不便多实例与备份。
+> **细化方案：** [round-5-t14-object-storage.md](./round-5-t14-object-storage.md)（2026-08-05：不兼容旧写盘；S3 API；全量迁移）
 
 ### 本轮目标
 
-1. **抽象存储接口**（示意）：`Put` / `Get` / `Delete` / `URL`（或签名 URL）  
-   - 实现：`LocalStorage`（兼容现状）+ **S3 兼容**（MinIO / 云厂商 OSS）至少一种  
-2. **配置**：`conf/app.conf` 增加 `[storage]`（或等价），如 `driver=local|s3`、`endpoint`、`bucket`、`access_key`、CDN 域名等；强类型进 `config.Config`  
-3. **新上传路径**一律走接口；本地驱动行为与现网一致  
-4. **旧数据迁移**  
-   - 命令或脚本：扫描 `uploads/` → 上传对象存储 → 校验 →（可选）改写库内/正文中以 `/uploads/` 开头的引用  
-   - 支持 dry-run、断点续传、失败重试清单  
-   - 升级文档：迁移顺序、回滚（保留本地副本 N 天）  
-5. **明确不做（本切片可砍）**：改 MCP 传二进制附件；一次切完所有历史 CDN 边角（可列后续清单）
+1. **完全重构**：`internal/storage.BlobStore`；业务禁止直写本地 `uploads/`  
+2. **远程仅 S3 API**：默认引擎 `aws-sdk-go-v2`；覆盖 MinIO / AWS / OSS / COS 等兼容后端  
+3. **读路径**：生产默认预签名（或 CDN）；proxy 仅 fallback  
+4. **全量迁移**：`doc storage migrate`（inventory → upload → verify → rewrite DB/正文 → cutover）  
+5. **兼容性矩阵**：MinIO CI 必过 + 至少一家公有云抽测  
 
 ### 建议 PR 拆分
 
 | PR | 内容 |
 |---|---|
-| T14-a | 接口 + local + s3 驱动 + 配置 |
-| T14-b | 业务上传点切换（Document / Setting / Blog 等） |
-| T14-c | `doc storage migrate`（名称待定）+ 运维文档 |
+| T14-a | 接口 + local + s3（aws-sdk-go-v2）+ 配置 + 单测 |
+| T14-b | 全部上传/下载/删除点切换 |
+| T14-c | 全量 migrate + rewrite + 运维/矩阵文档 |
 
 ### 验收
 
-- [ ] `driver=local` 回归与现网一致  
-- [ ] `driver=s3` 新上传可访问（签名或公网 URL）  
-- [ ] 迁移工具 dry-run + 小样本实迁成功；升级说明入库  
-- [ ] 多实例场景：新文件不依赖单机磁盘（s3 模式）  
+- [ ] 见细化方案 §十  
 
 ---
 
@@ -429,7 +427,7 @@ CORS / CSP / HSTS（可关）；建议 T6 后再收紧 CSP。
 
 | # | 任务 | PR | Commit | 状态 |
 |---|---|---|---|---|
-| T1 | 缓存评估报告 | | | ⏳ |
+| T1 | 缓存完全重构评估 | | | ✅ 结论已定 |
 | T2 | ORM/分层评估（kratos 方向） | | | ⏳ |
 | T3 | 搜索 FULLTEXT/FTS5 | | | ⏸ **暂不实施**（等新方案） |
 | T4 | 倒排/向量评估 | | | ⏸ **冻结** |
@@ -440,9 +438,9 @@ CORS / CSP / HSTS（可关）；建议 T6 后再收紧 CSP。
 | T9 | Repo 扩面 + 可选 Service | | | ⏳ |
 | T10 | Controller 域拆分 | | | ⏸ **暂不拆**（解冻后勿平铺） |
 | T11 | 安全头 middleware | | | ⏳ 可选 |
-| T12 | 缓存 B 实施 | | | ⏳ 闸门 |
+| T12 | 缓存完全重构实施 | | | ⏳ |
 | T13 | 拆 bootstrap.go | | | ⏸ **待定，暂不拆** |
-| T14 | 对象存储 + 旧数据迁移 | | | ⏳ |
+| T14 | 对象存储完全重构 + 全量迁移 | | | ⏳ |
 | T15 | scripts → deployments **方案 A 全迁** | | | ⏳ 已拍板；待搬迁 |
 | T16 | OAuth2 登录重写（钉钉 + 企微） | | | ⏳ |
 
@@ -463,9 +461,9 @@ CORS / CSP / HSTS（可关）；建议 T6 后再收紧 CSP。
 | 9 | `refactor: expand repository (+ optional service)` | T9 | 中 | 与 T8 串行若冲突 |
 | 10 | — | T10 | — | ⏸ 不开 |
 | 11 | `feat(security): CORS/CSP/HSTS middleware` | T11 | 小 | 建议 T6 后 |
-| 12 | `feat(cache): gocache or singleflight` | T12 | 中 | T1 |
+| 12a–d | `feat(cache): aside L1/L2 + migrate callers` | T12 | 大 | T1；建议与 T9 协调 |
 | 13 | — | T13 | — | ⏸ 不开 |
-| 14a–c | `feat(storage): …` / migrate | T14 | 大 | 可独立 |
+| 14a–c | `feat(storage): blobstore s3 + migrate all uploads` | T14 | 大 | 可独立 |
 | 15 | `chore: relocate scripts under deployments + root Makefile/justfile` | T15 方案 A | 小 | 无 |
 | 16a–b | `feat(auth): oauth provider + dingtalk migrate` / `feat(auth): wework provider` | T16 | 中 | 可独立 |
 
@@ -476,10 +474,10 @@ CORS / CSP / HSTS（可关）；建议 T6 后再收紧 CSP。
 - [ ] MCP：stdio / HTTP；P1（含 create_book / update_book）  
 - [ ] 前端：Vite 后关键页 200  
 - [ ] `go test` / CI 绿  
-- [ ] 对象存储：local 回归；s3 新上传；迁移 dry-run  
+- [ ] 对象存储：业务无直写盘；MinIO + 预签名；全量 migrate/verify/rewrite  
 - [ ] OAuth2：钉钉回归；企微（若启用）登录成功  
 - [ ] 环境变量命名：硬切为 `DOC_*`（**不**再兼容 `MINDOC_*`），验证关键项（如 `DOC_HOME`）生效 — 见 [round-5-env-mindoc-to-doc.md](./round-5-env-mindoc-to-doc.md)  
-- [ ] 若动缓存实现：清 session + cache  
+- [ ] 若动缓存：新前缀生效；压测击穿/穿透；指标可看；可回滚 `mode`  
 - [ ] **不做** FULLTEXT 升级步骤（本轮冻结）  
 
 ---
