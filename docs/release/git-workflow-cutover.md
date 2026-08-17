@@ -1,6 +1,6 @@
 # Git 协作约定 · 切换执行文档
 
-> **状态：** 🚧 执行中（2026-08-17）——电脑 A 的步骤 A～C 已完成；步骤 D（Gitea 保护）和步骤 E（电脑 B）待你操作。  
+> **状态：** 🚧 执行中（2026-08-17）——电脑 A 的步骤 A～C 与短命分支收尾已完成（`master` @ `6563803`）；步骤 D（Gitea 保护）和步骤 E（电脑 B）待你操作。  
 > **长期规则：** [git-workflow.md](./git-workflow.md)（切完后日常以那篇为准）  
 > **适用范围：** 仓库 `git.itopcms.com/astrueus/doc`。一人、两台电脑、两个 Gitea 账号。  
 > **本文职责：** 按已拍板的选择，把现状一次切到「主干 `master` + 短命 `feat/*` + tag 发版」。切完可当历史记录留着，不必当日常手册。
@@ -12,6 +12,7 @@
 | A 合入 `master` | ✅ | PR [#1](https://git.itopcms.com/astrueus/doc/pulls/1) squash → `7317f1e` |
 | B 发版脚本 | ✅ | PR [#2](https://git.itopcms.com/astrueus/doc/pulls/2) squash → `b16c49d` |
 | C `archive/*` | ✅ | 已推 `archive/1.0.0`…`archive/2.2.1`；已删远程 `refs/heads/v1.0.0`…`v2.2.1`；**未删 tag** |
+| 收尾 | ✅ | 已删远程 `chore/release-push-tag`、`docs/cutover-progress`；`archive/*` 不要开 PR |
 | D 保护 `master` | ⏳ | 须在 Gitea 网页操作 |
 | E 电脑 B 跟上 | ⏳ | 见第九节 |
 
@@ -25,7 +26,7 @@
 4. [执行顺序](#四执行顺序)
 5. [步骤 A：合入 `v2.2.1` → `master`](#五步骤-a合入-v221--master)
 6. [步骤 B：改发版脚本与文档](#六步骤-b改发版脚本与文档)
-7. [步骤 C：版本号分支改名为 `archive/*`](#七步骤-c版本号分支改名为-archive)
+7. [步骤 C：版本号分支改名为 `archive/*`](#七步骤-c版本号分支改名为-archive)（含 [C.7 核对与残留](#c7-核对与残留电脑-a2026-08-17)）
 8. [步骤 D：Gitea 保护 `master`](#八步骤-dgitea-保护-master)
 9. [步骤 E：另一台电脑跟上](#九步骤-e另一台电脑跟上)
 10. [切完后的日常（摘要）](#十切完后的日常摘要)
@@ -90,7 +91,7 @@
 | `v1.0.0` | `archive/1.0.0` | 不要叫 `archive/v1.0.0` |
 
 Gitea：`https://git.itopcms.com/astrueus/doc`  
-开 PR 快捷入口：`https://git.itopcms.com/astrueus/doc/pulls/new/v2.2.1`（目标选 `master`）
+切之前开 PR：`v2.2.1` → `master`（该入口在步骤 C 删旧名后失效）。此后从 `feat/*` / `docs/` / `chore/` 开 PR，目标仍是 `master`。
 
 ---
 
@@ -300,6 +301,26 @@ git branch -m v2.2.1 archive/2.2.1
 - 要看当时开发线上的文档提交 → `git checkout archive/2.2.1`。
 - 日常开发 → `master` 上拉 `feat/...`。
 
+### C.7 核对与残留（电脑 A，2026-08-17）
+
+电脑 A 当时：当前分支 `master` @ `6563803`，与 `origin/master` 一致，工作区干净。远程 **没有** `refs/heads/v1.0.0`…`v2.2.1`；有 `archive/1.0.0`…`archive/2.2.1`；tag `v2.2.1` 仍在。
+
+合入后曾残留的短命分支（squash 后 SHA 不同，内容已在 `master`）**已删远程**：
+
+| 远程分支 | 来历 | 处理 |
+|----------|------|------|
+| `chore/release-push-tag` | 步骤 B，PR [#2](https://git.itopcms.com/astrueus/doc/pulls/2) 已 squash | 已删 |
+| `docs/cutover-progress` | 记录切换进度；内容已在 `master` | 已删 |
+
+当时用的命令：
+
+```bat
+git push origin --delete refs/heads/chore/release-push-tag
+git push origin --delete refs/heads/docs/cutover-progress
+```
+
+`archive/*` **不要**开 PR、不要再往上面 push。GitHub / Gitea **没有**仓库级开关关闭「Compare & pull request」横幅；短命分支删掉后横幅会消失。只对真正要合进 `master` 的 `feat/` / `docs/` / `chore/` 点该按钮。
+
 ---
 
 ## 八、步骤 D：Gitea 保护 `master`
@@ -372,19 +393,21 @@ scripts\release.bat 2.2.2
 - 不提交 `scripts/.env.release`、`conf/app.conf`、Token。
 - 本次不跑正式发版脚本出新包（除非另说）。
 - 不删 `refs/tags/v2.2.1` 或 `v0.0.1-test`。
+- 不给 `archive/*` 开 PR，也不要再往上面 push 功能。
 
 ---
 
 ## 十二、完成标准
 
-- [x] 电脑 A 当前分支是 `master`，且包含原 `v2.2.1` 上应保留的提交（squash 于 `7317f1e`）
+- [x] 电脑 A 当前分支是 `master`（`6563803`），且包含原 `v2.2.1` 上应保留的提交（squash 于 `7317f1e`）
 - [ ] 电脑 B 已 `fetch` / 切 `master` / `prune`（步骤 E）
 - [x] 发版脚本推 tag 使用 `refs/tags/...`；已存在同名 tag 会失败退出（`b16c49d`）
 - [x] 远程存在 `archive/1.0.0` … `archive/2.2.1`
 - [x] 远程 **没有** `refs/heads/v1.0.0` … `v2.2.1`（tag `v2.2.1` 仍在）
 - [x] 裸删 `v2.2.1` 分支名会歧义；已改用 `refs/heads/v2.2.1` 删除。`git push origin v2.2.1` 现在只会碰到 **tag**（脚本仍写全名）
 - [ ] Gitea：`master` 禁止直推；不强制评审（步骤 D）
-- [ ] 新工作从 `master` 拉 `feat/*`（或 `fix/` `docs/` `chore/`），不再开 `v2.2.2`
+- [x] 电脑 A 已切到 `master`；新工作从此拉 `feat/*`（或 `fix/` `docs/` `chore/`），不再开 `v2.2.2`（电脑 B 见步骤 E）
+- [x] 已删除远程 `chore/release-push-tag`、`docs/cutover-progress`（见 [C.7](#c7-核对与残留电脑-a2026-08-17)）
 
 ---
 
@@ -394,3 +417,4 @@ scripts\release.bat 2.2.2
 |------|------|
 | 2026-08-17 | 初稿。旧版本开发分支改为 `archive/X.Y.Z` 后再删旧名；不挪 tag；一人两机两账号。 |
 | 2026-08-17 | 电脑 A 完成 A～C。删旧名须用 `refs/heads/v2.2.1`，裸 `--delete v2.2.1` 会与 tag 歧义。 |
+| 2026-08-17 | 按远程核对补进度：电脑 A 在 `master` @ `6563803`；D/E 仍待做。已删合完的 `chore/release-push-tag`、`docs/cutover-progress`。`archive/*` 不要开 PR。 |

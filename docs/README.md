@@ -22,7 +22,7 @@
 | [round-5/](./round-5/) | Round 5 执行计划、评估与任务细化 |
 | [router/](./router/) | 路由分类参考与拆分计划 |
 | [deploy-spug/](./deploy-spug/) | Spug 部署 |
-| [release/](./release/) | 本地 / Actions 发版；[小团队协作草案](./release/git-workflow.md) · [切换执行](./release/git-workflow-cutover.md) · [大团队参考](./release/git-workflow-large-team.md) |
+| [release/](./release/) | 本地 / Actions 发版；[小团队协作草案](./release/git-workflow.md) · [切换执行（A～C 已完成，D/E 待做）](./release/git-workflow-cutover.md) · [大团队参考](./release/git-workflow-large-team.md) |
 
 > **阅读顺序建议**：先看 [refactor-roadmap.md](./refactor-roadmap.md) → 已完成轮次看 [round-1-4/](./round-1-4/) → 进行中看 [round-5/](./round-5/) → 接入 MCP 看 [mcp-integration.md](./mcp-integration.md)。AI 协作约定见仓库根目录 [AGENTS.md](../AGENTS.md)。
 

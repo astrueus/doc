@@ -1,10 +1,10 @@
 # Git 分支、版本与多人协作约定（草案）
 
-> **状态：** 📝 草案（2026-08-17），对照用。发版脚本已改为 `refs/tags/` 推送，本地已有同名 tag 则失败退出。  
+> **状态：** 📝 草案（2026-08-17）。发版脚本已改为 `refs/tags/`；一次性切换 A～C 已完成，待保护 `master`（D）与电脑 B 跟上（E），见 [git-workflow-cutover.md](./git-workflow-cutover.md)。  
 > **适用范围：** 仓库 `git.itopcms.com/astrueus/doc`，Gitea + 本机 `scripts/release.*` + Spug 部署。  
 > **相关：** [release-local.md](./release-local.md)（怎么跑脚本）、[release-gitea-actions.md](./release-gitea-actions.md)（CI 发版）、[../deploy-spug/](../deploy-spug/)（怎么部署）、[git-workflow-cutover.md](./git-workflow-cutover.md)（一次性切换）、根目录 [AGENTS.md](../../AGENTS.md)（中文与决策确认）。
 
-对照现状时重点看文中 **「与现状差异」** 小节；认可后按 [git-workflow-cutover.md](./git-workflow-cutover.md) 执行（合入 `master`、`v*` 改为 `archive/*`、改发版脚本）。
+日常以本文为准。切换进度与残留分支见 [git-workflow-cutover.md](./git-workflow-cutover.md)。「与现状差异」只保留尚未落地的项。
 
 ---
 
@@ -455,29 +455,33 @@ master ──► hotfix/session-clear ──PR──► master ──► 发版 
 
 ## 十七、与现状差异（过渡清单）
 
-对照用。认可后再逐项做；**不要求一天切完**。
+电脑 A 的一次性切换（合入 `master`、改发版脚本、`v*` → `archive/*`）**已完成**。下面只列还没落地的差异。完整步骤与核对见 [git-workflow-cutover.md](./git-workflow-cutover.md)。
 
 | 现状 | 本文约定 | 建议 |
 |------|----------|------|
-| 开发分支名叫 `v2.2.1`、`v2.2.0`… | 主干 `master`，功能 `feat/*` | `v2.2.1` 用完这轮就停；下一功能从 `master` 拉 `feat/...`。一次性步骤见 [git-workflow-cutover.md](./git-workflow-cutover.md) |
-| 历史 `v1.0.0`～`v2.2.1` 分支 | 不再当集成分支 | 先改名为 `archive/2.2.1` 这类只读指针，再删旧名；需要某 commit 就 cherry-pick 到 `master`。不要用 `release/2.2.1`（那是维护线） |
-| `git push origin v2.2.1` | `refs/tags/v2.2.1` 或 `refs/heads/...` | 发版脚本已改为 `refs/tags/` |
-| tag 已存在则 skip 再 push | 已存在则失败 | 发版脚本已改为失败退出 |
-| `feature/round-3-mcp` 与 `feat/` 混用 | 统一 `feat/` | 新分支起统一 |
-| 有 `joker` 等个人分支 | 仅个人草稿 | 合入走 PR |
-| `master` 是否禁止直推 | 应禁止 | Gitea 开保护（若未开） |
-| 发版在「版本号分支」上做 | 在 `master` 上打 tag | 下一正式版开始 |
-| tag `v2.2.1` 仍指向旧提交 `fc5a716` | tag 应对准打包那次 commit | 是否 force 挪 tag **单独决定**（改历史）；与长期规则无关 |
+| `master` 是否禁止直推 | 应禁止，只能 PR | **待做**：Gitea 开保护（切换文档步骤 D） |
+| 电脑 B 可能仍停在旧 `v2.2.1` | 两台都在 `master` 上拉 `feat/*` | **待做**：电脑 B `fetch` / 切 `master` / `prune`（步骤 E） |
+| `feature/round-3-mcp` 与 `feat/` 混用 | 统一 `feat/` | 新分支起统一；旧名不强制改 |
+| 有 `joker` 等个人分支 | 仅个人草稿 | 合入走 PR；本次不改名、不删 |
+| tag `v2.2.1` 仍指向打 tag 时的提交 | 一个版本只打一次 tag，默认不移动 | **不** `tag -f`；下一正式版打新 tag |
 | CHANGELOG 用 Unreleased / Round N | 可保留 Round 作内部对照 | 发正式版时加 `## 2.x.x` 节更清晰 |
 | 本机脚本发版、无强制 CI | 允许 | 有 Runner 再加 PR 检查 |
+
+已落地（不必再做）：
+
+- 开发不再用 `v2.2.1` 当集成分支；远程已无 `refs/heads/v1.0.0`…`v2.2.1`，改为只读 `archive/1.0.0`…`archive/2.2.1`。
+- 发版脚本推 tag 使用 `refs/tags/`；本地已有同名 tag 则失败退出，不再 skip 再裸推。
+- 电脑 A 当前在 `master`（`6563803`）。
+- 已删远程 `chore/release-push-tag`、`docs/cutover-progress`；不要给 `archive/*` 开 PR。
 
 推荐落地顺序：
 
 1. ~~改 `release.ps1` / `release.sh` / `release-local.md` 的 tag 推送写法~~（已做）。
-2. `master` 开保护（若还没有）。
-3. 下一功能用 `feat/...`，不再开 `v2.2.2` 分支。
-4. 下一正式版在 `master` 上打 `v2.2.2` 或 `v2.3.0`。
-5. 旧 `v*` 开发分支改为 `archive/X.Y.Z` 后删除旧名（见 [git-workflow-cutover.md](./git-workflow-cutover.md)）。
+2. ~~旧 `v*` 开发分支改为 `archive/X.Y.Z` 后删除旧名~~（已做）。
+3. `master` 开保护（步骤 D，若还没有）。
+4. 电脑 B 跟上 `master`（步骤 E）。
+5. 下一功能用 `feat/...`，不再开 `v2.2.2` 分支。
+6. 下一正式版在 `master` 上打 `v2.2.2` 或 `v2.3.0`。
 
 ---
 
@@ -523,3 +527,4 @@ scripts\release.bat 2.3.0
 | 2026-08-17 | 初稿。由 `v2.2.1` 分支与 tag 同名导致推送失败引出。待对照习惯后修订；发版脚本尚未按本文修改。 |
 | 2026-08-17 | 补充一次性切换步骤：[git-workflow-cutover.md](./git-workflow-cutover.md)；旧版本开发分支改为 `archive/X.Y.Z`。 |
 | 2026-08-17 | 发版脚本推 tag 改为 `refs/tags/`；本地已有同名 tag 则失败退出。 |
+| 2026-08-17 | 「与现状差异」改为只列未完成项：A～C 已切完；待保护 `master`、电脑 B 跟上。不挪 tag `v2.2.1`。已删合完的短命分支。 |
