@@ -22,7 +22,7 @@ MinDoc 的前身是 [SmartWiki](https://github.com/lifei6671/SmartWiki) 文档�
 
 从旧布局 / Round 1 升到本仓库 Round 2 结构时，**必须清 session 与 gob 文件缓存**，否则登录态反序列化会失败。完整步骤见：
 
-- [docs/upgrade-round-2.md](docs/upgrade-round-2.md)
+- [docs/round-1-4/upgrade-round-2.md](docs/round-1-4/upgrade-round-2.md)
 - [CHANGELOG.md](CHANGELOG.md)
 
 摘要：停服 → 清 `runtime/session/*`（或 Redis/MySQL session）→ 清 `runtime/cache/*` → 部署启动 → 用户重新登录。
@@ -189,7 +189,7 @@ set DOC=//d/doc
 docker run -it --name=doc --restart=always -v "%DOC%":"/doc-sync-host" -p 8181:8181 -e DOC_ENABLE_EXPORT=true -d doc:latest
 ```
 
-启动镜像时常用的环境变量（完整列表见 [`conf/app.conf.example`](conf/app.conf.example)；对照表见 [docs/round-5-env-mindoc-to-doc.md](docs/round-5-env-mindoc-to-doc.md)）：
+启动镜像时常用的环境变量（完整列表见 [`conf/app.conf.example`](conf/app.conf.example)；对照表见 [docs/round-5/round-5-env-mindoc-to-doc.md](docs/round-5/round-5-env-mindoc-to-doc.md)）：
 
 ```ini
 DOC_ADDR                    监听地址（容器内常用 0.0.0.0）

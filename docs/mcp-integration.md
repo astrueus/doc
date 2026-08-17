@@ -2,7 +2,7 @@
 
 > Round 3 · AI 助手通过 [MCP](https://modelcontextprotocol.io/) 读写 Doc 文档。  
 > 实现基于官方 [`modelcontextprotocol/go-sdk`](https://github.com/modelcontextprotocol/go-sdk)。  
-> 相关执行计划：[round-3-execution-plan.md](./round-3-execution-plan.md)。
+> 相关执行计划：[round-3-execution-plan.md](./round-1-4/round-3-execution-plan.md)。
 
 本文说明如何把 Doc 接到 **Claude Desktop / Cursor** 等 MCP 客户端，并给出 10 个工具的速查与排错。
 
@@ -184,7 +184,7 @@ curl -s https://docs.example.com/mcp \
 
 #### `search_document`
 
-当前搜索实现为 **SQL LIKE**（FULLTEXT 旧方案在 Round 5 **⏸ 暂不实施**，见 [round-5 §一附](./round-5-execution-plan.md#一附2026-08-03-决策修订)）。
+当前搜索实现为 **SQL LIKE**（FULLTEXT 旧方案在 Round 5 **⏸ 暂不实施**，见 [round-5 §一附](./round-5/round-5-execution-plan.md#一附2026-08-03-决策修订)）。
 
 ```json
 // In
@@ -386,6 +386,6 @@ T1 FULLTEXT 已移交 Round 5 后 **⏸ 暂不实施**（等搜索方案重定�
 ./doc                      # Web；mcp_enable=true 时同端口提供 /mcp
 ```
 
-更多实现细节见 [round-3-execution-plan.md](./round-3-execution-plan.md)。  
-后续体验增强与「是否做 Book 写工具」的规划见 [round-3-execution-plan.md §十七](./round-3-execution-plan.md#十七后续规划mcp-实测反馈与体验增强)。  
-**进度：** §十七 **P0 已合入**（Round 4 T13）；**P1 📦 已移交 Round 5 T5**；Book 写工具当前不做。整体轮次进度见 [docs/README.md](./README.md) / [round-5-execution-plan.md](./round-5-execution-plan.md)。
+更多实现细节见 [round-3-execution-plan.md](./round-1-4/round-3-execution-plan.md)。  
+后续体验增强与「是否做 Book 写工具」的规划见 [round-3-execution-plan.md §十七](./round-1-4/round-3-execution-plan.md#十七后续规划mcp-实测反馈与体验增强)。  
+**进度：** §十七 **P0 已合入**（Round 4 T13）；**P1 📦 已移交 Round 5 T5**；Book 写工具当前不做。整体轮次进度见 [docs/README.md](./README.md) / [round-5-execution-plan.md](./round-5/round-5-execution-plan.md)。
