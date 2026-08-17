@@ -10,21 +10,21 @@
 > 同时汇总"顺带发现的技术债"与"前端现代化"两条支线，给出多轮可独立上线的迭代计划。
 >
 > **文档生成依据：** 当前仓库代码基线（2026-07 起）；进度以 **2026-08-03 / 分支** `v2.2.1` 为准。  
-> **总进度：** Round 1–2 ✅ · Round 3 MCP MVP ✅ · Round 3 §十七 P0 ✅ · Round 4 代码主线 ✅ · **Round 5 ⏳ 规划中**（工程化 / Vite / 对象存储 / kratos 向分层评估；搜索 FULLTEXT ⏸ 等重定义）。详见 [§七](#七迭代进度追踪)、[docs/README.md](./README.md)、[round-5-execution-plan.md](./round-5-execution-plan.md)。
+> **总进度：** Round 1–2 ✅ · Round 3 MCP MVP ✅ · Round 3 §十七 P0 ✅ · Round 4 代码主线 ✅ · **Round 5 ⏳ 规划中**（工程化 / Vite / 对象存储 / kratos 向分层评估；搜索 FULLTEXT ⏸ 等重定义）。详见 [§七](#七迭代进度追踪)、[docs/README.md](./README.md)、[round-5-execution-plan.md](./round-5/round-5-execution-plan.md)。
 >
 > **相关文档：**
 >
 > - **执行文档（每轮独立可落地）：**
->   - [round-1-execution-plan.md](./round-1-execution-plan.md) — Round 1 · 低风险重构 + 后续前置
->   - [round-2-execution-plan.md](./round-2-execution-plan.md) — Round 2 · `cmd/`+`internal/` 一步到位 + 强类型 Config
->   - [round-3-execution-plan.md](./round-3-execution-plan.md) — Round 3 · MCP Server（10 工具 + Bearer + 搜索）
->   - [round-4-execution-plan.md](./round-4-execution-plan.md) — Round 4 · 模型 / 日志 / i18n / 前端（含完成度核查）
->   - [round-4-coverage.md](./round-4-coverage.md) — Round 4 T10 测试基线
->   - [round-5-execution-plan.md](./round-5-execution-plan.md) — Round 5 · 工程化 + 对象存储 + kratos 向分层评估
+>   - [round-1-execution-plan.md](./round-1-4/round-1-execution-plan.md) — Round 1 · 低风险重构 + 后续前置
+>   - [round-2-execution-plan.md](./round-1-4/round-2-execution-plan.md) — Round 2 · `cmd/`+`internal/` 一步到位 + 强类型 Config
+>   - [round-3-execution-plan.md](./round-1-4/round-3-execution-plan.md) — Round 3 · MCP Server（10 工具 + Bearer + 搜索）
+>   - [round-4-execution-plan.md](./round-1-4/round-4-execution-plan.md) — Round 4 · 模型 / 日志 / i18n / 前端（含完成度核查）
+>   - [round-4-coverage.md](./round-1-4/round-4-coverage.md) — Round 4 T10 测试基线
+>   - [round-5-execution-plan.md](./round-5/round-5-execution-plan.md) — Round 5 · 工程化 + 对象存储 + kratos 向分层评估
 > - **参考文档：**
->   - [frontend-backend-split-migration-plan.md](./frontend-backend-split-migration-plan.md) — 前后端目录拆分（Round 2 目标目录已更新，附录 A/B 硬编码定位仍适用）
->   - [router-split-migration-plan.md](./router-split-migration-plan.md) — 路由按职责拆分与 `/api` 前缀治理（Round 2 T6 使用）
->   - [routers-reference.md](./routers-reference.md) — 现有路由分类参考
+>   - [frontend-backend-split-migration-plan.md](./round-1-4/frontend-backend-split-migration-plan.md) — 前后端目录拆分（Round 2 目标目录已更新，附录 A/B 硬编码定位仍适用）
+>   - [router-split-migration-plan.md](./router/router-split-migration-plan.md) — 路由按职责拆分与 `/api` 前缀治理（Round 2 T6 使用）
+>   - [routers-reference.md](./router/routers-reference.md) — 现有路由分类参考
 >   - [upstream-mindoc-checklist.md](./upstream-mindoc-checklist.md) — 上游 MinDoc 提交跟进清单
 >   - [AGENTS.md](../AGENTS.md) — AI 协作约定（简体中文文档/注释/提交）
 >
@@ -163,7 +163,7 @@
 
 > **决策更新（2026-07-29）**：本轮**一步到位** `cmd/` + `internal/` 激进方案，不再走 `server/` + `web/` + `deploy/` 过渡形态。
 > 理由：过渡方案完成后仍要迁到 `internal/`，等于**搬两次**；MCP 从 Round 3 开始就直接落在 `internal/mcp/` 最终位置。
-> [frontend-backend-split-migration-plan.md](./frontend-backend-split-migration-plan.md) 中关于 `ViewsPath` / `StaticDir` / 字体路径 / `conf/lang/` i18n 硬编码 / Docker & spug 脚本改动的**执行细节仍适用**，只是目标目录换成本节的最终结构。
+> [frontend-backend-split-migration-plan.md](./round-1-4/frontend-backend-split-migration-plan.md) 中关于 `ViewsPath` / `StaticDir` / 字体路径 / `conf/lang/` i18n 硬编码 / Docker & spug 脚本改动的**执行细节仍适用**，只是目标目录换成本节的最终结构。
 
 
 
@@ -241,7 +241,7 @@ doc/
   - 全仓 30+ 处 `import "git.itopcms.com/astrueus/doc/conf"` → `internal/config`
   - 硬编码路径最终对齐 `"./conf/app.conf"`、`"conf/lang/"+lang+".ini"`（勿再写回 `configs/`）
 3. **Controller 拆分**（可选，📦 **Round 5 T10**）：`DocumentController.go` 37KB 按方法组拆成 `internal/controller/document/read.go`、`edit.go`、`history.go`、`export.go`。**Round 2 只搬目录、不拆域**，减小 blast radius。
-4. `routers` **拆分**：见 [router-split-migration-plan.md](./router-split-migration-plan.md)，落到 `internal/router/`。
+4. `routers` **拆分**：见 [router-split-migration-plan.md](./router/router-split-migration-plan.md)，落到 `internal/router/`。
 5. **模板/静态资源路径**：`commands/command.go:311, 332, 334, 337, 342, 345-347` 的 `ViewsPath` / `StaticDir` / 字体路径全部同步；`BookResult.go` 里的导出资源拷贝路径也要一起改（详见 frontend-backend-split-migration-plan.md 附录 A）。
 6. **中间件合并**：原 `middleware/filter.go` + `routers/filter.go` 合到 `internal/middleware/`。
 7. `utils/` **拆分**：通用工具（`cryptil`、`filetil`、`pagination`、`requests` 等）→ `pkg/`；耦合业务的（如 `gopool` 若被 model 用）留 `internal/`。
@@ -585,7 +585,7 @@ type Cache interface {
 ### 🥈 Round 2：目录结构调整（一步到位激进）+ 配置强类型（2~4 周）
 
 > 内部收拾轮次。**一步到位** `cmd/` + `internal/` 布局，见 §2.2。为 Round 3 MCP 落地打好最终目录形态与配置基础。  
-> **进度（2026-07-30）：✅ 收工。** 明细见 [round-2-execution-plan.md §十四](./round-2-execution-plan.md#十四追踪表) / [§十五](./round-2-execution-plan.md#十五收尾工作round-2-宣布收工前)。
+> **进度（2026-07-30）：✅ 收工。** 明细见 [round-2-execution-plan.md §十四](./round-1-4/round-2-execution-plan.md#十四追踪表) / [§十五](./round-1-4/round-2-execution-plan.md#十五收尾工作round-2-宣布收工前)。
 
 - [x] **T1 / PR-1** 目录搬迁 + import 改写：`cmd/doc/` + `internal/**` + `web/` + `deployments/`（中期配置目录曾用 `configs/`）— `784610b` 等
 - [x] **T2 / PR-2** 路径硬编码 + 部署脚本（ViewsPath / StaticDir / Docker / spug / systemd）— `92cea73`
@@ -618,8 +618,8 @@ type Cache interface {
 
 ### 🏅 Round 4：模型 / 日志 / 前端现代化（3~4 周，按需推进）
 
-> **进度（2026-08-03）：** 代码主线已合入 `v2.2.1`。详见 [round-4-execution-plan.md §十六](./round-4-execution-plan.md#十六追踪表)。  
-> **遗留移交：** 报告 / Vite / P1 / T11 / 分层债 → [Round 5](./round-5-execution-plan.md)。
+> **进度（2026-08-03）：** 代码主线已合入 `v2.2.1`。详见 [round-4-execution-plan.md §十六](./round-1-4/round-4-execution-plan.md#十六追踪表)。  
+> **遗留移交：** 报告 / Vite / P1 / T11 / 分层债 → [Round 5](./round-5/round-5-execution-plan.md)。
 
 - [x] **模型层**：`BookModel` 拆解 + Repository 初版 + `md_` 硬编码修复（业务 SQL）
 - [x] **日志换** `uber-go/zap` + Lumberjack + beego/logs shim；stdio 禁 stdout
@@ -627,7 +627,7 @@ type Cache interface {
 - [x] **前端 P1**：去 IE shim / 条件注释；cdnjs 版本号
 - [ ] **前端 P2**：Vite 构建 — **→ Round 5 T6**
 - [x] **Session**：只存 `member_id` + remember msgpack；FilterUser 跟进修复
-- [x] **测试基线**：`pkg/`* + errs/auth/logging/i18n/repository（见 [round-4-coverage.md](./round-4-coverage.md)）
+- [x] **测试基线**：`pkg/`* + errs/auth/logging/i18n/repository（见 [round-4-coverage.md](./round-1-4/round-4-coverage.md)）
 - [ ] （可选）T7「维持 A」缓存评估报告；T12 ORM 评估报告 — **→ Round 5 T1/T2**
 - [ ] （可选）根据 MCP 使用反馈评估倒排索引（bleve / meilisearch）— **→ Round 5 T4**
 - [x] （可选）**T13 MCP 体验 P0** 已收口；P1 → Round 5 T5（**不含** Book 写工具）
@@ -636,7 +636,7 @@ type Cache interface {
 
 ### 🎯 Round 5：工程化收尾 + 对象存储 + 分层评估（3~5 周，按需推进）
 
-> **进度（2026-08-03）：** ⏳ 规划中。明细见 [round-5-execution-plan.md](./round-5-execution-plan.md) / [§一附决策](./round-5-execution-plan.md#一附2026-08-03-决策修订)。
+> **进度（2026-08-03）：** ⏳ 规划中。明细见 [round-5-execution-plan.md](./round-5/round-5-execution-plan.md) / [§一附决策](./round-5/round-5-execution-plan.md#一附2026-08-03-决策修订)。
 
 - [ ] **T1/T2** 缓存报告 + ORM/分层评估（**朝 kratos 靠拢**；model 可生成；只评估）
 - [ ] **T3** 搜索 FULLTEXT — **⏸ 暂不实施**（方案不完善，等重定义）
@@ -670,9 +670,9 @@ type Cache interface {
 | 9   | **AI 与人同时编辑同一文档**                           | AI 覆盖人的未保存改动，或反之                                                                                        | `update_document_content` 强制带 `expect_version`（对应 `Document.Version` 时间戳）做乐观锁；版本不匹配返回 `VERSION_CONFLICT`，AI 侧 `get_document` 后重试        |
 | 10  | **MCP API Token 泄露**                        | Token 一旦泄露，AI 侧任何写权限都可能被滥用                                                                              | ① 数据库只存 `sha256(token)`，不存明文；② 支持 `expires_at` 和一键撤销；③ 记录 `last_used_at`，异常访问可审计；④ HTTP 强制 HTTPS（部署要求）                                  |
 | 11  | **误将** `MemberToken` **当 API Token 用**      | `MemberToken` 是邮箱验证码用途，含 `Email`/`SendTime`/发送次数限制，用作 API Token 会破坏原有找回密码逻辑                             | 明确新建 `member_api_tokens` 表（见 §2.1）；两张表职责分离                                                                                              |
-| 12  | **Round 2 一步到位迁移触碰几乎每个文件**                  | `cmd/`+`internal/` 激进方案导致全仓 import 改写；PR 巨大，review 只能看 diff summary                                     | ✅ Round 2 已落地（T1/T2 分步）；后续升级仍按 [upgrade-round-2.md](./upgrade-round-2.md)                                                                 |
+| 12  | **Round 2 一步到位迁移触碰几乎每个文件**                  | `cmd/`+`internal/` 激进方案导致全仓 import 改写；PR 巨大，review 只能看 diff summary                                     | ✅ Round 2 已落地（T1/T2 分步）；后续升级仍按 [upgrade-round-2.md](./round-1-4/upgrade-round-2.md)                                                                 |
 | 13  | **gob 缓存与 session 反序列化在包路径变更后失败**           | Round 2 改包路径后旧数据反序列化会崩                                                                                  | ✅ 缓存侧 msgpack（R1）；Session 只存 id + remember msgpack（R4 T6）；上线仍需清旧 session/cache                                                          |
-| 14  | **老部署环境** `--workDir` **目录结构不匹配**           | 旧环境假定根下 `conf/`+`views/`+`static/`；Round 2 定型为 **`conf/`** + `web/views` + `web/static`（中期曾短暂用 `configs/`，收尾 A 已改回） | ✅ 目录已定型；升级按 [upgrade-round-2.md](./upgrade-round-2.md)；preflight 发现 `./configs` 会 warn 迁到 `./conf` |
+| 14  | **老部署环境** `--workDir` **目录结构不匹配**           | 旧环境假定根下 `conf/`+`views/`+`static/`；Round 2 定型为 **`conf/`** + `web/views` + `web/static`（中期曾短暂用 `configs/`，收尾 A 已改回） | ✅ 目录已定型；升级按 [upgrade-round-2.md](./round-1-4/upgrade-round-2.md)；preflight 发现 `./configs` 会 warn 迁到 `./conf` |
 
 
 ---
@@ -688,7 +688,7 @@ type Cache interface {
 
 ### Round 1 — ✅ 已完成
 
-详见 [round-1-execution-plan.md](./round-1-execution-plan.md)（2026-07-29 收工）。
+详见 [round-1-execution-plan.md](./round-1-4/round-1-execution-plan.md)（2026-07-29 收工）。
 
 - [x] `configs/` / 配置与代码分离（后续 Round 2 定型为 `conf/`）
 - [x] `smtp_host` / `smtp_port` 等配置债修复
@@ -703,7 +703,7 @@ type Cache interface {
 
 ### Round 2 — ✅ 已完成（2026-07-30 收工）
 
-权威明细：[round-2-execution-plan.md §十四 追踪表](./round-2-execution-plan.md#十四追踪表) · [§十五 收尾](./round-2-execution-plan.md#十五收尾工作round-2-宣布收工前) · [§十六 Round 3 前置核对](./round-2-execution-plan.md#十六round-3-前置产物核对)。
+权威明细：[round-2-execution-plan.md §十四 追踪表](./round-1-4/round-2-execution-plan.md#十四追踪表) · [§十五 收尾](./round-1-4/round-2-execution-plan.md#十五收尾工作round-2-宣布收工前) · [§十六 Round 3 前置核对](./round-1-4/round-2-execution-plan.md#十六round-3-前置产物核对)。
 
 #### T1–T9（主线）
 
@@ -745,7 +745,7 @@ type Cache interface {
 
 ### Round 3（MCP + 搜索）— ✅ MVP；T1 📦→R5
 
-详见 [round-3-execution-plan.md §十四](./round-3-execution-plan.md#十四追踪表)。
+详见 [round-3-execution-plan.md §十四](./round-1-4/round-3-execution-plan.md#十四追踪表)。
 
 - [ ] 搜索 FULLTEXT/FTS5 + 标题加权 — **→ Round 5 T3（且 R5 ⏸ 暂不实施，等重定义）**
 - [x] MCP stdio · 4 读 + 6 写工具
@@ -760,7 +760,7 @@ type Cache interface {
 
 ### Round 4 — 🔶 代码主线 ✅（遗留移交 Round 5）
 
-详见 [round-4-execution-plan.md §十六](./round-4-execution-plan.md#十六追踪表) / [§十六附](./round-4-execution-plan.md#十六附完成度核查2026-08-03)。合入分支 `v2.2.1`。
+详见 [round-4-execution-plan.md §十六](./round-1-4/round-4-execution-plan.md#十六追踪表) / [§十六附](./round-1-4/round-4-execution-plan.md#十六附完成度核查2026-08-03)。合入分支 `v2.2.1`。
 
 - [x] `BookModel` 拆分 — `c090401`
 - [x] Repository 初版（MCP 写路径）— `cd8e446`
@@ -769,15 +769,15 @@ type Cache interface {
 - [x] i18n：`internal/i18n` 替 `beego/i18n` — `cd8e446`（非 go-i18n/v2）
 - [x] Session 只存 id + remember msgpack — `4141346` + FilterUser `f9be16c`
 - [x] 前端 P1 — `98c8bb4`
-- [x] T10 测试基线 — `cd8e446`；[round-4-coverage.md](./round-4-coverage.md)
+- [x] T10 测试基线 — `cd8e446`；[round-4-coverage.md](./round-1-4/round-4-coverage.md)
 - [x] T13 MCP P0 — `c70d4c1`
-- [ ] 前端 P2 Vite / T7·T12 报告 / T13 P1 / T11 — **→ [Round 5](./round-5-execution-plan.md)**
+- [ ] 前端 P2 Vite / T7·T12 报告 / T13 P1 / T11 — **→ [Round 5](./round-5/round-5-execution-plan.md)**
 
 
 
 ### Round 5 — ⏳ 规划中（未开工）
 
-详见 [round-5-execution-plan.md §十四](./round-5-execution-plan.md#十四追踪表) / [§一附](./round-5-execution-plan.md#一附2026-08-03-决策修订)。
+详见 [round-5-execution-plan.md §十四](./round-5/round-5-execution-plan.md#十四追踪表) / [§一附](./round-5/round-5-execution-plan.md#一附2026-08-03-决策修订)。
 
 - [ ] T1 缓存报告 · T2 ORM/分层（kratos 方向）报告
 - [ ] T3 搜索 FULLTEXT — **⏸ 暂不实施**

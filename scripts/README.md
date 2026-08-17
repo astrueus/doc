@@ -55,7 +55,7 @@ cp scripts/.env.release.example scripts/.env.release
 
 其它脚本如需通用 JSON 解析，可 `source scripts/lib/json.sh`（`json_flatten` / `json_get` / `json_find_index` 等）；单测：`bash scripts/lib/json_test.sh`。
 
-更多说明见 [docs/release-local.md](../docs/release-local.md)。  
+更多说明见 [docs/release/release-local.md](../docs/release/release-local.md)。  
 产物目录：`release/doc_<version>_windows_amd64.zip`、`release/doc_<version>_linux_amd64.tar.gz`（已 gitignore）。
 
 Round 2 起部署相关文件已迁到：

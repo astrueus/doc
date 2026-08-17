@@ -2,7 +2,7 @@
 
 ## Unreleased / Round 5
 
-> ⚠️ **Breaking（环境变量硬切）**：`MINDOC_*` **不再兼容**，一律改为 `DOC_*`（监听为 `DOC_ADDR` / `DOC_PORT`；邮件过期为 `DOC_MAIL_EXPIRED`；部署同步为 `DOC_SYNC`）。完整对照见 [docs/round-5-env-mindoc-to-doc.md](docs/round-5-env-mindoc-to-doc.md)。  
+> ⚠️ **Breaking（环境变量硬切）**：`MINDOC_*` **不再兼容**，一律改为 `DOC_*`（监听为 `DOC_ADDR` / `DOC_PORT`；邮件过期为 `DOC_MAIL_EXPIRED`；部署同步为 `DOC_SYNC`）。完整对照见 [docs/round-5/round-5-env-mindoc-to-doc.md](docs/round-5/round-5-env-mindoc-to-doc.md)。  
 > ⚠️ **Breaking（默认标识）**：`app_key` 默认 `doc`、`sessionname` 默认 `doc_id`、`cache_redis_prefix` 默认 `doc::cache`。升级须**清空 session 存储**，并视为旧「记住我」cookie / 旧 Redis 前缀缓存失效。
 
 ### Changed
@@ -22,14 +22,14 @@
 - Session：不再 gob 序列化整份 `Member`
 - 修复：`FilterUser` / 登录页仍按 `model.Member` 断言 Session，T6 只存 `member_id` 后编辑等操作会误跳登录；统一用 `auth.MemberIDFromSession`
 - 前端 P1：移除 IE shim / 条件注释；常用静态资源 `cdnjs` 补 `"version"`
-- 测试（T10）：补 `pkg/*`、`internal/errs`/`auth`/`logging`/`i18n` 单测；见 `docs/round-4-coverage.md`
+- 测试（T10）：补 `pkg/*`、`internal/errs`/`auth`/`logging`/`i18n` 单测；见 `docs/round-1-4/round-4-coverage.md`
 - i18n（T5）：移除 `beego/i18n`，新增 `internal/i18n`（保留 `conf/lang/*.ini` 与 `Tr`/`IsExist`/`SetMessage` API）
 - Repository（T2）：新增 `internal/repository`（Document/Book/Member）；MCP 写工具乐观锁改走 `DocumentRepo`
 
 ## Unreleased / Round 2
 
 > ⚠️ **Breaking**：从旧版本升级到 Round 2 必须**清 session + 清 `runtime/cache/`（及旧 `cache/`）**，用户需重新登录。  
-> 步骤见 [docs/upgrade-round-2.md](docs/upgrade-round-2.md)。
+> 步骤见 [docs/round-1-4/upgrade-round-2.md](docs/round-1-4/upgrade-round-2.md)。
 
 ### Changed
 
