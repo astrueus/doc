@@ -1,11 +1,19 @@
 # Git 协作约定 · 切换执行文档
 
-> **状态：** 🚧 执行中（2026-08-17）  
+> **状态：** 🚧 执行中（2026-08-17）——电脑 A 的步骤 A～C 已完成；步骤 D（Gitea 保护）和步骤 E（电脑 B）待你操作。  
 > **长期规则：** [git-workflow.md](./git-workflow.md)（切完后日常以那篇为准）  
 > **适用范围：** 仓库 `git.itopcms.com/astrueus/doc`。一人、两台电脑、两个 Gitea 账号。  
 > **本文职责：** 按已拍板的选择，把现状一次切到「主干 `master` + 短命 `feat/*` + tag 发版」。切完可当历史记录留着，不必当日常手册。
 
-进度：步骤 A 已完成（PR [#1](https://git.itopcms.com/astrueus/doc/pulls/1) squash 合入 `master` @ `7317f1e`）。步骤 B 随 `chore/release-push-tag` 合入。步骤 C 待做。
+进度：
+
+| 步骤 | 状态 | 记录 |
+|------|------|------|
+| A 合入 `master` | ✅ | PR [#1](https://git.itopcms.com/astrueus/doc/pulls/1) squash → `7317f1e` |
+| B 发版脚本 | ✅ | PR [#2](https://git.itopcms.com/astrueus/doc/pulls/2) squash → `b16c49d` |
+| C `archive/*` | ✅ | 已推 `archive/1.0.0`…`archive/2.2.1`；已删远程 `refs/heads/v1.0.0`…`v2.2.1`；**未删 tag** |
+| D 保护 `master` | ⏳ | 须在 Gitea 网页操作 |
+| E 电脑 B 跟上 | ⏳ | 见第九节 |
 
 ---
 
@@ -219,7 +227,8 @@ git log --oneline origin/master..origin/v2.2.0
 ```
 
 把 `v2.2.0` 换成表里每一个。输出为空：只是旧指针，可以改名。  
-有输出：先看要不要 cherry-pick 进 `master`（`v2.2.1` 应已在步骤 A 合完，这里应为空）。
+有输出：先看要不要 cherry-pick 进 `master`（`v2.2.1` 应已在步骤 A 合完）。  
+若步骤 A 用了 **squash**，`git log origin/master..origin/v2.2.1` 仍可能列出旧 SHA（内容已在 `master` 里，**不要再 cherry-pick 一遍**）。
 
 ### C.2 先推新名（旧名还在）
 
@@ -246,13 +255,21 @@ git ls-remote --heads origin "refs/heads/archive/*"
 
 ### C.4 再删远程旧名（不删 tag）
 
+**必须写全名。** `git push origin --delete v2.2.1` 会和 tag 再次歧义（`dst refspec matches more than one`），整批删除可能全部失败。
+
 ```bat
-git push origin --delete v2.2.1
-git push origin --delete v2.2.0
-git push origin --delete v2.1.0
-git push origin --delete v2.0.1
-git push origin --delete v2.0.0
-git push origin --delete v1.0.0
+git push origin --delete refs/heads/v2.2.1
+git push origin --delete refs/heads/v2.2.0
+git push origin --delete refs/heads/v2.1.0
+git push origin --delete refs/heads/v2.0.1
+git push origin --delete refs/heads/v2.0.0
+git push origin --delete refs/heads/v1.0.0
+```
+
+也可一条：
+
+```bat
+git push origin --delete refs/heads/v2.2.1 refs/heads/v2.2.0 refs/heads/v2.1.0 refs/heads/v2.0.1 refs/heads/v2.0.0 refs/heads/v1.0.0
 ```
 
 **禁止：** `git push origin --delete refs/tags/v2.2.1` 或任何删 tag。
@@ -360,12 +377,13 @@ scripts\release.bat 2.2.2
 
 ## 十二、完成标准
 
-- [ ] 两台电脑当前分支都是 `master`，且包含原 `v2.2.1` 上应保留的提交
-- [ ] 发版脚本推 tag 使用 `refs/tags/...`；已存在同名 tag 会失败退出
-- [ ] 远程存在 `archive/1.0.0` … `archive/2.2.1`
-- [ ] 远程 **没有** `refs/heads/v1.0.0` … `v2.2.1`（tag 仍在）
-- [ ] `git push origin v2.2.1` 不再报 `matches more than one`（只可能碰到 tag；脚本仍写全名）
-- [ ] Gitea：`master` 禁止直推；不强制评审
+- [x] 电脑 A 当前分支是 `master`，且包含原 `v2.2.1` 上应保留的提交（squash 于 `7317f1e`）
+- [ ] 电脑 B 已 `fetch` / 切 `master` / `prune`（步骤 E）
+- [x] 发版脚本推 tag 使用 `refs/tags/...`；已存在同名 tag 会失败退出（`b16c49d`）
+- [x] 远程存在 `archive/1.0.0` … `archive/2.2.1`
+- [x] 远程 **没有** `refs/heads/v1.0.0` … `v2.2.1`（tag `v2.2.1` 仍在）
+- [x] 裸删 `v2.2.1` 分支名会歧义；已改用 `refs/heads/v2.2.1` 删除。`git push origin v2.2.1` 现在只会碰到 **tag**（脚本仍写全名）
+- [ ] Gitea：`master` 禁止直推；不强制评审（步骤 D）
 - [ ] 新工作从 `master` 拉 `feat/*`（或 `fix/` `docs/` `chore/`），不再开 `v2.2.2`
 
 ---
@@ -375,3 +393,4 @@ scripts\release.bat 2.2.2
 | 日期 | 说明 |
 |------|------|
 | 2026-08-17 | 初稿。旧版本开发分支改为 `archive/X.Y.Z` 后再删旧名；不挪 tag；一人两机两账号。 |
+| 2026-08-17 | 电脑 A 完成 A～C。删旧名须用 `refs/heads/v2.2.1`，裸 `--delete v2.2.1` 会与 tag 歧义。 |
