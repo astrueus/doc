@@ -1,8 +1,8 @@
 # Git 分支、版本与多人协作约定（草案）
 
-> **状态：** 📝 草案（2026-08-17），供对照现有习惯后修订，**尚未改发版脚本**。  
+> **状态：** 📝 草案（2026-08-17），对照用。发版脚本已改为 `refs/tags/` 推送，本地已有同名 tag 则失败退出。  
 > **适用范围：** 仓库 `git.itopcms.com/astrueus/doc`，Gitea + 本机 `scripts/release.*` + Spug 部署。  
-> **相关：** [release-local.md](./release-local.md)（怎么跑脚本）、[release-gitea-actions.md](./release-gitea-actions.md)（CI 发版）、[../deploy-spug/](../deploy-spug/)（怎么部署）、根目录 [AGENTS.md](../../AGENTS.md)（中文与决策确认）。
+> **相关：** [release-local.md](./release-local.md)（怎么跑脚本）、[release-gitea-actions.md](./release-gitea-actions.md)（CI 发版）、[../deploy-spug/](../deploy-spug/)（怎么部署）、[git-workflow-cutover.md](./git-workflow-cutover.md)（一次性切换）、根目录 [AGENTS.md](../../AGENTS.md)（中文与决策确认）。
 
 对照现状时重点看文中 **「与现状差异」** 小节；认可后按 [git-workflow-cutover.md](./git-workflow-cutover.md) 执行（合入 `master`、`v*` 改为 `archive/*`、改发版脚本）。
 
@@ -356,15 +356,13 @@ fix(round4): polish zap console UX
 
 `--dry-run`：只编包，不打 tag、不调 API，用来核对产物。
 
-### 11.2 脚本必须遵守（待改现状）
+### 11.2 脚本必须遵守
 
-当前 `scripts/release.ps1` / `release.sh` 仍是 `git push origin $Tag`，且 tag 已存在时会 skip 再 push。与本文冲突，**改脚本前不要用裸名字推 tag**。
+`scripts/release.ps1` / `release.sh`：
 
-目标行为：
-
-1. `git push origin refs/tags/v$Version`
-2. 本地已有同名 tag → **退出码非 0**，打印「已存在，指向 xxx」，不要 skip
-3. 文档 [release-local.md](./release-local.md) 流程图里的 `git push origin vX.Y.Z` 同步改掉
+1. `git push origin refs/tags/v$Version`（禁止裸 `git push origin vX.Y.Z`）
+2. 本地已有同名 tag → **退出码非 0**，打印「已存在，指向 xxx」，不要 skip 再 push
+3. 文档 [release-local.md](./release-local.md) 流程图与 [release-gitea-actions.md](./release-gitea-actions.md) 使用同一写法
 
 ### 11.3 tag 和事后文档提交
 
@@ -463,8 +461,8 @@ master ──► hotfix/session-clear ──PR──► master ──► 发版 
 |------|----------|------|
 | 开发分支名叫 `v2.2.1`、`v2.2.0`… | 主干 `master`，功能 `feat/*` | `v2.2.1` 用完这轮就停；下一功能从 `master` 拉 `feat/...`。一次性步骤见 [git-workflow-cutover.md](./git-workflow-cutover.md) |
 | 历史 `v1.0.0`～`v2.2.1` 分支 | 不再当集成分支 | 先改名为 `archive/2.2.1` 这类只读指针，再删旧名；需要某 commit 就 cherry-pick 到 `master`。不要用 `release/2.2.1`（那是维护线） |
-| `git push origin v2.2.1` | `refs/tags/v2.2.1` 或 `refs/heads/...` | **先改发版脚本** |
-| tag 已存在则 skip 再 push | 已存在则失败 | 与脚本一起改 |
+| `git push origin v2.2.1` | `refs/tags/v2.2.1` 或 `refs/heads/...` | 发版脚本已改为 `refs/tags/` |
+| tag 已存在则 skip 再 push | 已存在则失败 | 发版脚本已改为失败退出 |
 | `feature/round-3-mcp` 与 `feat/` 混用 | 统一 `feat/` | 新分支起统一 |
 | 有 `joker` 等个人分支 | 仅个人草稿 | 合入走 PR |
 | `master` 是否禁止直推 | 应禁止 | Gitea 开保护（若未开） |
@@ -475,7 +473,7 @@ master ──► hotfix/session-clear ──PR──► master ──► 发版 
 
 推荐落地顺序：
 
-1. 改 `release.ps1` / `release.sh` / `release-local.md` 的 tag 推送写法（必做，低风险）。
+1. ~~改 `release.ps1` / `release.sh` / `release-local.md` 的 tag 推送写法~~（已做）。
 2. `master` 开保护（若还没有）。
 3. 下一功能用 `feat/...`，不再开 `v2.2.2` 分支。
 4. 下一正式版在 `master` 上打 `v2.2.2` 或 `v2.3.0`。
@@ -524,3 +522,4 @@ scripts\release.bat 2.3.0
 |------|------|
 | 2026-08-17 | 初稿。由 `v2.2.1` 分支与 tag 同名导致推送失败引出。待对照习惯后修订；发版脚本尚未按本文修改。 |
 | 2026-08-17 | 补充一次性切换步骤：[git-workflow-cutover.md](./git-workflow-cutover.md)；旧版本开发分支改为 `archive/X.Y.Z`。 |
+| 2026-08-17 | 发版脚本推 tag 改为 `refs/tags/`；本地已有同名 tag 则失败退出。 |

@@ -48,7 +48,7 @@
 
     ├─ 打包到 release/：Windows → .zip，Linux → .tar.gz（文件名 doc_<version>_<os>_amd64.*）
 
-    ├─ git tag vX.Y.Z && git push origin vX.Y.Z   （可用 --dry-run 跳过）
+    ├─ git tag vX.Y.Z && git push origin refs/tags/vX.Y.Z   （可用 --dry-run 跳过）
 
     ├─ 调 Gitea API 创建 Release
 

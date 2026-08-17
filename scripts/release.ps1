@@ -275,13 +275,12 @@ if ($DryRun) {
 if (-not $SkipTagPush) {
   Write-Host "[3/5] Tag $Tag ..."
   $existing = git tag --list $Tag
-  if (-not $existing) {
-    git tag -a $Tag -m "Release $Tag"
+  if ($existing) {
+    $point = (git log -1 --format=%h $Tag).Trim()
+    throw "tag $Tag already exists (points to $point). Refusing to skip+push. Use a new version or delete the local tag after checking."
   }
-  else {
-    Write-Host "  tag $Tag already exists, skip git tag"
-  }
-  git push origin $Tag
+  git tag -a $Tag -m "Release $Tag"
+  git push origin "refs/tags/$Tag"
 }
 else {
   Write-Host "[3/5] Skip tag/push"

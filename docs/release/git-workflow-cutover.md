@@ -1,9 +1,11 @@
 # Git 协作约定 · 切换执行文档
 
-> **状态：** 📝 待执行（2026-08-17）  
+> **状态：** 🚧 执行中（2026-08-17）  
 > **长期规则：** [git-workflow.md](./git-workflow.md)（切完后日常以那篇为准）  
 > **适用范围：** 仓库 `git.itopcms.com/astrueus/doc`。一人、两台电脑、两个 Gitea 账号。  
 > **本文职责：** 按已拍板的选择，把现状一次切到「主干 `master` + 短命 `feat/*` + tag 发版」。切完可当历史记录留着，不必当日常手册。
+
+进度：步骤 A 已完成（PR [#1](https://git.itopcms.com/astrueus/doc/pulls/1) squash 合入 `master` @ `7317f1e`）。步骤 B 随 `chore/release-push-tag` 合入。步骤 C 待做。
 
 ---
 

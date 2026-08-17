@@ -300,12 +300,12 @@ fi
 # ---------- 3) Tag ----------
 if [[ "$SKIP_TAG" -eq 0 ]]; then
   log "[3/5] Tag $TAG ..."
-  if ! git tag --list "$TAG" | grep -qx "$TAG"; then
-    git tag -a "$TAG" -m "Release $TAG"
-  else
-    log "  tag $TAG already exists, skip git tag"
+  if git tag --list "$TAG" | grep -qx "$TAG"; then
+    point="$(git log -1 --format=%h "$TAG")"
+    die "tag $TAG already exists (points to ${point}). Refusing to skip+push. Use a new version or delete the local tag after checking."
   fi
-  git push origin "$TAG"
+  git tag -a "$TAG" -m "Release $TAG"
+  git push origin "refs/tags/$TAG"
 else
   log "[3/5] Skip tag/push"
 fi

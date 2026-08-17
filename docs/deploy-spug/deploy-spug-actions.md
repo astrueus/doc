@@ -63,7 +63,7 @@ flowchart LR
 | 维度 | 本地脚本发版 | Actions 自动发版 |
 |------|--------------|-----------------|
 | 谁产出包 | 开发者本机 `release.{ps1\|bat\|sh}` | Gitea Actions Runner |
-| 触发点 | 本机命令 | `git push origin v*` |
+| 触发点 | 本机命令 | `git push origin refs/tags/v*` |
 | Spug 发布触发 | 手动选 TAG | 手动选 TAG / webhook 自动触发 |
 | 失败排查 | 本机日志 | Gitea Actions Run 日志 |
 | 多人发版 | 需口头同步 | 谁 push tag 就由 Runner 跑 |
@@ -131,7 +131,7 @@ bash "$WWW/deployments/spug/spug_run.sh"
 ```text
 开发者：
   git tag -a v1.0.0 -m "..."
-  git push origin v1.0.0
+  git push origin refs/tags/v1.0.0
 
 Gitea Actions：
   自动 build + 上传 Release（约 1~3 分钟）

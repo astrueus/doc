@@ -333,7 +333,7 @@ jobs:
 
 ```bash
 git tag -a v1.0.0 -m "Release v1.0.0"
-git push origin v1.0.0
+git push origin refs/tags/v1.0.0
 ```
 
 push tag 后立即在 Gitea Actions 列表看到 Run。
@@ -432,7 +432,7 @@ Actions 把 `doc_<version>_linux_amd64.tar.gz` 发布到 Gitea Release 后，Spu
 3. 提交 push 到主分支
 4. 本地打 tag 并 push：
      git tag -a v1.0.0 -m "Release v1.0.0"
-     git push origin v1.0.0
+     git push origin refs/tags/v1.0.0
 5. Gitea Actions 页面观察 Run
 6. Releases 页面看到 v1.0.0 与 doc_1.0.0_linux_amd64.tar.gz
 ```

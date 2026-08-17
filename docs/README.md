@@ -2,7 +2,7 @@
 
 本目录存放与项目维护、上游同步相关的文档。
 
-> **整体进度快照（2026-08-03，分支 `v2.2.1`）**  
+> **整体进度快照（2026-08-17，主干 `master`）**  
 > Round 1–2 ✅ · Round 3 MCP MVP ✅ · §十七 P0 ✅ · Round 4 代码主线 ✅ · **Round 5 ⏳**（工程化 / Vite / 对象存储 / kratos 向评估；搜索 FULLTEXT ⏸）。  
 > 明细见 [refactor-roadmap.md §七](./refactor-roadmap.md#七迭代进度追踪) 与 [round-5/round-5-execution-plan.md](./round-5/round-5-execution-plan.md)。
 
