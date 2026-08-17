@@ -9,6 +9,7 @@
 
 - 配置 example、docker-compose、sync 脚本、README：环境变量前缀切至 `DOC_*`
 - `internal/config` 默认 `app_key` / `sessionname` / Redis 前缀与 example 对齐为 `doc*`
+- example / 演示文案去掉硬编码密钥：`beegoserversessionkey`、`http_login_secret`、`ldap_password`、`db_password` 仅走 `DOC_*`；删除未引用的 `internal/thirdparty/ldap` 演示代码
 
 ## Unreleased / Round 4
 

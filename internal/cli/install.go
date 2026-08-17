@@ -53,7 +53,7 @@ func initialization() {
 		member.Password = "123456"
 		member.AuthMethod = "local"
 		member.Role = config.MemberSuperRole
-		member.Email = "admin@iminho.me"
+		member.Email = "admin@example.com"
 
 		if err := member.Add(); err != nil {
 			panic("Member.Add => " + err.Error())

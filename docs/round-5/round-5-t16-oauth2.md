@@ -12,7 +12,7 @@
 |---|---|
 | 钉钉 | [`AccountController`](../../internal/controller/AccountController.go) + [`internal/thirdparty/dingtalk`](../../internal/thirdparty/dingtalk/dingtalk.go)；路由 `/dingtalk_login` |
 | 企业微信 | **无** |
-| LDAP | 独立密码校验路径（[`internal/thirdparty/ldap`](../../internal/thirdparty/ldap/ldap.go)），**不在**本任务 OAuth 抽象内（可并列存在） |
+| LDAP | 独立密码校验路径（[`Member.ldapLogin`](../../internal/model/Member.go)），**不在**本任务 OAuth 抽象内（可并列存在） |
 | 配置 | `[dingtalk]`（example 仍可能是 `MINDOC_DINGTALK_*`；与 [env 硬切](./round-5-env-mindoc-to-doc.md) 一并改 `DOC_DINGTALK_*`） |
 | 问题 | 登录逻辑挤在 AccountController；无统一 Provider；加企微只能复制粘贴；state/回调校验与账号绑定分散 |
 

@@ -421,6 +421,7 @@ master ──► hotfix/session-clear ──PR──► master ──► 发版 
 | `scripts/.env.release` | gitignore；不要复制给无关的人 |
 | `scripts/.env.release.example` | 无真实 Token |
 | `conf/app.conf` | gitignore；example 进库 |
+| `conf/app.conf.example` | 密钥只用 `${DOC_*}`，**不写明文默认值** |
 | Gitea PAT | 到期轮换；离职撤销 |
 
 工作目录、上传限制等仍以 `README.md` / `conf/app.conf.example` 为准。
