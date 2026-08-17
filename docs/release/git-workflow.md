@@ -462,7 +462,6 @@ master ──► hotfix/session-clear ──PR──► master ──► 发版 
 | `master` 是否禁止直推 | 应禁止，只能 PR | **待做**：Gitea 开保护（切换文档步骤 D） |
 | 电脑 B 可能仍停在旧 `v2.2.1` | 两台都在 `master` 上拉 `feat/*` | **待做**：电脑 B `fetch` / 切 `master` / `prune`（步骤 E） |
 | `feature/round-3-mcp` 与 `feat/` 混用 | 统一 `feat/` | 新分支起统一；旧名不强制改 |
-| 有 `joker` 等个人分支 | 仅个人草稿 | 合入走 PR；本次不改名、不删 |
 | tag `v2.2.1` 仍指向打 tag 时的提交 | 一个版本只打一次 tag，默认不移动 | **不** `tag -f`；下一正式版打新 tag |
 | CHANGELOG 用 Unreleased / Round N | 可保留 Round 作内部对照 | 发正式版时加 `## 2.x.x` 节更清晰 |
 | 本机脚本发版、无强制 CI | 允许 | 有 Runner 再加 PR 检查 |
@@ -472,7 +471,7 @@ master ──► hotfix/session-clear ──PR──► master ──► 发版 
 - 开发不再用 `v2.2.1` 当集成分支；远程已无 `refs/heads/v1.0.0`…`v2.2.1`，改为只读 `archive/1.0.0`…`archive/2.2.1`。
 - 发版脚本推 tag 使用 `refs/tags/`；本地已有同名 tag 则失败退出，不再 skip 再裸推。
 - 电脑 A 当前在 `master`（`6563803`）。
-- 已删远程 `chore/release-push-tag`、`docs/cutover-progress`；不要给 `archive/*` 开 PR。
+- 已删远程 `chore/release-push-tag`、`docs/cutover-progress`、`joker`；不要给 `archive/*` 开 PR。个人草稿不要当第二主干。
 
 推荐落地顺序：
 
@@ -528,3 +527,4 @@ scripts\release.bat 2.3.0
 | 2026-08-17 | 补充一次性切换步骤：[git-workflow-cutover.md](./git-workflow-cutover.md)；旧版本开发分支改为 `archive/X.Y.Z`。 |
 | 2026-08-17 | 发版脚本推 tag 改为 `refs/tags/`；本地已有同名 tag 则失败退出。 |
 | 2026-08-17 | 「与现状差异」改为只列未完成项：A～C 已切完；待保护 `master`、电脑 B 跟上。不挪 tag `v2.2.1`。已删合完的短命分支。 |
+| 2026-08-17 | 已删个人分支 `joker`（无独有提交）。 |

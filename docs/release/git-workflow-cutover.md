@@ -12,7 +12,7 @@
 | A 合入 `master` | ✅ | PR [#1](https://git.itopcms.com/astrueus/doc/pulls/1) squash → `7317f1e` |
 | B 发版脚本 | ✅ | PR [#2](https://git.itopcms.com/astrueus/doc/pulls/2) squash → `b16c49d` |
 | C `archive/*` | ✅ | 已推 `archive/1.0.0`…`archive/2.2.1`；已删远程 `refs/heads/v1.0.0`…`v2.2.1`；**未删 tag** |
-| 收尾 | ✅ | 已删远程 `chore/release-push-tag`、`docs/cutover-progress`；`archive/*` 不要开 PR |
+| 收尾 | ✅ | 已删远程 `chore/release-push-tag`、`docs/cutover-progress`、`joker`；`archive/*` 不要开 PR |
 | D 保护 `master` | ⏳ | 须在 Gitea 网页操作 |
 | E 电脑 B 跟上 | ⏳ | 见第九节 |
 
@@ -49,7 +49,7 @@
 | 评审 | 自己开 PR、自己合；Gitea **不要**开「至少 1 个评审」 |
 | 强制 CI 绿 | 先不开 |
 | 本次是否发 `2.2.2` 包 | **否**。切流程与发新包分开，要发再说 |
-| `joker`、旧 `feat/*` | **不在本次必做**。合入仍走 PR；不要当第二主干 |
+| `joker`、旧 `feat/*` | 切流程时不强制处理。事后已删远程/本地 `joker`（无独有提交，指针同 `archive/1.0.0` / `e55dd27`）。旧 `feat/*` 合入仍走 PR，不要当第二主干 |
 
 `archive/*` 只读考古：不要再往上面推功能。需要某次提交时 `cherry-pick` 到 `master`。
 
@@ -69,7 +69,7 @@
 | 分支 `v2.0.1` | `c0eda5d` | 同上 |
 | 分支 `v2.0.0` | `d76b0f3` | 同上 |
 | 分支 `v1.0.0` | `e55dd27` | 与 `joker` 同一提交 |
-| `joker` | `e55dd27` | 个人分支，本次不改名、不删 |
+| `joker` | `e55dd27` | 个人分支；切完后已删远程与本地（提交仍在 `archive/1.0.0`） |
 
 `v2.2.1` 相对 `master` 多出的提交（必须先合进 `master`，再改名）：
 
@@ -408,6 +408,7 @@ scripts\release.bat 2.2.2
 - [ ] Gitea：`master` 禁止直推；不强制评审（步骤 D）
 - [x] 电脑 A 已切到 `master`；新工作从此拉 `feat/*`（或 `fix/` `docs/` `chore/`），不再开 `v2.2.2`（电脑 B 见步骤 E）
 - [x] 已删除远程 `chore/release-push-tag`、`docs/cutover-progress`（见 [C.7](#c7-核对与残留电脑-a2026-08-17)）
+- [x] 已删除远程与本地 `joker`（无独有提交；指针同 `archive/1.0.0` / `e55dd27`）
 
 ---
 
@@ -418,3 +419,4 @@ scripts\release.bat 2.2.2
 | 2026-08-17 | 初稿。旧版本开发分支改为 `archive/X.Y.Z` 后再删旧名；不挪 tag；一人两机两账号。 |
 | 2026-08-17 | 电脑 A 完成 A～C。删旧名须用 `refs/heads/v2.2.1`，裸 `--delete v2.2.1` 会与 tag 歧义。 |
 | 2026-08-17 | 按远程核对补进度：电脑 A 在 `master` @ `6563803`；D/E 仍待做。已删合完的 `chore/release-push-tag`、`docs/cutover-progress`。`archive/*` 不要开 PR。 |
+| 2026-08-17 | 已删远程与本地 `joker`（无独有提交，等同 `archive/1.0.0`）。 |
