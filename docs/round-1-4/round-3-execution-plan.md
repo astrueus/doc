@@ -58,7 +58,7 @@
 - ✅ `spf13/cobra` 已引入，`doc mcp` 子命令 stub 已存在（Round 1 T4）
 - ✅ 强类型 `config.Global.MCP.XXX` 可读（Round 2 T4）
 
-**分支：** `feature/round-3-mcp`（内部按 T1~T7 拆 7 个 PR）
+**分支：** 当时为 `feature/round-3-mcp`（内部按 T1~T7 拆 7 个 PR）；远程已改名为 `feat/round3-mcp`。
 
 ---
 
