@@ -4,7 +4,7 @@
 > **适用范围：** 仓库 `git.itopcms.com/astrueus/doc`，Gitea + 本机 `scripts/release.*` + Spug 部署。  
 > **相关：** [release-local.md](./release-local.md)（怎么跑脚本）、[release-gitea-actions.md](./release-gitea-actions.md)（CI 发版）、[../deploy-spug/](../deploy-spug/)（怎么部署）、根目录 [AGENTS.md](../../AGENTS.md)（中文与决策确认）。
 
-对照现状时重点看文中 **「与现状差异」** 小节；认可后再改脚本 / 开保护分支。
+对照现状时重点看文中 **「与现状差异」** 小节；认可后按 [git-workflow-cutover.md](./git-workflow-cutover.md) 执行（合入 `master`、`v*` 改为 `archive/*`、改发版脚本）。
 
 ---
 
@@ -461,8 +461,8 @@ master ──► hotfix/session-clear ──PR──► master ──► 发版 
 
 | 现状 | 本文约定 | 建议 |
 |------|----------|------|
-| 开发分支名叫 `v2.2.1`、`v2.2.0`… | 主干 `master`，功能 `feat/*` | `v2.2.1` 用完这轮就停；下一功能从 `master` 拉 `feat/...` |
-| 历史 `v1.0.0`～`v2.2.0` 分支 | 不再当集成分支 | 只读考古；需要某 commit 就 cherry-pick 到 `master` |
+| 开发分支名叫 `v2.2.1`、`v2.2.0`… | 主干 `master`，功能 `feat/*` | `v2.2.1` 用完这轮就停；下一功能从 `master` 拉 `feat/...`。一次性步骤见 [git-workflow-cutover.md](./git-workflow-cutover.md) |
+| 历史 `v1.0.0`～`v2.2.1` 分支 | 不再当集成分支 | 先改名为 `archive/2.2.1` 这类只读指针，再删旧名；需要某 commit 就 cherry-pick 到 `master`。不要用 `release/2.2.1`（那是维护线） |
 | `git push origin v2.2.1` | `refs/tags/v2.2.1` 或 `refs/heads/...` | **先改发版脚本** |
 | tag 已存在则 skip 再 push | 已存在则失败 | 与脚本一起改 |
 | `feature/round-3-mcp` 与 `feat/` 混用 | 统一 `feat/` | 新分支起统一 |
@@ -479,7 +479,7 @@ master ──► hotfix/session-clear ──PR──► master ──► 发版 
 2. `master` 开保护（若还没有）。
 3. 下一功能用 `feat/...`，不再开 `v2.2.2` 分支。
 4. 下一正式版在 `master` 上打 `v2.2.2` 或 `v2.3.0`。
-5. 旧 `v*` 分支冻结。
+5. 旧 `v*` 开发分支改为 `archive/X.Y.Z` 后删除旧名（见 [git-workflow-cutover.md](./git-workflow-cutover.md)）。
 
 ---
 
@@ -523,3 +523,4 @@ scripts\release.bat 2.3.0
 | 日期 | 说明 |
 |------|------|
 | 2026-08-17 | 初稿。由 `v2.2.1` 分支与 tag 同名导致推送失败引出。待对照习惯后修订；发版脚本尚未按本文修改。 |
+| 2026-08-17 | 补充一次性切换步骤：[git-workflow-cutover.md](./git-workflow-cutover.md)；旧版本开发分支改为 `archive/X.Y.Z`。 |
