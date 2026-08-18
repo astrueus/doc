@@ -1,7 +1,7 @@
 # Git 分支、版本与多人协作约定（草案）
 
 > **状态：** 📝 草案（2026-08-17）。发版脚本已改为 `refs/tags/`；一次性切换 A～C 已完成，待保护 `master`（D）与电脑 B 跟上（E），见 [git-workflow-cutover.md](./git-workflow-cutover.md)。  
-> **适用范围：** 仓库 `git.itopcms.com/astrueus/doc`，Gitea + 本机 `scripts/release.*` + Spug 部署。  
+> **适用范围：** 仓库 `git.itopcms.com/astrueus/doc`，Gitea + 本机 `deployments/scripts/release.*` + Spug 部署。  
 > **相关：** [release-local.md](./release-local.md)（怎么跑脚本）、[release-gitea-actions.md](./release-gitea-actions.md)（CI 发版）、[../deploy-spug/](../deploy-spug/)（怎么部署）、[git-workflow-cutover.md](./git-workflow-cutover.md)（一次性切换）、根目录 [AGENTS.md](../../AGENTS.md)（中文与决策确认）。
 
 日常以本文为准。切换进度与残留分支见 [git-workflow-cutover.md](./git-workflow-cutover.md)。「与现状差异」只保留尚未落地的项。
@@ -47,7 +47,7 @@
 2. **版本号只出现在 tag（以及包名、CHANGELOG、Release 标题）上**，禁止再用 `v2.2.1` 当分支名。
 3. **进 `master` 走 Pull Request**。禁止日常直接 push `master`（紧急热修见第十二节，事后补 PR）。
 4. **一个版本只打一次 tag，默认不移动、不 `--force`。** 发错就升 PATCH 再打。
-5. **密钥不进 Git。** `scripts/.env.release`、Gitea Token、生产 `conf/app.conf` 不提交。
+5. **密钥不进 Git。** `deployments/scripts/.env.release`、Gitea Token、生产 `conf/app.conf` 不提交。
 6. **文档、注释、提交说明用简体中文**（见 [AGENTS.md](../../AGENTS.md)）。
 7. **生产只部署「打了 tag 的发布包」**，不在服务器上 `git pull` + 现场编译。
 
@@ -76,7 +76,7 @@ Gitea 仓库建议（可按习惯改严或改松，但建议至少做到前两�
 
 - 权限尽量只覆盖 **写 Release / 写仓库**（按 Gitea 实际勾选）。
 - 优先用「发版机器人」账号，避免绑定某个人、人走了就不能发。
-- 放在每人（或维护者）本机 `scripts/.env.release`，已 gitignore。
+- 放在每人（或维护者）本机 `deployments/scripts/.env.release`，已 gitignore。
 
 ---
 
@@ -165,7 +165,7 @@ ci/<简述>          ci/gitea-release
 | **chore/** | **工程杂务、不改产品行为**：gitignore、依赖小升级、发版脚本路径、目录搬家、示例配置校对、与功能无关的格式化。 | 改 CI 工作流（用 ci）；大范围重构（用 refactor）；用户能感到的变化（用 feat/fix）。 | `chore/release-push-tag`、`chore/docs-layout` |
 | **refactor/** | **重构：对外行为保持不变**（或仅内部结构变化）：拆文件、分层、重命名、抽函数。可附带测试，但仍以结构为主。 | 重构时改了接口语义或修了用户可见 bug——按「别人最先感知」改用 feat 或 fix，或拆成两个 PR。 | `refactor/cache-facade`、`refactor/book-model-split` |
 | **test/** | **只加/改测试**：单测、集成测、测试脚本夹具；生产代码基本不动。 | 为新功能写测试（跟着 feat）；修测试是因为修了 bug（跟着 fix）。 | `test/mcp-ratelimit`、`test/pkg-gob` |
-| **ci/** | **持续集成 / 流水线**：Gitea Actions、workflow、PR 门禁、CI 用的构建矩阵。 | 本机 `scripts/release.*` 小改（chore 即可）；只有 CI 里顺带改了一行文档仍用 ci。 | `ci/gitea-release`、`ci/pr-go-test` |
+| **ci/** | **持续集成 / 流水线**：Gitea Actions、workflow、PR 门禁、CI 用的构建矩阵。 | 本机 `deployments/scripts/release.*` 小改（chore 即可）；只有 CI 里顺带改了一行文档仍用 ci。 | `ci/gitea-release`、`ci/pr-go-test` |
 
 拿不准时：
 
@@ -358,7 +358,7 @@ fix(round4): polish zap console UX
 
 ### 11.2 脚本必须遵守
 
-`scripts/release.ps1` / `release.sh`：
+`deployments/scripts/release.ps1` / `release.sh`：
 
 1. `git push origin refs/tags/v$Version`（禁止裸 `git push origin vX.Y.Z`）
 2. 本地已有同名 tag → **退出码非 0**，打印「已存在，指向 xxx」，不要 skip 再 push
@@ -418,8 +418,8 @@ master ──► hotfix/session-clear ──PR──► master ──► 发版 
 
 | 文件 | 规则 |
 |------|------|
-| `scripts/.env.release` | gitignore；不要复制给无关的人 |
-| `scripts/.env.release.example` | 无真实 Token |
+| `deployments/scripts/.env.release` | gitignore；不要复制给无关的人 |
+| `deployments/scripts/.env.release.example` | 无真实 Token |
 | `conf/app.conf` | gitignore；example 进库 |
 | Gitea PAT | 到期轮换；离职撤销 |
 

@@ -100,7 +100,7 @@ vite_css("document-edit")   → 对应 CSS（若拆出）
 ## 六、构建与发布
 
 1. 本地 / CI：`cd web-ui && npm ci && npm run build`  
-2. 发布包：`scripts/release.*` 增加一步前端构建（或文档要求发版前必跑）  
+2. 发布包：`deployments/scripts/release.*` 增加一步前端构建（或文档要求发版前必跑）  
 3. `web/static/dist/`：建议 **构建产物入库或发版时生成**（二选一写进 `web-ui/README.md`；推荐 CI/发版生成 + `.gitignore dist`，避免 hash 噪音）
 
 ---

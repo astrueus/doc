@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================
-# scripts/lib/json.sh —— 小型 JSON 解析器（bash + grep）
+# deployments/scripts/lib/json.sh —— 小型 JSON 解析器（bash + grep）
 #
 # 设计参考 JSON.sh (https://github.com/dominictarr/JSON.sh)：
 #   1. 用 `grep -E -o` 做分词，尊重 JSON 字符串与转义；
@@ -13,7 +13,7 @@
 # 以内的响应（Gitea Release 场景足够）。
 #
 # 用法：
-#   source scripts/lib/json.sh
+#   source deployments/scripts/lib/json.sh
 #
 #   FLAT=$(json_flatten <<<"$json")           # 展平：path<TAB>value
 #

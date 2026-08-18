@@ -36,7 +36,11 @@ database
 .env.local
 .env.release
 scripts/.env.release
+deployments/scripts/.env.release
 *.env.release
+coverage.out
+coverage.txt
+/coverage
 /vendor
 /runtime
 /uploads/*

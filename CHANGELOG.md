@@ -9,6 +9,9 @@
 
 - 配置 example、docker-compose、sync 脚本、README：环境变量前缀切至 `DOC_*`
 - `internal/config` 默认 `app_key` / `sessionname` / Redis 前缀与 example 对齐为 `doc*`
+- T15：根目录 `scripts/` 全迁 `deployments/scripts/`；根目录用 `Makefile` / `justfile` 作快捷入口
+- T7：新增 `deployments/scripts/test.sh` / `test.ps1`、覆盖率基线、`.gitea/workflows/test.yml` 白名单硬闸
+- T2：ORM/分层评估结论入库（本轮维持 beego/orm + 扩 Repo；Round 6+ 既定 ① data → ② biz）
 
 ## Unreleased / Round 4
 

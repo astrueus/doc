@@ -213,7 +213,13 @@ do_windows() {
 parse_args "$@"
 validate
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# 脚本在 deployments/scripts/，向上查找含 go.mod 的仓库根
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ROOT="$SCRIPT_DIR"
+while [[ -n "$ROOT" && "$ROOT" != "/" && ! ( -f "$ROOT/go.mod" && -d "$ROOT/cmd/doc" ) ]]; do
+    ROOT="$(cd "$ROOT/.." && pwd)"
+done
+[[ -f "$ROOT/go.mod" && -d "$ROOT/cmd/doc" ]] || die "cannot locate repo root (need go.mod and cmd/doc); script dir: $SCRIPT_DIR"
 cd "$ROOT"
 
 resolve_version

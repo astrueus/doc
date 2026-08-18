@@ -1,4 +1,4 @@
-﻿package pagination
+package pagination
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ import (
 	"git.itopcms.com/astrueus/doc/internal/i18n"
 )
 
-//Pagination 分页器
+// Pagination 分页器
 type Pagination struct {
 	Request *http.Request
 	Total   int
@@ -21,7 +21,7 @@ type Pagination struct {
 	BaseUrl string
 }
 
-//NewPagination 新建分页器
+// NewPagination 新建分页器
 func NewPagination(req *http.Request, total int, pernum int, baseUrl string) *Pagination {
 	return &Pagination{
 		Request: req,
@@ -35,7 +35,7 @@ func (p *Pagination) HtmlPages() template.HTML {
 	return template.HTML(p.Pages())
 }
 
-//Pages 渲染生成html分页标签
+// Pages 渲染生成html分页标签
 func (p *Pagination) Pages() string {
 	queryParams := p.Request.URL.Query()
 	//从当前请求中获取page
@@ -107,7 +107,7 @@ func (p *Pagination) Pages() string {
 	return fmt.Sprintf(`<ul class="pagination">%s%s%s%s%s</ul>`, firstLink, prevLink, strings.Join(pageLinks, ""), nextLink, lastLink)
 }
 
-//pageURL 生成分页url
+// pageURL 生成分页url
 func (p *Pagination) pageURL(page string) string {
 	//基于当前url新建一个url对象
 	u, _ := url.Parse(p.BaseUrl + p.Request.URL.String())

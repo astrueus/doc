@@ -126,6 +126,9 @@ if exist "%SCRIPT_DIR%go.mod" if exist "%SCRIPT_DIR%cmd\doc" set "ROOT=%SCRIPT_D
 if not defined ROOT if exist "%SCRIPT_DIR%..\go.mod" if exist "%SCRIPT_DIR%..\cmd\doc" (
     for %%I in ("%SCRIPT_DIR%..") do set "ROOT=%%~fI"
 )
+if not defined ROOT if exist "%SCRIPT_DIR%..\..\go.mod" if exist "%SCRIPT_DIR%..\..\cmd\doc" (
+    for %%I in ("%SCRIPT_DIR%..\..") do set "ROOT=%%~fI"
+)
 if not defined ROOT if exist "go.mod" if exist "cmd\doc" set "ROOT=%CD%"
 if not defined ROOT (
     echo [ERROR] cannot locate repo root ^(need go.mod and cmd\doc^)

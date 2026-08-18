@@ -2,7 +2,7 @@
 
 > 对应 [round-5-execution-plan.md §九 T7](./round-5-execution-plan.md#九t7--测试工程化1~2-天)。  
 > 脚本落点以 [T15](./round-5-scripts-layout.md) 为准（**方案 A** → `deployments/scripts/test.sh`；本地可用根目录 `make test` / `just test`）。  
-> **状态：** ⏳ 待实施。
+> **状态：** ✅ 已落地（`deployments/scripts/test.sh` + `test.ps1` + `.gitea/workflows/test.yml`）；Gitea Runner 上线后需再勾一次 CI 绿。
 
 ---
 
@@ -83,7 +83,7 @@ go tool cover -func=coverage.out | tee coverage.txt
 
 ## 四、覆盖率门槛
 
-1. 跑一次白名单，把 `total` 写入 `docs/round-5-coverage-baseline.md`（或更新 round-4 文档）。  
+1. 跑一次白名单，把 `total` 写入 [round-5-coverage-baseline.md](./round-5-coverage-baseline.md) 与 [coverage-baseline.txt](./coverage-baseline.txt)。  
 2. 门槛策略（首版）：**不低于基线 − 0**（不回退）；暂不设「≥ 40%」总目标（留给 Round 6+）。  
 3. 实现：脚本解析 `go tool cover -func` 的 `total:` 行与基线文件比对（简单 awk/python 一行即可）。
 
@@ -92,7 +92,7 @@ go tool cover -func=coverage.out | tee coverage.txt
 ## 五、文档改动
 
 - [`deployments/scripts/README.md`](../../deployments/scripts/README.md)（迁后）：增加「测试」小节  
-- 根 [`Makefile`](../Makefile) / [`justfile`](../justfile)：`test` 目标  
+- 根 [`Makefile`](../../Makefile) / [`justfile`](../../justfile)：`test` 目标  
 - [`AGENTS.md`](../../AGENTS.md) / 根 [`README.md`](../../README.md)：一键跑测（`make test` / `just test` 或权威路径）  
 - 本任务验收勾选写入 [执行计划 §九](./round-5-execution-plan.md#九t7--测试工程化1~2-天)
 
@@ -111,10 +111,10 @@ go tool cover -func=coverage.out | tee coverage.txt
 
 ## 七、验收
 
-- [ ] 本地一键：`deployments/scripts/test.sh` 绿  
-- [ ] CI 对白名单包硬闸且绿  
-- [ ] 覆盖率快照入库；门槛策略写明  
-- [ ] 路径与 T15 方案 A 一致  
+- [x] 本地一键：`deployments/scripts/test.sh` / `test.ps1` 绿（Windows 本机 2026-08-18）  
+- [x] CI workflow 入库（`.gitea/workflows/test.yml` 硬闸白名单）；**Runner 就绪后**再确认云端绿  
+- [x] 覆盖率快照入库；门槛策略写明（不低于 28.5%）  
+- [x] 路径与 T15 方案 A 一致  
 
 ---
 

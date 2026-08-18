@@ -2,21 +2,22 @@
 
 > 对应 [round-5-execution-plan.md §十三丁 T15](./round-5-execution-plan.md#十三丁t15--scripts-是否迁入-deployments0.5~1-天)。  
 > **定位：** 评估 + 搬迁；牵动 T7（测试脚本）与文档路径。  
-> **状态：** ✅ **已拍板：方案 A（全迁）**；根快捷入口用 **Makefile / justfile**（非根 `scripts/` 薄封装）。
+> **状态：** ✅ 已拍板并落地：方案 A（全迁）；根快捷入口用 **Makefile / justfile**。
 
 ---
 
 ## 一、现状盘点
 
-### 1.1 `scripts/` 现有内容
+### 1.1 迁前 `scripts/` 内容（现已在 `deployments/scripts/`）
 
 | 文件 | 用途 | 谁在调用 |
 |---|---|---|
-| [`build.sh`](../../scripts/build.sh) / [`build.bat`](../../scripts/build.bat) | 多平台编译（Zig / MinGW） | 开发者本地；`release.*` 内部调用 |
-| [`release.sh`](../../scripts/release.sh) / [`release.bat`](../../scripts/release.bat) / [`release.ps1`](../../scripts/release.ps1) | 一键发版（编译 → 打包 → tag → Gitea Release） | 开发者本地 |
-| [`.env.release.example`](../../scripts/.env.release.example) | 发版环境变量模板 | `release.*` |
-| [`lib/json.sh`](../../scripts/lib/json.sh) / [`lib/json_test.sh`](../../scripts/lib/json_test.sh) | 纯 bash JSON 解析 + 单测 | `release.sh` |
-| [`README.md`](../../scripts/README.md) | 使用说明 | 人 |
+| [`build.sh`](../../deployments/scripts/build.sh) / [`build.bat`](../../deployments/scripts/build.bat) | 多平台编译（Zig / MinGW） | 开发者本地；`release.*` 内部调用 |
+| [`release.sh`](../../deployments/scripts/release.sh) / [`release.bat`](../../deployments/scripts/release.bat) / [`release.ps1`](../../deployments/scripts/release.ps1) | 一键发版（编译 → 打包 → tag → Gitea Release） | 开发者本地 |
+| [`.env.release.example`](../../deployments/scripts/.env.release.example) | 发版环境变量模板 | `release.*` |
+| [`lib/json.sh`](../../deployments/scripts/lib/json.sh) / [`lib/json_test.sh`](../../deployments/scripts/lib/json_test.sh) | 纯 bash JSON 解析 + 单测 | `release.sh` |
+| [`README.md`](../../deployments/scripts/README.md) | 使用说明 | 人 |
+| `test.sh` / `test.ps1` | 白名单测试 + 覆盖率门槛（T7，迁后新增） | `make test` / CI |
 
 ### 1.2 `deployments/` 现有内容
 
@@ -32,10 +33,10 @@
 
 - [x] `deployments/spug/spug_run.sh:11` — `REPO/scripts/` **仅作服务器侧运维习惯目录**，与仓库内 `scripts/` 无耦合  
 - [x] `deployments/spug/spug_run.sh:55` — 从发布包 `deployments/spug/` 拷贝，与仓库 `scripts/` 无耦合  
-- [ ] 迁后**删除**根 `scripts/`（不留目录、不留 README）  
-- [ ] `docs/release/release-local.md` / `docs/deploy-spug-*.md` / `README.md` — 批量替换为 `make`/`just` 或权威路径  
-- [ ] `release.*` 内部相对路径（`lib/`、调用 `build.*`）— 随迁改  
-- [ ] Gitea Actions（未来）：若有 workflow 引用 `scripts/`，一并改  
+- [x] 迁后**删除**根 `scripts/`（不留目录、不留 README）  
+- [x] `docs/release/release-local.md` / `docs/deploy-spug-*.md` / `README.md` — 批量替换为 `make`/`just` 或权威路径  
+- [x] `release.*` 内部相对路径（`lib/`、调用 `build.*`）— 随迁改  
+- [x] Gitea Actions：`.gitea/workflows/test.yml` 调用 `deployments/scripts/test.sh`；发版文档示例已改路径  
 
 **结论：** 仓库内没有生产运行时依赖根 `scripts/` 的硬编码；搬迁主要是**文档 + 脚本自引用**。
 
@@ -174,12 +175,12 @@ help:
 ## 五、验收
 
 - [x] 结论写入本文件「决策」段  
-- [ ] `git mv` 完成；`release.*` / `build.*` 内部路径已修  
-- [ ] 根目录 `Makefile` 与/或 `justfile` 可驱动 build/release/test，且与权威脚本行为一致  
-- [ ] Linux（及可选 Windows）入口已验证；文档写清依赖（`make` / `just`）  
-- [ ] 根 **`scripts/` 目录已删除**（仓库中不存在）  
-- [ ] 路径引用（README、release/spug 文档、AGENTS）已更新为 make/just 或 `deployments/scripts/`  
-- [ ] [round-5-execution-plan.md §十四追踪表](./round-5-execution-plan.md#十四追踪表) T15 状态更新  
+- [x] `git mv` 完成；`release.*` / `build.*` 内部路径已修  
+- [x] 根目录 `Makefile` 与 `justfile` 可驱动 build/release/test，且与权威脚本行为一致  
+- [x] Linux（及 Windows）入口已写清；文档写清依赖（`make` / `just`）  
+- [x] 根 **`scripts/` 目录已删除**（仓库中不存在）  
+- [x] 路径引用（README、release/spug 文档、AGENTS）已更新为 make/just 或 `deployments/scripts/`  
+- [x] [round-5-execution-plan.md §十四追踪表](./round-5-execution-plan.md#十四追踪表) T15 状态更新  
 
 ---
 

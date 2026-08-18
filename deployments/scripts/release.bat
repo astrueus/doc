@@ -2,16 +2,16 @@
 setlocal EnableExtensions EnableDelayedExpansion
 
 REM Usage:
-REM   scripts\release.bat <version> [all^|linux^|windows] [options...]
+REM   deployments\scripts\release.bat <version> [all^|linux^|windows] [options...]
 REM Options:
-REM   --env=PATH     env file (default: scripts\.env.release if present)
+REM   --env=PATH     env file (default: deployments\scripts\.env.release if present)
 REM   --draft        create draft release
 REM   --dry-run      build+zip only
 REM   --skip-tag     skip git tag/push
 REM
 REM Examples:
-REM   scripts\release.bat 0.0.1-test windows --dry-run
-REM   scripts\release.bat 0.0.1-test windows --env=scripts\.env.release --draft
+REM   deployments\scripts\release.bat 0.0.1-test windows --dry-run
+REM   deployments\scripts\release.bat 0.0.1-test windows --env=deployments\scripts\.env.release --draft
 
 REM 必须在任何 shift 之前保存：shift 后 %~dp0 会变成当前目录
 set "SCRIPT_DIR=%~dp0"

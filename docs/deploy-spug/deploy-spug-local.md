@@ -14,7 +14,7 @@
 
 ```mermaid
 flowchart LR
-    A[开发者本机<br/>scripts/release.*] --> B[Gitea Release<br/>doc_VERSION_linux_amd64.tar.gz]
+    A[开发者本机<br/>deployments/scripts/release.*] --> B[Gitea Release<br/>doc_VERSION_linux_amd64.tar.gz]
     B --> C[Spug 发布任务<br/>下载 + 解压]
     C --> D[Spug 前置脚本<br/>spug_pre.sh]
     D --> E[Spug 后置脚本<br/>deployments/spug/spug_run.sh]
@@ -293,7 +293,7 @@ bash "$WWW/deployments/spug/spug_run.sh"
 
 ```text
 本机：
-  scripts\release.bat 1.0.0 linux   # 或 ./scripts/release.sh 1.0.0 linux
+  deployments\scripts\release.bat 1.0.0 linux   # 或 ./deployments/scripts/release.sh 1.0.0 linux / just release 1.0.0
   # 产物：doc_1.0.0_linux_amd64.tar.gz，tag：v1.0.0
 
 Spug：

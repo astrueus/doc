@@ -9,7 +9,7 @@
   构建目标：all | linux | windows（默认 windows，本机联调更省事）
 
 .PARAMETER EnvFile
-  环境变量文件路径（KEY=VALUE）。默认：仓库根下 scripts/.env.release（若存在）。
+  环境变量文件路径（KEY=VALUE）。默认：本脚本目录 deployments/scripts/.env.release（若存在）。
   需要：GITEA_URL、GITEA_TOKEN、GITEA_OWNER、GITEA_REPO（DryRun 可不设）。
 
 .PARAMETER SkipTagPush
@@ -22,10 +22,10 @@
   只编译 + 打 zip，不打 tag、不调 Gitea API（无需 Token）。
 
 .EXAMPLE
-  powershell -ExecutionPolicy Bypass -File scripts\release.ps1 -Version 0.0.1-test -Target windows -Draft
+  powershell -ExecutionPolicy Bypass -File deployments\scripts\release.ps1 -Version 0.0.1-test -Target windows -Draft
 
 .EXAMPLE
-  powershell -ExecutionPolicy Bypass -File scripts\release.ps1 -Version 0.0.1-test -EnvFile .\scripts\.env.release -DryRun
+  powershell -ExecutionPolicy Bypass -File deployments\scripts\release.ps1 -Version 0.0.1-test -EnvFile .\deployments\scripts\.env.release -DryRun
 #>
 param(
   [Parameter(Mandatory = $true)][string]$Version,
@@ -68,7 +68,22 @@ function Import-DotEnv {
 }
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$Root = (Resolve-Path (Join-Path $ScriptDir "..")).Path
+function Find-RepoRoot {
+  param([string]$Start)
+  $dir = (Resolve-Path -LiteralPath $Start).Path
+  while ($dir) {
+    $mod = Join-Path $dir "go.mod"
+    $cmd = Join-Path $dir "cmd\doc"
+    if ((Test-Path -LiteralPath $mod) -and (Test-Path -LiteralPath $cmd)) {
+      return $dir
+    }
+    $parent = Split-Path -Parent $dir
+    if ($parent -eq $dir) { break }
+    $dir = $parent
+  }
+  throw "cannot locate repo root (need go.mod and cmd\doc); start: $Start"
+}
+$Root = Find-RepoRoot -Start $ScriptDir
 Set-Location $Root
 
 if (-not $EnvFile) {
@@ -91,17 +106,17 @@ $Token = $env:GITEA_TOKEN
 if (-not $DryRun) {
   if (-not $Owner -or -not $Repo -or -not $Base -or -not $Token) {
     throw @"
-Missing Gitea env. Provide EnvFile (scripts/.env.release) or export:
+Missing Gitea env. Provide EnvFile (deployments/scripts/.env.release) or export:
   GITEA_URL / GITEA_TOKEN / GITEA_OWNER / GITEA_REPO
 Or use -DryRun to build+zip only.
-See: scripts/.env.release.example
+See: deployments/scripts/.env.release.example
 "@
   }
 }
 
 # ---------- 1) Build ----------
 Write-Host "[1/5] Build $Target release $Version ..."
-$buildBat = Join-Path $Root "scripts\build.bat"
+$buildBat = Join-Path $ScriptDir "build.bat"
 cmd /c "`"$buildBat`" --target=$Target --mode=release --version=$Version"
 if ($LASTEXITCODE -ne 0) { throw "build failed (exit $LASTEXITCODE)" }
 

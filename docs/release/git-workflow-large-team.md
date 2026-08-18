@@ -160,7 +160,7 @@ git push origin refs/tags/v2.3.0
 
 禁止 `git push origin v2.3.0`。大团队里同名分支出现的概率更高（误建、脚本、旧习惯）。
 
-本机 `scripts/release.*` 在大团队里降级为 **开发者 dry-run 编包**，正式发版走 CI。Token 只存在 CI 密钥库，不存在每人笔记本。
+本机 `deployments/scripts/release.*` 在大团队里降级为 **开发者 dry-run 编包**，正式发版走 CI。Token 只存在 CI 密钥库，不存在每人笔记本。
 
 ---
 
@@ -206,7 +206,7 @@ git push origin refs/tags/v2.3.0
 ```text
 /internal/mcp/          @mcp-owners
 /internal/auth/         @auth-owners
-/scripts/release.*      @release-captains
+/deployments/scripts/release.*      @release-captains
 /docs/release/          @release-captains
 /deployments/           @sre-owners
 ```
@@ -411,7 +411,7 @@ MinDoc 上游仍建议 **cherry-pick + PR**，不要 merge 整库。大团队加
 | 主题 | [git-workflow.md](./git-workflow.md)（小团队） | 本文（大团队） |
 |------|-----------------------------------------------|----------------|
 | 主干 | `master` + 短 `feat/*` | 先选 4.1 或 4.2；常有 `release/X.Y` |
-| 发版 | 维护者本机 `scripts/release.*` | CI 打 tag 与制品；本机仅 dry-run |
+| 发版 | 维护者本机 `deployments/scripts/release.*` | CI 打 tag 与制品；本机仅 dry-run |
 | 评审 | 1 人即可，可自审 | CODEOWNERS + 常要 2 人；高风险强制 |
 | CI | 可口头保证 | PR 门禁；建议 merge queue |
 | 环境 | 开发 / 生产，预发建议有 | 开发 → 预发 → 生产，晋升审批 |

@@ -43,42 +43,56 @@ MinDoc 的前身是 [SmartWiki](https://github.com/lifei6671/SmartWiki) 文档�
 
 ### 使用构建脚本（推荐）
 
-项目提供了跨平台构建脚本：
+项目提供了跨平台构建脚本（权威路径在 `deployments/scripts/`；根目录 `make` / `just` 为快捷入口）：
 
-| 脚本                  | 平台            | 说明                       |
-|---------------------|---------------|--------------------------|
-| `scripts/build.sh`  | Linux / macOS | Linux 本机构建使用系统 gcc/clang |
-| `scripts/build.bat` | Windows       | Linux 交叉编译使用 **Zig**     |
+| 入口 | 平台 | 说明 |
+|------|------|------|
+| `make build` / `just build` | 各平台 | 调用 `deployments/scripts/build.sh` 或 `build.bat` |
+| `make test` / `just test` | 各平台 | 白名单包测试 + 覆盖率门槛 |
+| `deployments/scripts/build.sh` | Linux / macOS | Linux 本机构建使用系统 gcc/clang |
+| `deployments/scripts/build.bat` | Windows | Linux 交叉编译使用 **Zig** |
 
 编译 Windows 时传入 `mingw` 可改用 **MinGW-w64**。默认**调试模式**（产物输出到项目根目录），也可切换为**发布模式**（产物输出到 `dist/`）。
 
 ```bash
 # Linux：本机构建 + 交叉编译 Windows（交叉编译需 Zig）
-chmod +x scripts/build.sh
-./scripts/build.sh
+make build
+# 等价：bash deployments/scripts/build.sh
 
 # 只构建 Linux（仅需 gcc/clang）
-./scripts/build.sh --target=linux
+bash deployments/scripts/build.sh --target=linux
 
 # 发布构建
-./scripts/build.sh --mode=release --version=1.0.0
+bash deployments/scripts/build.sh --mode=release --version=1.0.0
 ```
 
 ```bat
 REM Windows：Zig 构建 Linux + Windows（需安装 Zig 并加入 PATH）
-scripts\build.bat
+just build
+REM 或：deployments\scripts\build.bat
 
 REM 只构建 Windows（Zig）
-scripts\build.bat --target=windows
+deployments\scripts\build.bat --target=windows
 
 REM 使用 MinGW-w64 构建 Windows
-scripts\build.bat --target=windows --toolchain=mingw
+deployments\scripts\build.bat --target=windows --toolchain=mingw
 
 REM 发布构建
-scripts\build.bat --mode=release --version=1.0.0
+deployments\scripts\build.bat --mode=release --version=1.0.0
 ```
 
-更多参数说明见 [scripts/README.md](scripts/README.md)。
+更多参数说明见 [deployments/scripts/README.md](deployments/scripts/README.md)。
+
+### 跑测试
+
+```bash
+make test          # 或 just test
+# 权威脚本：
+bash deployments/scripts/test.sh
+```
+
+Windows：`just test` 或 `powershell -File deployments\scripts\test.ps1`。  
+默认闸 `pkg/`、`internal/{errs,auth,logging,i18n,repository}`；覆盖率不低于 [docs/round-5/coverage-baseline.txt](docs/round-5/coverage-baseline.txt)。CI 见 `.gitea/workflows/test.yml`。
 
 ### 手动编译
 

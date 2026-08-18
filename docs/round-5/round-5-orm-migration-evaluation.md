@@ -3,7 +3,7 @@
 > 对应 [round-5-execution-plan.md §四 T2](./round-5-execution-plan.md#四t2--orm--分层评估报告朝-kratos-靠拢--不实施)。  
 > **决策方向（[§一附 5](./round-5-execution-plan.md#一附2026-08-03-决策修订)）：** 朝 [go-kratos](https://go-kratos.dev/) 的分层习惯靠拢；model 期望**自动化生成**；把「模型 / 业务逻辑 / 数据访问」拆开。  
 > **定位：** 本轮**只评估不实施**；产出结论进决策日志；实施另立项（Round 6+）。  
-> **状态：** ⏳ 待写结论。
+> **状态：** ✅ 结论已写入决策日志（2026-08-18）；本轮不实施 ORM 切换。
 
 ---
 
@@ -276,12 +276,12 @@ Round 7+    按域复制 ①→②（Book → Member → …）
 
 ## 七、验收
 
-- [ ] 报告合入 `docs/`
-- [ ] [决策日志](./round-5-execution-plan.md#十四追踪表) / roadmap §八写入拍板结论：本轮 A；Round 6+ 走 **①→②** 分阶段（非「① 后再议要不要 ②」）
-- [ ] **本轮无** ORM / 框架切换实施 PR
-- [ ] T9 命名与目录**已按未来 `internal/data/` / `internal/biz/` 方向对齐**
-- [ ] §1.4 文件命名建议已记入决策：Round 5 是否单开 `git mv` PR（建议做）
-- [ ] §6.2 衔接约束已同步到 [T9 细化方案](./round-5-t9-repo-service.md)（避免 service 变成 Repo 克隆）
+- [x] 报告合入 `docs/`
+- [x] [决策日志](../refactor-roadmap.md#八决策记录decision-log) / 本轮追踪表写入拍板结论：本轮 A；Round 6+ 走 **①→②** 分阶段（非「① 后再议要不要 ②」）
+- [x] **本轮无** ORM / 框架切换实施 PR
+- [x] T9 命名与目录**已按未来 `internal/data/` / `internal/biz/` 方向对齐**（细化方案已写；实施仍属 T9）
+- [x] §1.4 文件命名建议已记入决策：**与 T8 合并 `git mv`，不单开本批 PR**
+- [x] §6.2 衔接约束已同步到 [T9 细化方案](./round-5-t9-repo-service.md)（避免 service 变成 Repo 克隆）
 
 ---
 

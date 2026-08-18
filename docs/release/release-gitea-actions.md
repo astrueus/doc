@@ -18,7 +18,7 @@ flowchart LR
     B --> C[解析 .gitea/workflows/release.yml]
     C --> D[Act Runner 领取 Job]
     D --> E[checkout + setup-go]
-    E --> F[scripts/build.sh --mode=release]
+    E --> F[deployments/scripts/build.sh --mode=release]
     F --> G[打包 tar.gz / zip]
     G --> H[gitea-release-action 上传]
     H --> I[Gitea Releases 页可见]
@@ -154,9 +154,9 @@ jobs:
 
       - name: Build (linux only by default)
         run: |
-          chmod +x scripts/build.sh
+          chmod +x deployments/scripts/build.sh
           # 仅编 Linux；如需 all（同时出 Windows），需先安装 Zig
-          ./scripts/build.sh --target=linux --mode=release --version="${{ steps.ver.outputs.version }}"
+          ./deployments/scripts/build.sh --target=linux --mode=release --version="${{ steps.ver.outputs.version }}"
 
       - name: Verify binary
         run: |
@@ -164,7 +164,7 @@ jobs:
           ./dist/doc_linux_amd64 version
           rm conf/app.conf
 
-      # 包结构与 scripts/release.* 一致：
+      # 包结构与 deployments/scripts/release.* 一致：
       #   doc_<version>_linux_amd64.tar.gz
       #   根目录 doc + conf/{lang,app.conf.example} + web/ + uploads/ + deployments/{spug,systemd}/ + LICENSE.md
       - name: Package tar.gz
@@ -244,12 +244,12 @@ jobs:
 
       - name: Build
         run: |
-          chmod +x scripts/build.sh
+          chmod +x deployments/scripts/build.sh
           VERSION="${GITHUB_REF_NAME#v}"
           if [ "${{ matrix.target }}" = "windows" ]; then
-            ./scripts/build.sh --target=windows --toolchain=mingw --mode=release --version="$VERSION"
+            ./deployments/scripts/build.sh --target=windows --toolchain=mingw --mode=release --version="$VERSION"
           else
-            ./scripts/build.sh --target=linux --mode=release --version="$VERSION"
+            ./deployments/scripts/build.sh --target=linux --mode=release --version="$VERSION"
           fi
 
       - name: Package
@@ -358,7 +358,7 @@ workflow 内 `build.sh` 已通过 `-ldflags -X conf.VERSION=...` 注入。验证
 # 期望输出包含 1.0.0
 ```
 
-如未注入，检查 `scripts/build.sh` 的 `LDFLAGS_COMMON` 和 `internal/config` 中 `VERSION` 变量名是否一致。
+如未注入，检查 `deployments/scripts/build.sh` 的 `LDFLAGS_COMMON` 和 `internal/config` 中 `VERSION` 变量名是否一致。
 
 ---
 

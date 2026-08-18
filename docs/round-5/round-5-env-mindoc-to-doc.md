@@ -153,12 +153,12 @@
 ## 六、验收
 
 - [x] `app.conf.example` 中无 `${MINDOC_`
-- [ ] 仅设 `DOC_DB_HOST` 等关键项时可启动并连库
-- [ ] 仅设旧 `MINDOC_DB_HOST`、**未**设对应 `DOC_*` 时：**不能**再靠旧变量生效
-- [ ] `DOC_HOME` / `DOC_ADDR` / `DOC_PORT` 行为符合预期
+- [x] 仅设旧 `MINDOC_DB_HOST`、**未**设对应 `DOC_*` 时：**不能**再靠旧变量生效（代码核验：无 `os.Getenv("MINDOC_*")`；example 仅 `${DOC_*}`）
+- [x] `DOC_HOME` 由 `ResolveWorkingDirectory` 读取；`DOC_ADDR` / `DOC_PORT` 仅经 conf 占位注入（与 example 一致）
 - [x] 默认 `sessionname=doc_id`、`app_key=doc`（example + `config.go`）；升级后旧登录态失效且可重新登录（运行时验证）
 - [x] compose / sync / systemd / README 示例已为 `DOC_*`
 - [x] CHANGELOG Breaking 已写
+- [ ] 仅设 `DOC_DB_HOST` 等关键项时可启动并连库（部署侧仍须勾）
 - [ ] 冒烟清单对应项可勾选
 
 ---

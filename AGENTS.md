@@ -64,6 +64,18 @@ fix(round4): 修复日志控制台体验与 Session 登录过滤器误判
 
 本仓库当前仅有 `docs/`，因此默认写入 `docs/`。
 
+## 测试
+
+白名单包一键跑测（权威脚本在 `deployments/scripts/`）：
+
+```bash
+make test    # 或 just test
+bash deployments/scripts/test.sh
+```
+
+Windows：`just test` 或 `powershell -File deployments/scripts/test.ps1`。  
+覆盖率门槛见 `docs/round-5/coverage-baseline.txt`；CI 为 `.gitea/workflows/test.yml`。
+
 ## 决策确认
 
 影响对外契约、鉴权、数据或生产配置时先确认；小改动直接做。  

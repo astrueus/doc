@@ -11,6 +11,7 @@
 | [round-5-orm-migration-evaluation.md](./round-5-orm-migration-evaluation.md) | T2 ORM / 分层评估 |
 | [round-5-env-mindoc-to-doc.md](./round-5-env-mindoc-to-doc.md) | 环境变量 `MINDOC_*` → `DOC_*` |
 | [round-5-scripts-layout.md](./round-5-scripts-layout.md) | T15 `scripts/` 与 `deployments/` |
+| [round-5-coverage-baseline.md](./round-5-coverage-baseline.md) | T7 覆盖率基线 |
 | [search-redesign.md](./search-redesign.md) | T3/T4 解冻前提（搜索重定义） |
 
 ## 任务细化

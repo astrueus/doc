@@ -62,6 +62,14 @@ internal/service/
 
 > 与 [T2 §6.2](./round-5-orm-migration-evaluation.md#62-round-6-分阶段规划既定路径非可选项) 对齐：Round 6+ 路径是 **① data → ② biz**（既定，非「做完 data 再议」）。本轮若引入 `service`，按 usecase 薄编排来写，**不要**把业务规则塞进 Repo/`data`，也**不要**让 `service` 沦为第二套 Repo。
 
+### 2.4 衔接约束（T2 已同步，实施时遵守）
+
+1. **`repository` 不依赖** `controller` / `mcp` / Beego `web.Context`（可传标准 `context.Context`）。  
+2. **业务规则不进 Repo**（发布编排、权限决策、乐观锁冲突处理留在调用方或未来 `service`/`biz`）。  
+3. 本轮若建 `internal/service/`，只做 **usecase 薄编排**，不要变成第二套 Repo。  
+4. **本轮不建** `internal/biz/`（评估未实施）。  
+5. `model` 文件 snake_case 重命名与 **T8** 合并，避免 Result 迁出前搬两次。
+
 ---
 
 ## 三、Repo 扩面清单（Document / Book）

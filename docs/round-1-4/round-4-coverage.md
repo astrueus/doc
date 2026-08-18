@@ -2,7 +2,7 @@
 
 Round 4 T10 阶段产出：覆盖 `pkg/` 以及 `internal/errs`、`auth`、`logging`、`i18n`、`repository` 等包的基础单测。
 
-> **后续：** `scripts/test.sh` / CI 硬闸 / 覆盖率门槛 📦 **已移交 [Round 5 T7](../round-5/round-5-execution-plan.md#九t7--测试工程化1~2-天)**。
+> **后续：** 测试脚本 / CI 硬闸 / 覆盖率门槛见 [Round 5 T7](../round-5/round-5-t7-testing.md) 与 [覆盖率基线](../round-5/round-5-coverage-baseline.md)。
 
 ## 如何刷新
 

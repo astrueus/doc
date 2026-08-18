@@ -6,16 +6,17 @@
 #    release.sh <version> [all|linux|windows] [options...]
 #
 #  Options:
-#    --env=PATH     env 文件（默认：存在则用 scripts/.env.release）
+#    --env=PATH     env 文件（默认：存在则用 deployments/scripts/.env.release）
 #    --draft        创建草稿 Release
 #    --dry-run      只编译+打包，不打 tag、不调 Gitea API
 #    --skip-tag     跳过 git tag / push
 #    -h|--help
 #
 #  Examples:
-#    ./scripts/release.sh 0.0.1-test linux --dry-run
-#    ./scripts/release.sh 0.0.1-test all --env=scripts/.env.release --draft
-#    ./scripts/release.sh 1.0.0 linux
+#    ./deployments/scripts/release.sh 0.0.1-test linux --dry-run
+#    ./deployments/scripts/release.sh 0.0.1-test all --env=deployments/scripts/.env.release --draft
+#    ./deployments/scripts/release.sh 1.0.0 linux
+#    # 或：just release 0.0.1-test / make release VERSION=0.0.1-test
 #
 #  产物（与 Windows 脚本一致）：
 #    release/doc_<version>_windows_amd64.zip
@@ -39,16 +40,16 @@ usage() {
 Usage: release.sh <version> [all|linux|windows] [options...]
 
 Options:
-  --env=PATH     env file (default: scripts/.env.release if present)
+  --env=PATH     env file (default: deployments/scripts/.env.release if present)
   --draft        create draft release
   --dry-run      build+package only
   --skip-tag     skip git tag/push
   -h|--help
 
 Examples:
-  ./scripts/release.sh 0.0.1-test linux --dry-run
-  ./scripts/release.sh 0.0.1-test all --env=scripts/.env.release --draft
-  ./scripts/release.sh 1.0.0 linux
+  ./deployments/scripts/release.sh 0.0.1-test linux --dry-run
+  ./deployments/scripts/release.sh 0.0.1-test all --env=deployments/scripts/.env.release --draft
+  ./deployments/scripts/release.sh 1.0.0 linux
 EOF
   exit 0
 }
@@ -91,7 +92,11 @@ case "$TARGET" in
 esac
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+ROOT="$SCRIPT_DIR"
+while [[ -n "$ROOT" && "$ROOT" != "/" && ! ( -f "$ROOT/go.mod" && -d "$ROOT/cmd/doc" ) ]]; do
+  ROOT="$(cd "$ROOT/.." && pwd)"
+done
+[[ -f "$ROOT/go.mod" && -d "$ROOT/cmd/doc" ]] || die "cannot locate repo root (need go.mod and cmd/doc); script dir: $SCRIPT_DIR"
 cd "$ROOT"
 
 # ---------- load env ----------
@@ -142,19 +147,19 @@ TOKEN="${GITEA_TOKEN:-}"
 
 if [[ "$DRY_RUN" -eq 0 ]]; then
   if [[ -z "$OWNER" || -z "$REPO" || -z "$BASE" || -z "$TOKEN" ]]; then
-    die "Missing Gitea env. Provide --env=scripts/.env.release or export:
+    die "Missing Gitea env. Provide --env=deployments/scripts/.env.release or export:
   GITEA_URL / GITEA_TOKEN / GITEA_OWNER / GITEA_REPO
 Or use --dry-run to build+package only.
-See: scripts/.env.release.example"
+See: deployments/scripts/.env.release.example"
   fi
   command -v curl >/dev/null 2>&1 || die "curl is required for Gitea API"
 fi
 
 # ---------- JSON parsing ----------
-# 为减少外部依赖，release.sh 直接使用 scripts/lib/json.sh
+# 为减少外部依赖，release.sh 直接使用 deployments/scripts/lib/json.sh
 # （无需 jq/python/go）
 # 适合：Gitea Release API 这种 JSON 响应（几十 KB 以内）
-source "$ROOT/scripts/lib/json.sh"
+source "$SCRIPT_DIR/lib/json.sh"
 
 # ---------- 1) Build ----------
 log "[1/5] Build $TARGET release $VERSION ..."

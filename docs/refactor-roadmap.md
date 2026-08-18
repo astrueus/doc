@@ -10,7 +10,7 @@
 > 同时汇总"顺带发现的技术债"与"前端现代化"两条支线，给出多轮可独立上线的迭代计划。
 >
 > **文档生成依据：** 当前仓库代码基线（2026-07 起）；进度以 **2026-08-03 / 分支** `v2.2.1` 为准。  
-> **总进度：** Round 1–2 ✅ · Round 3 MCP MVP ✅ · Round 3 §十七 P0 ✅ · Round 4 代码主线 ✅ · **Round 5 ⏳ 规划中**（工程化 / Vite / 对象存储 / kratos 向分层评估；搜索 FULLTEXT ⏸ 等重定义）。详见 [§七](#七迭代进度追踪)、[docs/README.md](./README.md)、[round-5-execution-plan.md](./round-5/round-5-execution-plan.md)。
+> **总进度：** Round 1–2 ✅ · Round 3 MCP MVP ✅ · Round 3 §十七 P0 ✅ · Round 4 代码主线 ✅ · **Round 5 🔶 批次 A 进行中**（T1/T2/T15/T7；搜索 FULLTEXT ⏸）。详见 [§七](#七迭代进度追踪)、[docs/README.md](./README.md)、[round-5-execution-plan.md](./round-5/round-5-execution-plan.md)。
 >
 > **相关文档：**
 >
@@ -636,17 +636,18 @@ type Cache interface {
 
 ### 🎯 Round 5：工程化收尾 + 对象存储 + 分层评估（3~5 周，按需推进）
 
-> **进度（2026-08-03）：** ⏳ 规划中。明细见 [round-5-execution-plan.md](./round-5/round-5-execution-plan.md) / [§一附决策](./round-5/round-5-execution-plan.md#一附2026-08-03-决策修订)。
+> **进度（2026-08-18）：** 🔶 批次 A 已开工（T1/T2 评估收口、T15 脚本搬迁、T7 测试入口）。明细见 [round-5-execution-plan.md](./round-5/round-5-execution-plan.md)。
 
-- [ ] **T1/T2** 缓存报告 + ORM/分层评估（**朝 kratos 靠拢**；model 可生成；只评估）
+- [x] **T1/T2** 缓存报告 + ORM/分层评估（**朝 kratos 靠拢**；model 可生成；只评估）
 - [ ] **T3** 搜索 FULLTEXT — **⏸ 暂不实施**（方案不完善，等重定义）
-- [ ] **T5** MCP P1 · **T6** Vite P2 · **T7** 测试 CI（路径见 T15）
+- [ ] **T5** MCP P1 · **T6** Vite P2
+- [x] **T7** 测试 CI（路径见 T15；Gitea Runner 就绪后勾云端绿）
 - [ ] **T8/T9** `*Result`→dto + Repository / 可选 Service
 - [ ] **T14** 对象存储上传 + `uploads/` 旧数据迁移
-- [ ] **T15** `scripts/` 是否迁入 `deployments/`（评估 / 可选搬迁）
+- [x] **T15** `scripts/` 全迁 `deployments/scripts/` + 根 Makefile/justfile
 - [ ] （可选/闸门）T10 Controller · T11 安全头 · T12 缓存实施
 - [ ] **T4** 倒排 · **T13** 拆 bootstrap — **⏸ 冻结 / 暂不拆**
-- [x] **明确不做本轮：** 完整 ORM/kratos 替换实施、Bootstrap5/Vue SPA、MCP Book 写工具、OTel、FULLTEXT 旧路线编码
+- [x] **明确不做本轮：** 完整 ORM/kratos 替换实施、Bootstrap5/Vue SPA、MCP `delete_book`、OTel、FULLTEXT 旧路线编码
 
 **风险：** 中。对象存储与 Vite 体量大宜单开；分层评估勿与实施混 PR；搜索冻结避免半成品索引。
 
@@ -775,15 +776,17 @@ type Cache interface {
 
 
 
-### Round 5 — ⏳ 规划中（未开工）
+### Round 5 — 🔶 批次 A 已开工
 
 详见 [round-5-execution-plan.md §十四](./round-5/round-5-execution-plan.md#十四追踪表) / [§一附](./round-5/round-5-execution-plan.md#一附2026-08-03-决策修订)。
 
-- [ ] T1 缓存报告 · T2 ORM/分层（kratos 方向）报告
+- [x] T1 缓存报告 · T2 ORM/分层（kratos 方向）报告
 - [ ] T3 搜索 FULLTEXT — **⏸ 暂不实施**
-- [ ] T5 MCP P1 · T6 Vite · T7 测试 CI
+- [ ] T5 MCP P1 · T6 Vite
+- [x] T7 测试 CI（workflow 已入库，待 Runner）
 - [ ] T8 `*Result`→dto · T9 Repo/Service
-- [ ] **T14** 对象存储 + 旧数据迁移 · **T15** scripts↔deployments
+- [ ] **T14** 对象存储 + 旧数据迁移
+- [x] **T15** scripts → `deployments/scripts/`
 - [ ] （可选/闸门）T10 · T11 · T12
 - [ ] T4 倒排 · T13 bootstrap — **⏸**
 
@@ -816,8 +819,10 @@ type Cache interface {
 | **2026-08-03** | **Round 5：FULLTEXT/FTS5 搜索最小方案是否做？** | **暂不实施**；须重新定义方案；重定义前不再处理 | 现方案不完善；过渡期继续 LIKE；T3/T4 ⏸ |
 | **2026-08-03** | **Round 5：拆 bootstrap.go？** | **待定，暂时不拆** | 无强收益；避免无意义 churn |
 | **2026-08-03** | **Round 5：对象存储？** | **做**：新上传支持对象存储 + 旧 `uploads/` 迁移 | 多实例与备份需要；见 R5 T14 |
-| **2026-08-03** | **Round 5：`scripts/` 迁 `deployments/`？** | **本轮评估并可选搬迁**（T15） | 部署资产已在 deployments；构建/测试脚本落点需统一 |
+| **2026-08-03** | **Round 5：`scripts/` 迁 `deployments/`？** | **方案 A 全迁** + 根 Makefile/justfile（T15）；2026-08-18 已落地 | 部署资产已在 deployments；构建/测试脚本落点统一 |
 | **2026-08-03** | **Round 5：ORM 评估朝向？** | **朝 go-kratos 分层靠拢**；期望 model **可自动生成**；模型与业务逻辑拆分 | 本轮只出评估报告不实施；见 R5 T2 |
+| **2026-08-18** | **Round 5 T2：本轮 ORM/分层结论？** | **A：维持 beego/orm + 扩 Repo**；Round 6+ **既定** ① 数据层（生成 model + `data`）→ ② 业务层（`biz`）；③ 全量 kratos HTTP 默认不做。ent vs gorm gen 开工前 spike，默认倾向 gorm gen | 见 [round-5-orm-migration-evaluation.md](./round-5/round-5-orm-migration-evaluation.md) |
+| **2026-08-18** | **model 文件 PascalCase → snake_case？** | **与 T8 合并 `git mv`**，不单开本批 PR | 避免 Result 迁 dto 前搬两次 |
 | **2026-07-31** | **MCP MVP 之后还要不要扩工具面？**                                             | **先补体验，不大扩工具**                                                            | Cursor 实测：10 工具读写闭环已够用；痛点是长文写入、stdio stdout 污染、`append` 缺锁/`auto_release`。详见 round-3 §十七 P0/P1/P2                                                                                                                                                                             |
 | **2026-07-31** | **是否增加 MCP** `create_book` **/** `update_book`**？**                 | **当前阶段不做**                                                                | MVP 定位「在已有项目里改文档」；Book 创建/设置字段重、误操作面大；建项目继续走 Web。出现「AI/CI 一键建空项目」稳定需求后再做最小集（title/identify/private ± description；默认不做 delete_book）                                                                                                                                            |
 | **2026-08-03** | **Round 4 T5：是否上 go-i18n/v2 + toml？**                               | **否**；落地 `internal/i18n` 读既有 `.ini`                                       | 保持 `section.key` + `Sprintf` 与模板 `{{i18n}}` 零改动；去掉 11 年前的 `beego/i18n` 即可。复数/ICU 需求出现后再迁                                                                                                                                                                                      |

@@ -1,0 +1,32 @@
+name: test
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  test:
+    name: whitelist packages
+    runs-on: ubuntu-latest
+    env:
+      GOPRIVATE: git.itopcms.com
+      GONOSUMDB: git.itopcms.com
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Install gcc
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential
+
+      - name: Test
+        run: bash deployments/scripts/test.sh

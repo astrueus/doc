@@ -105,7 +105,7 @@ Gitea：`https://git.itopcms.com/astrueus/doc`
 | 电脑 B | 切的过程中 **不要提交、不要往 `v2.2.1` push**。等 A 说 `master` 已更新，再 `fetch` + 切 `master`（步骤 E） |
 | Gitea 网页 | 合 PR（若没用 API）、保护 `master`（步骤 D）。Agent **改不了**保护规则 |
 
-两账号都需要能推功能分支。发版 Token 仍只放各机 `scripts/.env.release`，不进 Git。
+两账号都需要能推功能分支。发版 Token 仍只放各机 `deployments/scripts/.env.release`，不进 Git。
 
 ---
 

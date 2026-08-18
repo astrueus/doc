@@ -6,13 +6,14 @@
 
 > **脚本已落盘：**  
 
-> - Windows：`scripts/release.ps1`、`scripts/release.bat`  
+> - Windows：`deployments/scripts/release.ps1`、`deployments/scripts/release.bat`  
 
-> - Linux / macOS：`scripts/release.sh`  
+> - Linux / macOS：`deployments/scripts/release.sh`  
 
-> - JSON 解析：`scripts/lib/json.sh`（`release.sh` 已引用）  
+> - JSON 解析：`deployments/scripts/lib/json.sh`（`release.sh` 已引用）  
 
-> 密钥放 `scripts/.env.release`（gitignore，见 `.env.release.example`）。
+> 密钥放 `deployments/scripts/.env.release`（gitignore，见 `.env.release.example`）。  
+> 日常也可 `just release <version>` / `make release VERSION=<version>`。
 
 
 
@@ -40,9 +41,9 @@
 
 开发者本机
 
-  scripts/release.bat|ps1|sh  ──┐
+  deployments/scripts/release.bat|ps1|sh  ──┐
 
-    ├─ 读取 scripts/.env.release（或 --env=）
+    ├─ 读取 deployments/scripts/.env.release（或 --env=）
 
     ├─ 调 build.bat / build.sh 编 release
 
@@ -112,13 +113,13 @@ Linux / macOS：
 
 ```bash
 
-cp scripts/.env.release.example scripts/.env.release
+cp deployments/scripts/.env.release.example deployments/scripts/.env.release
 
 ```
 
 
 
-编辑 `scripts/.env.release`：
+编辑 `deployments/scripts/.env.release`：
 
 
 
@@ -136,7 +137,7 @@ GITEA_REPO=doc
 
 
 
-> `scripts/.env.release` 已在 `.gitignore` 中。也可用系统环境变量；脚本会加载 `--env` 文件。
+> `deployments/scripts/.env.release` 已在 `.gitignore` 中。也可用系统环境变量；脚本会加载 `--env` 文件。
 
 
 
@@ -144,12 +145,12 @@ GITEA_REPO=doc
 
 
 
-参见 `scripts/README.md`：Go ≥ 1.25；Windows 构建需 Zig 或 MinGW。  
+参见 `deployments/scripts/README.md`：Go ≥ 1.25；Windows 构建需 Zig 或 MinGW。  
 
 `release.sh` 额外需要：`curl`、`tar`；打 Windows zip 时需 `zip`。  
-发版脚本的 JSON 解析使用仓库内 `scripts/lib/json.sh`（纯 bash，无需 jq/python/go）。
+发版脚本的 JSON 解析使用仓库内 `deployments/scripts/lib/json.sh`（纯 bash，无需 jq/python/go）。
 
-需要在其它脚本里通用解析 JSON，可 `source scripts/lib/json.sh`（零第三方依赖，参考 JSON.sh 思路）。
+需要在其它脚本里通用解析 JSON，可 `source deployments/scripts/lib/json.sh`（零第三方依赖，参考 JSON.sh 思路）。
 
 
 
@@ -257,19 +258,19 @@ powershell -ExecutionPolicy Bypass -File scripts\release.ps1 `
 
 # 只编译+打包（默认 target=linux）
 
-./scripts/release.sh 0.0.1-test --dry-run
+./deployments/scripts/release.sh 0.0.1-test --dry-run
 
 
 
 # 草稿发版
 
-./scripts/release.sh 0.0.1-test linux --draft
+./deployments/scripts/release.sh 0.0.1-test linux --draft
 
 
 
 # 正式双平台
 
-./scripts/release.sh 1.0.0 all
+./deployments/scripts/release.sh 1.0.0 all
 
 ```
 
@@ -365,7 +366,7 @@ git tag -d v0.0.1-test
 
 
 
-立刻在 Gitea 吊销该 Token，更新 `scripts/.env.release`。
+立刻在 Gitea 吊销该 Token，更新 `deployments/scripts/.env.release`。
 
 
 
@@ -393,7 +394,7 @@ curl -X DELETE -H "Authorization: token $GITEA_TOKEN" \
 
 
 
-安装 `zip`（如 `apt install zip` / `yum install zip`），或只发 Linux：`./scripts/release.sh 1.0.0 linux`。
+安装 `zip`（如 `apt install zip` / `yum install zip`），或只发 Linux：`./deployments/scripts/release.sh 1.0.0 linux`。
 
 
 
@@ -407,7 +408,7 @@ curl -X DELETE -H "Authorization: token $GITEA_TOKEN" \
 
 - [ ] PAT 仅 `repository` 读写
 
-- [ ] `scripts/.env.release` 不进 git
+- [ ] `deployments/scripts/.env.release` 不进 git
 
 - [ ] 试验用 `0.0.x-test` + `--draft`，测完删 tag/Release
 

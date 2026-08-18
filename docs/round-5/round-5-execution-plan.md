@@ -4,7 +4,7 @@
 > **定位：** 承接 Round 3/4 遗留中**仍可推进**的项——补齐评估报告、Vite、测试工程化、分层债；并新增**对象存储**、**`scripts/`→`deployments/`**、**OAuth2 登录重写**。  
 > **按需推进：** 大块（Vite / 对象存储）可独立 sprint；评估类与小增强可并行。
 >
-> **状态（2026-08-03 修订）：** ⏳ **未开工**。明细以 [§十四 追踪表](#十四追踪表) 为准。  
+> **状态（2026-08-18 修订）：** 🔶 **批次 A 已开工**：T1/T2 评估收口、env 硬切、T15 脚本搬迁、T7 测试入口与 workflow。其余 ⏳。明细以 [§十四 追踪表](#十四追踪表) 为准。  
 > **当日决策：** 见 [§一附](#一附2026-08-03-决策修订)（搜索 FULLTEXT 暂缓重定义、bootstrap 暂不拆、ORM 评估朝 kratos 靠拢等）。
 
 ---
@@ -83,7 +83,7 @@
 | Controller 域拆分 | Round 2 | **T10**（可选） |
 | CORS/CSP/HSTS | Round 4+ | **T11**（可选） |
 | 上传仅本地 `uploads/` | 现状 | **T14**（新增） |
-| 根目录仍有 `scripts/build.*` | Round 2 后部署已在 `deployments/` | **T15**（新增） |
+| 根目录 `scripts/build.*`（已迁走） | Round 2 后部署已在 `deployments/` | **T15**（已落地） |
 | 钉钉登录无统一 OAuth；无企微 | upstream §3.2 | **T16**（新增） |
 
 ### 2.2 前置条件（开工前核对）
@@ -173,8 +173,8 @@
 
 ### 验收
 
-- [ ] 报告合入；§八 决策日志写入拍板结论  
-- [ ] **本轮无** ORM/框架切换实施 PR  
+- [x] 报告合入；§八 决策日志写入拍板结论  
+- [x] **本轮无** ORM/框架切换实施 PR  
 
 ---
 
@@ -257,8 +257,8 @@
 
 ### 验收
 
-- [ ] 一键跑测写入 README / AGENTS  
-- [ ] CI 绿  
+- [x] 一键跑测写入 README / AGENTS  
+- [x] 本地白名单绿；CI workflow 已入库（Runner 就绪后再确认云端绿）  
 
 ---
 
@@ -395,8 +395,8 @@ CORS / CSP / HSTS（可关）；建议 T6 后再收紧 CSP。
 ### 验收
 
 - [x] 书面结论写入 [round-5-scripts-layout.md](./round-5-scripts-layout.md)  
-- [ ] 路径搬迁 + 引用更新（README、release 文档、Actions）且 `deployments/scripts/build.sh` / `release.sh` 可跑  
-- [ ] T7 使用 `deployments/scripts/test.sh`  
+- [x] 路径搬迁 + 引用更新（README、release 文档、Actions）且 `deployments/scripts/build.sh` / `release.sh` 可跑  
+- [x] T7 使用 `deployments/scripts/test.sh`  
 
 ---
 
@@ -428,12 +428,12 @@ CORS / CSP / HSTS（可关）；建议 T6 后再收紧 CSP。
 | # | 任务 | PR | Commit | 状态 |
 |---|---|---|---|---|
 | T1 | 缓存完全重构评估 | | | ✅ 结论已定 |
-| T2 | ORM/分层评估（kratos 方向） | | | ⏳ |
+| T2 | ORM/分层评估（kratos 方向） | | | ✅ 结论已定 |
 | T3 | 搜索 FULLTEXT/FTS5 | | | ⏸ **暂不实施**（等新方案） |
 | T4 | 倒排/向量评估 | | | ⏸ **冻结** |
 | T5 | MCP P1 + Book 写最小集 | | | ⏳ |
 | T6 | Vite P2 | | | ⏳ |
-| T7 | 测试 CI / 覆盖率门槛 | | | ⏳ |
+| T7 | 测试 CI / 覆盖率门槛 | | | ✅ 脚本+workflow；待 Runner 勾云端绿 |
 | T8 | `*Result` → dto | | | ⏳ |
 | T9 | Repo 扩面 + 可选 Service | | | ⏳ |
 | T10 | Controller 域拆分 | | | ⏸ **暂不拆**（解冻后勿平铺） |
@@ -441,7 +441,7 @@ CORS / CSP / HSTS（可关）；建议 T6 后再收紧 CSP。
 | T12 | 缓存完全重构实施 | | | ⏳ |
 | T13 | 拆 bootstrap.go | | | ⏸ **待定，暂不拆** |
 | T14 | 对象存储完全重构 + 全量迁移 | | | ⏳ |
-| T15 | scripts → deployments **方案 A 全迁** | | | ⏳ 已拍板；待搬迁 |
+| T15 | scripts → deployments **方案 A 全迁** | | | ✅ 已搬迁 |
 | T16 | OAuth2 登录重写（钉钉 + 企微） | | | ⏳ |
 
 ---
@@ -473,10 +473,10 @@ CORS / CSP / HSTS（可关）；建议 T6 后再收紧 CSP。
 
 - [ ] MCP：stdio / HTTP；P1（含 create_book / update_book）  
 - [ ] 前端：Vite 后关键页 200  
-- [ ] `go test` / CI 绿  
+- [ ] `go test` / CI 绿（白名单脚本已绿；Gitea Runner 就绪后勾云端）  
 - [ ] 对象存储：业务无直写盘；MinIO + 预签名；全量 migrate/verify/rewrite  
 - [ ] OAuth2：钉钉回归；企微（若启用）登录成功  
-- [ ] 环境变量命名：硬切为 `DOC_*`（**不**再兼容 `MINDOC_*`；`DOC_ADDR`/`DOC_PORT`；默认 `app_key`/`sessionname`/redis 前缀已改 `doc*`），验证关键项（如 `DOC_HOME`）生效 — 见 [round-5-env-mindoc-to-doc.md](./round-5-env-mindoc-to-doc.md)  
+- [x] 环境变量命名：硬切为 `DOC_*`（**不**再兼容 `MINDOC_*`；代码与 example 已切；部署连库冒烟仍须勾） — 见 [round-5-env-mindoc-to-doc.md](./round-5-env-mindoc-to-doc.md)  
 - [ ] 若动缓存：新前缀生效；压测击穿/穿透；指标可看；可回滚 `mode`  
 - [ ] **不做** FULLTEXT 升级步骤（本轮冻结）  
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/lib/json_test.sh —— json.sh 单测。运行方式：bash scripts/lib/json_test.sh
+# json.sh 单测。运行：bash deployments/scripts/lib/json_test.sh
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
