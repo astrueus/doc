@@ -2,7 +2,7 @@
 
 > 对应 [round-5-execution-plan.md §七 T5](./round-5-execution-plan.md#七t5--mcp-体验-p10.5~1-天)。  
 > 承接 Round 3 §十七 P1，并**纳入 Book 写工具最小集**（修订原 §17.3「当前阶段不做」——本轮做 create/update；delete 仍默认不做）。  
-> **状态：** 🔶 实施中（`feat/r5-mcp-p1`）。  
+> **状态：** ✅ 已合入 `master`（`80ee298`，分支 `feat/r5-mcp-p1` 保留）。  
 > **2026-08-18 增补：** `create_document` 增加可选 `auto_release`（与 update/append 对齐）；**不**读取项目级 `book.auto_release`。
 
 ---
