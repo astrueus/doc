@@ -2,8 +2,19 @@
 
 ## Unreleased / Round 5
 
+其余任务（T6 Vite、T8/T9、T12、T14、T16 等）见 [round-5-execution-plan.md](docs/round-5/round-5-execution-plan.md)。已交付项见 **2.3.0**。
+
+## 2.3.0 — 2026-08-18
+
+> 从 `v2.2.1` 升级到本版请先读下面两条 Breaking，再部署 Release 附件。  
 > ⚠️ **Breaking（环境变量硬切）**：`MINDOC_*` **不再兼容**，一律改为 `DOC_*`（监听为 `DOC_ADDR` / `DOC_PORT`；邮件过期为 `DOC_MAIL_EXPIRED`；部署同步为 `DOC_SYNC`）。完整对照见 [docs/round-5/round-5-env-mindoc-to-doc.md](docs/round-5/round-5-env-mindoc-to-doc.md)。  
 > ⚠️ **Breaking（默认标识）**：`app_key` 默认 `doc`、`sessionname` 默认 `doc_id`、`cache_redis_prefix` 默认 `doc::cache`。升级须**清空 session 存储**，并视为旧「记住我」cookie / 旧 Redis 前缀缓存失效。
+
+### Added
+
+- MCP T5：`create_book` / `update_book`（元数据最小集，无删书、无封面）
+- MCP：`create_document` 支持 `if_exists=update`、可选 `auto_release`（默认不发布，不读项目自动发布开关）
+- MCP：`get_document` 按 Unicode 字符截断；`search_document` 返回 `book_identify` / `doc_identify`
 
 ### Changed
 
@@ -12,12 +23,6 @@
 - T15：根目录 `scripts/` 全迁 `deployments/scripts/`；根目录用 `Makefile` / `justfile` 作快捷入口
 - T7：新增 `deployments/scripts/test.sh` / `test.ps1`、覆盖率基线、`.gitea/workflows/test.yml` 白名单硬闸
 - T2：ORM/分层评估结论入库（本轮维持 beego/orm + 扩 Repo；Round 6+ 既定 ① data → ② biz）
-
-### Added
-
-- MCP T5：`create_book` / `update_book`（元数据最小集，无删书、无封面）
-- MCP：`create_document` 支持 `if_exists=update`、可选 `auto_release`（默认不发布，不读项目自动发布开关）
-- MCP：`get_document` 按 Unicode 字符截断；`search_document` 返回 `book_identify` / `doc_identify`
 
 ## Unreleased / Round 4
 
