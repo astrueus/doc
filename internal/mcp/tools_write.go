@@ -3,6 +3,7 @@ package mcp
 import (
 	"context"
 	"strconv"
+	"strings"
 	"time"
 
 	"git.itopcms.com/astrueus/doc/internal/config"
@@ -20,18 +21,59 @@ func handleCreateDocument(ctx context.Context, _ *sdkmcp.CallToolRequest, in mcp
 	if m == nil {
 		return toolBizErrorOut[mcpdto.CreateDocumentOut](errs.New(errs.CodeUnauthorized, "unauthorized"))
 	}
-	if in.BookID <= 0 || in.Title == "" {
-		return toolBizErrorOut[mcpdto.CreateDocumentOut](errs.New(errs.CodeInvalidParam, "book_id and title required"))
+
+	bookID, _, err := resolveBookID(m, in.BookID, in.BookIdentify)
+	if err != nil {
+		return toolBizErrorOut[mcpdto.CreateDocumentOut](err)
 	}
-	if err := ensureWritable(m, in.BookID); err != nil {
+	if err := ensureWritable(m, bookID); err != nil {
 		return toolBizErrorOut[mcpdto.CreateDocumentOut](err)
 	}
 
+	ident, err := resolveDocIdentify(in.Identify, in.DocIdentify)
+	if err != nil {
+		return toolBizErrorOut[mcpdto.CreateDocumentOut](err)
+	}
+	ifExists, err := parseIfExists(in.IfExists)
+	if err != nil {
+		return toolBizErrorOut[mcpdto.CreateDocumentOut](err)
+	}
+	if ifExists == "update" && ident == "" {
+		return toolBizErrorOut[mcpdto.CreateDocumentOut](errs.New(errs.CodeInvalidParam, "identify required when if_exists=update"))
+	}
+
+	parentID, err := resolveParentID(ctx, bookID, in.ParentID, in.ParentIdentify)
+	if err != nil {
+		return toolBizErrorOut[mcpdto.CreateDocumentOut](err)
+	}
+
+	var existing *model.Document
+	if ident != "" {
+		doc, findErr := documentRepo().FindByIdentify(ctx, ident, bookID)
+		if findErr != nil && findErr != orm.ErrNoRows {
+			return toolBizErrorOut[mcpdto.CreateDocumentOut](errs.Wrap(errs.CodeInternal, "lookup document failed", findErr))
+		}
+		if findErr == nil {
+			existing = doc
+		}
+	}
+
+	if existing != nil {
+		if ifExists != "update" {
+			return toolBizErrorOut[mcpdto.CreateDocumentOut](errs.New(errs.CodeInvalidParam, "document identify already exists"))
+		}
+		return updateExistingOnCreate(ctx, m, existing, in)
+	}
+
+	if strings.TrimSpace(in.Title) == "" {
+		return toolBizErrorOut[mcpdto.CreateDocumentOut](errs.New(errs.CodeInvalidParam, "title required"))
+	}
+
 	doc := model.NewDocument()
-	doc.BookId = in.BookID
-	doc.ParentId = in.ParentID
+	doc.BookId = bookID
+	doc.ParentId = parentID
 	doc.DocumentName = in.Title
-	doc.Identify = in.Identify
+	doc.Identify = ident
 	doc.Markdown = in.Markdown
 	doc.MemberId = m.MemberId
 	doc.ModifyAt = m.MemberId
@@ -40,7 +82,89 @@ func handleCreateDocument(ctx context.Context, _ *sdkmcp.CallToolRequest, in mcp
 	if err := documentRepo().Save(ctx, doc); err != nil {
 		return toolBizErrorOut[mcpdto.CreateDocumentOut](errs.Wrap(errs.CodeInternal, "create document failed", err))
 	}
-	return nil, mcpdto.CreateDocumentOut{DocumentID: doc.DocumentId, Version: doc.Version}, nil
+	maybeAutoRelease(ctx, in.AutoRelease, doc.DocumentId)
+	return nil, mcpdto.CreateDocumentOut{DocumentID: doc.DocumentId, Version: doc.Version, Updated: false}, nil
+}
+
+func resolveDocIdentify(identify, docIdentify string) (string, error) {
+	a := strings.TrimSpace(identify)
+	b := strings.TrimSpace(docIdentify)
+	if a != "" && b != "" && a != b {
+		return "", errs.New(errs.CodeInvalidParam, "identify and doc_identify mismatch")
+	}
+	if a != "" {
+		return a, nil
+	}
+	return b, nil
+}
+
+func parseIfExists(v string) (string, error) {
+	s := strings.ToLower(strings.TrimSpace(v))
+	if s == "" {
+		return "error", nil
+	}
+	if s != "error" && s != "update" {
+		return "", errs.New(errs.CodeInvalidParam, "if_exists must be error or update")
+	}
+	return s, nil
+}
+
+func resolveParentID(ctx context.Context, bookID, parentID int, parentIdentify string) (int, error) {
+	if parentID > 0 {
+		parent, err := documentRepo().Find(ctx, parentID)
+		if err != nil {
+			return 0, errs.Wrap(errs.CodeNotFound, "parent document not found", err)
+		}
+		if parent.BookId != bookID {
+			return 0, errs.New(errs.CodeInvalidParam, "parent document not in book")
+		}
+		return parent.DocumentId, nil
+	}
+	parentIdentify = strings.TrimSpace(parentIdentify)
+	if parentIdentify == "" {
+		return 0, nil
+	}
+	parent, err := documentRepo().FindByIdentify(ctx, parentIdentify, bookID)
+	if err != nil {
+		return 0, errs.Wrap(errs.CodeNotFound, "parent document not found", err)
+	}
+	return parent.DocumentId, nil
+}
+
+func updateExistingOnCreate(ctx context.Context, m *model.Member, existing *model.Document, in mcpdto.CreateDocumentIn) (*sdkmcp.CallToolResult, mcpdto.CreateDocumentOut, error) {
+	version := existing.Version
+	if in.Markdown != "" {
+		if in.ExpectVersion == 0 {
+			return toolBizErrorOut[mcpdto.CreateDocumentOut](errs.New(errs.CodeInvalidParam, "expect_version required when if_exists=update with markdown"))
+		}
+		newVersion := time.Now().Unix()
+		aff, err := documentRepo().UpdateMarkdownWithVersion(ctx, existing.DocumentId, in.ExpectVersion, in.Markdown, m.MemberId, newVersion)
+		if err != nil {
+			return toolBizErrorOut[mcpdto.CreateDocumentOut](errs.Wrap(errs.CodeInternal, "update document failed", err))
+		}
+		if aff == 0 {
+			return toolBizErrorOut[mcpdto.CreateDocumentOut](errs.New(errs.CodeVersionConflict, "version conflict: please refetch with get_document and retry"))
+		}
+		version = newVersion
+	}
+	if title := strings.TrimSpace(in.Title); title != "" && title != existing.DocumentName {
+		existing.DocumentName = title
+		existing.ModifyAt = m.MemberId
+		if err := existing.InsertOrUpdate("document_name", "modify_at"); err != nil {
+			return toolBizErrorOut[mcpdto.CreateDocumentOut](errs.Wrap(errs.CodeInternal, "update title failed", err))
+		}
+	}
+	maybeAutoRelease(ctx, in.AutoRelease, existing.DocumentId)
+	return nil, mcpdto.CreateDocumentOut{DocumentID: existing.DocumentId, Version: version, Updated: true}, nil
+}
+
+func maybeAutoRelease(ctx context.Context, auto bool, documentID int) {
+	if !auto || documentID <= 0 {
+		return
+	}
+	if err := releaseOneDocument(ctx, documentID); err != nil {
+		logs.Warning("auto_release failed for doc %d: %v", documentID, err)
+	}
 }
 
 func handleUpdateDocumentContent(ctx context.Context, _ *sdkmcp.CallToolRequest, in mcpdto.UpdateDocumentContentIn) (*sdkmcp.CallToolResult, mcpdto.UpdateDocumentContentOut, error) {
@@ -71,9 +195,7 @@ func handleUpdateDocumentContent(ctx context.Context, _ *sdkmcp.CallToolRequest,
 	}
 
 	if in.AutoRelease {
-		if err := releaseOneDocument(ctx, in.DocumentID); err != nil {
-			logs.Warning("auto_release failed for doc %d: %v", in.DocumentID, err)
-		}
+		maybeAutoRelease(ctx, true, in.DocumentID)
 	}
 
 	return nil, mcpdto.UpdateDocumentContentOut{
@@ -112,9 +234,7 @@ func handleAppendDocumentContent(ctx context.Context, _ *sdkmcp.CallToolRequest,
 	}
 
 	if in.AutoRelease {
-		if err := releaseOneDocument(ctx, in.DocumentID); err != nil {
-			logs.Warning("auto_release failed for doc %d: %v", in.DocumentID, err)
-		}
+		maybeAutoRelease(ctx, true, in.DocumentID)
 	}
 
 	return nil, mcpdto.AppendDocumentContentOut{DocumentID: in.DocumentID, Version: newVersion}, nil

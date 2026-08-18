@@ -24,7 +24,15 @@ func handleSearchDocument(ctx context.Context, _ *sdkmcp.CallToolRequest, in mcp
 	if err != nil {
 		return toolBizErrorOut[mcpdto.SearchDocumentOut](errs.Wrap(errs.CodeInternal, "search failed", err))
 	}
-	return nil, toSearchOut(docs), nil
+	idSet := make([]int, 0, len(docs))
+	for _, d := range docs {
+		idSet = append(idSet, d.BookId)
+	}
+	idents, err := bookRepo().IdentifiesByIDs(ctx, idSet)
+	if err != nil {
+		return toolBizErrorOut[mcpdto.SearchDocumentOut](errs.Wrap(errs.CodeInternal, "load book identify failed", err))
+	}
+	return nil, toSearchOut(docs, idents), nil
 }
 
 func handleGetDocument(ctx context.Context, _ *sdkmcp.CallToolRequest, in mcpdto.GetDocumentIn) (*sdkmcp.CallToolResult, mcpdto.GetDocumentOut, error) {
@@ -37,7 +45,11 @@ func handleGetDocument(ctx context.Context, _ *sdkmcp.CallToolRequest, in mcpdto
 	if err != nil {
 		return toolBizErrorOut[mcpdto.GetDocumentOut](err)
 	}
-	return nil, toGetDocumentOut(doc, bookIdentify), nil
+	includeTruncated := true
+	if in.IncludeTruncated != nil {
+		includeTruncated = *in.IncludeTruncated
+	}
+	return nil, toGetDocumentOut(doc, bookIdentify, in.MaxChars, includeTruncated), nil
 }
 
 func resolveDocument(m *model.Member, in mcpdto.GetDocumentIn) (*model.Document, string, error) {

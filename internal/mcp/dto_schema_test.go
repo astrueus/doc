@@ -17,6 +17,8 @@ func TestMCPDTOInputSchemas(t *testing.T) {
 		{"ListBooksIn", func() (*jsonschema.Schema, error) { return jsonschema.For[mcpdto.ListBooksIn](nil) }},
 		{"ListDocumentTreeIn", func() (*jsonschema.Schema, error) { return jsonschema.For[mcpdto.ListDocumentTreeIn](nil) }},
 		{"CreateDocumentIn", func() (*jsonschema.Schema, error) { return jsonschema.For[mcpdto.CreateDocumentIn](nil) }},
+		{"CreateBookIn", func() (*jsonschema.Schema, error) { return jsonschema.For[mcpdto.CreateBookIn](nil) }},
+		{"UpdateBookIn", func() (*jsonschema.Schema, error) { return jsonschema.For[mcpdto.UpdateBookIn](nil) }},
 		{"UpdateDocumentContentIn", func() (*jsonschema.Schema, error) { return jsonschema.For[mcpdto.UpdateDocumentContentIn](nil) }},
 		{"AppendDocumentContentIn", func() (*jsonschema.Schema, error) { return jsonschema.For[mcpdto.AppendDocumentContentIn](nil) }},
 		{"UpdateDocumentMetaIn", func() (*jsonschema.Schema, error) { return jsonschema.For[mcpdto.UpdateDocumentMetaIn](nil) }},

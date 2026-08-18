@@ -1,9 +1,11 @@
 package mcpdto
 
 type GetDocumentIn struct {
-	DocumentID   int    `json:"document_id,omitempty" jsonschema:"文档 ID（与 book_identify+doc_identify 二选一）"`
-	BookIdentify string `json:"book_identify,omitempty" jsonschema:"项目 identify"`
-	DocIdentify  string `json:"doc_identify,omitempty" jsonschema:"文档 identify"`
+	DocumentID       int    `json:"document_id,omitempty" jsonschema:"文档 ID（与 book_identify+doc_identify 二选一）"`
+	BookIdentify     string `json:"book_identify,omitempty" jsonschema:"项目 identify"`
+	DocIdentify      string `json:"doc_identify,omitempty" jsonschema:"文档 identify"`
+	MaxChars         int    `json:"max_chars,omitempty" jsonschema:"按 Unicode 字符数截断 markdown/release，0=不截断"`
+	IncludeTruncated *bool  `json:"include_truncated,omitempty" jsonschema:"截断时是否追加 …[truncated]，默认 true"`
 }
 
 type GetDocumentOut struct {
@@ -16,19 +18,27 @@ type GetDocumentOut struct {
 	Release      string `json:"release"`
 	Version      int64  `json:"version"`
 	ParentID     int    `json:"parent_id"`
+	Truncated    bool   `json:"truncated"`
 }
 
 type CreateDocumentIn struct {
-	BookID   int    `json:"book_id" jsonschema:"项目 ID"`
-	ParentID int    `json:"parent_id,omitempty" jsonschema:"父文档 ID，0 表示根"`
-	Title    string `json:"title" jsonschema:"文档标题"`
-	Identify string `json:"identify,omitempty" jsonschema:"文档唯一标识，可空自动生成"`
-	Markdown string `json:"markdown,omitempty" jsonschema:"初始 Markdown 内容"`
+	BookID         int    `json:"book_id,omitempty" jsonschema:"项目 ID（与 book_identify 二选一）"`
+	BookIdentify   string `json:"book_identify,omitempty" jsonschema:"项目 identify"`
+	ParentID       int    `json:"parent_id,omitempty" jsonschema:"父文档 ID，0 表示根；仅创建路径生效"`
+	ParentIdentify string `json:"parent_identify,omitempty" jsonschema:"父文档 identify；仅创建路径，与 parent_id 二选一"`
+	Title          string `json:"title,omitempty" jsonschema:"文档标题；新建必填，update 时可省略"`
+	Identify       string `json:"identify,omitempty" jsonschema:"文档唯一标识；与 doc_identify 同义"`
+	DocIdentify    string `json:"doc_identify,omitempty" jsonschema:"文档 identify 别名"`
+	Markdown       string `json:"markdown,omitempty" jsonschema:"Markdown 内容"`
+	IfExists       string `json:"if_exists,omitempty" jsonschema:"identify 已存在时：error（缺省）或 update"`
+	ExpectVersion  int64  `json:"expect_version,omitempty" jsonschema:"if_exists 为 update 且写入 markdown 时必填"`
+	AutoRelease    bool   `json:"auto_release,omitempty" jsonschema:"写入后是否立即 release（Markdown→HTML），默认 false"`
 }
 
 type CreateDocumentOut struct {
 	DocumentID int   `json:"document_id"`
 	Version    int64 `json:"version"`
+	Updated    bool  `json:"updated"`
 }
 
 type UpdateDocumentContentIn struct {

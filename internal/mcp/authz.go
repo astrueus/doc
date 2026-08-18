@@ -45,6 +45,51 @@ func canReadBook(m *model.Member, bookID int) error {
 	return nil
 }
 
+func ensureCanCreateBook(m *model.Member) error {
+	if m == nil {
+		return errs.New(errs.CodeUnauthorized, "unauthorized")
+	}
+	if m.Status != 0 {
+		return errs.New(errs.CodeForbidden, "forbidden: member disabled")
+	}
+	return nil
+}
+
+func bookRoleOf(m *model.Member, bookID int) (config.BookRole, error) {
+	if m == nil {
+		return config.BookObserver, errs.New(errs.CodeUnauthorized, "unauthorized")
+	}
+	if m.IsAdministrator() {
+		return config.BookFounder, nil
+	}
+	if _, err := model.NewBook().Find(bookID); err != nil {
+		return config.BookObserver, errs.Wrap(errs.CodeNotFound, "book not found", err)
+	}
+	role, err := model.NewBook().FindForRoleId(bookID, m.MemberId)
+	if err != nil {
+		return config.BookObserver, errs.New(errs.CodeForbidden, "forbidden")
+	}
+	return role, nil
+}
+
+// ensureBookMetaWritable 对齐 Web：改标题/简介需创始人或项目管理员；改公开/私有仅创始人。
+func ensureBookMetaWritable(m *model.Member, bookID int, changePrivate bool) error {
+	role, err := bookRoleOf(m, bookID)
+	if err != nil {
+		return err
+	}
+	if changePrivate {
+		if role != config.BookFounder {
+			return errs.New(errs.CodeForbidden, "forbidden: only founder can change private")
+		}
+		return nil
+	}
+	if role != config.BookFounder && role != config.BookAdmin {
+		return errs.New(errs.CodeForbidden, "forbidden: need BookAdmin or founder")
+	}
+	return nil
+}
+
 // ensureWritable requires BookRole <= BookEditor (founder/admin/editor).
 func ensureWritable(m *model.Member, bookID int) error {
 	if m == nil {

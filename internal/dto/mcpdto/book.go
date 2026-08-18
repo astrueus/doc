@@ -39,3 +39,19 @@ type ListDocumentTreeOut struct {
 	BookIdentify string             `json:"book_identify"`
 	Nodes        []DocumentTreeNode `json:"nodes"`
 }
+
+type CreateBookIn struct {
+	Title        string `json:"title" jsonschema:"项目名称"`
+	Identify     string `json:"identify" jsonschema:"项目唯一标识"`
+	Private      bool   `json:"private,omitempty" jsonschema:"true 表示私有，默认公开"`
+	Description  string `json:"description,omitempty" jsonschema:"简介"`
+	ItemIdentify string `json:"item_identify,omitempty" jsonschema:"所属空间 key，缺省为默认空间"`
+}
+
+type UpdateBookIn struct {
+	BookID       int     `json:"book_id,omitempty" jsonschema:"项目 ID（与 book_identify 二选一）"`
+	BookIdentify string  `json:"book_identify,omitempty" jsonschema:"项目 identify"`
+	Title        *string `json:"title,omitempty" jsonschema:"新标题"`
+	Description  *string `json:"description,omitempty" jsonschema:"新简介"`
+	Private      *bool   `json:"private,omitempty" jsonschema:"是否私有；省略则不改"`
+}

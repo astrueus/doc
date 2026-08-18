@@ -217,16 +217,17 @@
 
 | 项 | 说明 |
 |---|---|
-| P1-1 | `create_document` 增加 `if_exists=update` |
+| P1-1 | `create_document` 增加 `if_exists=update`、可选 `auto_release`（默认 false；不读 `book.auto_release`） |
 | P1-2 | `get_document` 截断选项 |
 | P1-3 | `search_document` 返回 `book_identify` / `doc_identify`（仍可基于 LIKE） |
-| P1-4 | **`create_book` / `update_book`**（元数据最小集；**不做** `delete_book`） |
+| P1-4 | **`create_book` / `update_book`**（元数据最小集；**不做** `delete_book`、封面） |
 
 ### 验收
 
 - [ ] `mcpdto` + [mcp-integration.md](../mcp-integration.md) 更新  
 - [ ] 权限 / 乐观锁与现网一致；原 10 工具 + P0 不回归  
 - [ ] Book：可建空项目并 update 元数据；无 delete_book  
+- [ ] `create_document` 可用 `auto_release` 控制是否立刻发布  
 
 ---
 
@@ -432,7 +433,7 @@ CORS / CSP / HSTS（可关）；建议 T6 后再收紧 CSP。
 | T2 | ORM/分层评估（kratos 方向） | — | `602ddb4` | ✅ 结论已定（本轮不实施） |
 | T3 | 搜索 FULLTEXT/FTS5 | — | — | ⏸ **暂不实施**（等新方案） |
 | T4 | 倒排/向量评估 | — | — | ⏸ **冻结** |
-| T5 | MCP P1 + Book 写最小集 | | | ⏳ |
+| T5 | MCP P1 + Book 写最小集 | | | 🔶 `feat/r5-mcp-p1` 实施中 |
 | T6 | Vite P2 | | | ⏳ |
 | T7 | 测试 CI / 覆盖率门槛 | — | `602ddb4` | ✅ 脚本+workflow 已合入；待 Runner 勾云端绿 |
 | T8 | `*Result` → dto | | | ⏳ |

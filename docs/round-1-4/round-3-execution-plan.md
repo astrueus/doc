@@ -990,7 +990,8 @@ T1 评估完成后再插回（可与 MCP 并行或作为独立 PR）。
 | 若将来做，最小集            | `create_book`：`title` + `identify` + `private` + 可选 `description`（封面/高级项仍走 Web）；`update_book`：仅元数据；**默认不做** `delete_book`（若做须强确认 + 更高权限）。        |
 
 
-> 已记入 [refactor-roadmap.md §八 决策日志](../refactor-roadmap.md#八决策记录decision-log)（2026-07-31）。
+> 已记入 [refactor-roadmap.md §八 决策日志](../refactor-roadmap.md#八决策记录decision-log)（2026-07-31）。  
+> **修订（2026-08-18）：** Round 5 T5 **实施最小集** `create_book` / `update_book`；仍**不做** `delete_book` 与封面。见 [round-5-t5-mcp-p1.md](../round-5/round-5-t5-mcp-p1.md)。
 
 
 
@@ -1014,4 +1015,4 @@ Round 3 MVP（T2–T7）✅
 - [x] `doc mcp`（stdio）冷启动后客户端可 `initialize`，stdout 无 beego/bootstrap 杂讯（T13 P0-1）
 - [x] `append_document_content` 在错误 `expect_version` 时返回 6100；`auto_release=true` 后 Web 可读到 HTML（T13 P0-2）
 - [x] `mcp-integration.md` 含「长文分块写入」小节（T13 P0-3）
-- [ ] 回归：既有 10 工具 schema 与权限行为不变；**仍无** `create_book` / `update_book`
+- [ ] 回归：既有文档工具 schema 与权限行为不变（Book 写工具已移交 Round 5 T5）

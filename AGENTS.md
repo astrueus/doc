@@ -82,6 +82,16 @@ Windows：`just test` 或 `powershell -File deployments/scripts/test.ps1`。
 提问：优先用可点选的选项工具（Cursor 为 AskQuestion）；不可用则改用同类工具；都没有则用文本列出——**问题用序号，选项用 A/B**（写清差异，必要时附少量代码），等确认后再做。方案对比不清楚时，提供「先对照代码/示例再决定」选项。  
 冲突裁决与提问细则见 `.cursor/rules/decision-confirm.mdc`。
 
+## 功能分支保留
+
+用户确认把功能分支合入 `master` 之后：
+
+- **不要立刻删除**该功能分支（本地与远程都先留着）。
+- 按合入时间大约保留最近 **3** 条已合入的功能分支；再合入第 4 条时，列出最旧的一条请用户确认后再删。
+- 未合入、或用户明确要求保留的分支不要当「可删的第 4 条」。
+
+细则与命令见 [docs/release/git-workflow.md](./docs/release/git-workflow.md) §8.4。Agent 未获用户确认合入前，仍不得自行 `commit` / `push` / 合 `master`。
+
 ## 相关入口
 
 | 路径 | 用途 |
@@ -91,3 +101,4 @@ Windows：`just test` 或 `powershell -File deployments/scripts/test.ps1`。
 | `.cursor/rules/chinese-communication.mdc` | 中文表达（Cursor 摘要） |
 | `.cursor/rules/doc-output-location.mdc` | 文档输出目录（Cursor 摘要） |
 | `.cursor/rules/decision-confirm.mdc` | 决策确认（Cursor 全文） |
+| `.cursor/rules/git-branch-retention.mdc` | 已合入功能分支保留约 3 条（Cursor 摘要） |

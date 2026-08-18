@@ -4,7 +4,7 @@
 > 实现基于官方 [`modelcontextprotocol/go-sdk`](https://github.com/modelcontextprotocol/go-sdk)。  
 > 相关执行计划：[round-3-execution-plan.md](./round-1-4/round-3-execution-plan.md)。
 
-本文说明如何把 Doc 接到 **Claude Desktop / Cursor** 等 MCP 客户端，并给出 10 个工具的速查与排错。
+本文说明如何把 Doc 接到 **Claude Desktop / Cursor** 等 MCP 客户端，并给出工具速查与排错。
 
 ---
 
@@ -103,7 +103,7 @@
 }
 ```
 
-保存后在 MCP 面板启用 `doc`，确认 tools 列表有 10 个工具。
+保存后在 MCP 面板启用 `doc`，确认 tools 列表有文档读写 + `create_book` / `update_book`（约 12 个工具）。
 
 ---
 
@@ -171,12 +171,14 @@ curl -s https://docs.example.com/mcp \
 
 ---
 
-## 5. 10 个工具速查
+## 5. 工具速查
 
 权限约定（项目角色数值越小权限越高）：
 
 - **读**：公开项目任意人可读；私有项目需至少 Observer。
-- **写**：需至少 Editor（含管理员 / 创始人）；系统管理员可写全部。
+- **写文档**：需至少 Editor（含管理员 / 创始人）；系统管理员可写全部。
+- **建项目**（`create_book`）：已登录且账号未禁用（与 Web 创建项目一致）。
+- **改项目元数据**（`update_book`）：标题/简介需创始人或项目管理员；改公开/私有仅创始人（系统管理员除外）。
 
 业务错误常以工具结果 `IsError` + JSON 文本返回，形如：`{"code":6100,"message":"..."}`。
 
@@ -191,19 +193,48 @@ curl -s https://docs.example.com/mcp \
 { "query": "安装说明", "book_id": 0, "limit": 10 }
 
 // Out
-{ "total": 1, "items": [{ "id": 12, "book_id": 3, "title": "...", "snippet": "...", "version": 1710000000 }] }
+{
+  "total": 1,
+  "items": [{
+    "id": 12,
+    "book_id": 3,
+    "book_identify": "my-book",
+    "doc_identify": "intro",
+    "title": "...",
+    "snippet": "...",
+    "version": 1710000000
+  }]
+}
 ```
+
+命中项带 `book_identify` / `doc_identify`，便于直接调 `get_document`。文档 identify 为空时仍用 `id`。
 
 #### `get_document`
 
 ```json
-// In（二选一）
+// In（二选一；可选截断）
 { "document_id": 12 }
 { "book_identify": "my-book", "doc_identify": "intro" }
+{ "document_id": 12, "max_chars": 500, "include_truncated": true }
 
 // Out
-{ "document_id": 12, "book_id": 3, "title": "...", "markdown": "...", "release": "...", "version": 1710000000, "parent_id": 0 }
+{
+  "document_id": 12,
+  "book_id": 3,
+  "book_identify": "my-book",
+  "title": "...",
+  "identify": "intro",
+  "markdown": "...",
+  "release": "...",
+  "version": 1710000000,
+  "parent_id": 0,
+  "truncated": false
+}
 ```
+
+- `max_chars`：按 Unicode 字符数截断 `markdown` 与 `release`；`0`（缺省）不截断。超过约 20 万字会钳制。
+- `include_truncated`：截断时是否在正文末追加 `…[truncated]`，默认 `true`。
+- `truncated`：是否发生了截断。标题 / version / identify **始终完整**。
 
 #### `list_books`
 
@@ -230,13 +261,32 @@ curl -s https://docs.example.com/mcp \
 
 #### `create_document`
 
+`book_id` 与 `book_identify` 二选一。`identify` 与 `doc_identify` 同义。
+
 ```json
-// In
-{ "book_id": 3, "parent_id": 0, "title": "新文档", "identify": "", "markdown": "# Hello" }
+// 新建（默认不发布）
+{ "book_id": 3, "parent_id": 0, "title": "新文档", "identify": "hello", "markdown": "# Hello" }
+
+// 新建并立刻发布给读者
+{ "book_id": 3, "title": "新文档", "identify": "hello", "markdown": "# Hello", "auto_release": true }
+
+// 已存在则更新正文（须 expect_version）；可选 auto_release
+{
+  "book_identify": "my-book",
+  "identify": "hello",
+  "markdown": "# 更新后",
+  "if_exists": "update",
+  "expect_version": 1710000001,
+  "auto_release": false
+}
 
 // Out
-{ "document_id": 99, "version": 1710000001 }
+{ "document_id": 99, "version": 1710000001, "updated": false }
 ```
+
+- `if_exists`：缺省 / `error` = 同书下 identify 已存在则报错；`update` = 走覆盖写（写 markdown 时必须带 `expect_version`，冲突 `6100`）。
+- `auto_release`：默认 `false`。`true` 时写入成功后 Markdown→HTML 写入 `release`。**不**看项目设置里的「自动发布」。发布失败只记日志，创建/更新仍算成功。
+- `updated`：`if_exists=update` 且命中已有文档时为 `true`。
 
 #### `update_document_content`（乐观锁）
 
@@ -290,6 +340,33 @@ curl -s https://docs.example.com/mcp \
 // Out: { "deleted_count": 1, "snapshot_history_id": 55 }
 ```
 
+#### `create_book`
+
+建空项目；创建者成为创始人。与 Web 一样会插入一篇空白首页文档。封面、成员仍走 Web。
+
+```json
+// In
+{ "title": "安装手册", "identify": "install-guide", "private": false, "description": "可选简介" }
+
+// Out（BookBrief）
+{ "book_id": 3, "identify": "install-guide", "title": "安装手册", "private": false, "role_id": 0, "doc_count": 1 }
+```
+
+- `identify`：`^[a-z]+[a-zA-Z0-9_-]*$`，全局唯一；冲突报错，不静默改名。
+- `item_identify`：所属空间 key；缺省用站点默认空间（id=1，与 Web 一致）。
+- 随后用 `create_document` 灌文；需要读者可见时带 `auto_release: true` 或再调 `release_document`。
+
+#### `update_book`
+
+只改传入字段。`private` 用布尔指针语义，避免「省略」与 `false` 分不清。
+
+```json
+{ "book_identify": "install-guide", "title": "新标题", "description": "新简介" }
+{ "book_id": 3, "private": true }
+```
+
+本轮不改 `identify`、封面、成员。无 `delete_book`。
+
 ### 5.3 常见错误码
 
 | Code | 常量 | 含义 | 处理 |
@@ -325,7 +402,7 @@ curl -s https://docs.example.com/mcp \
 
 1. **首段**：`update_document_content`（带 `expect_version`）写入开头内容。
 2. **后续**：多次 `append_document_content`，每次带上一步返回的新 `version` 作为 `expect_version`；单块建议远小于 30KB。
-3. **收尾**：最后一次 `auto_release: true`，或单独调 `release_document`，让 Web 可读到 HTML。
+3. **收尾**：最后一次 `auto_release: true`，或单独调 `release_document`，让 Web 可读到 HTML。新建时也可在 `create_document` 上传 `auto_release: true`（短文一次写完时）。
 
 若中途 `6100`：重新 `get_document`，确认已写入内容后从断点继续 append（勿用过期 version 盲写）。
 
@@ -387,5 +464,5 @@ T1 FULLTEXT 已移交 Round 5 后 **⏸ 暂不实施**（等搜索方案重定�
 ```
 
 更多实现细节见 [round-3-execution-plan.md](./round-1-4/round-3-execution-plan.md)。  
-后续体验增强与「是否做 Book 写工具」的规划见 [round-3-execution-plan.md §十七](./round-1-4/round-3-execution-plan.md#十七后续规划mcp-实测反馈与体验增强)。  
-**进度：** §十七 **P0 已合入**（Round 4 T13）；**P1 📦 已移交 Round 5 T5**；Book 写工具当前不做。整体轮次进度见 [docs/README.md](./README.md) / [round-5-execution-plan.md](./round-5/round-5-execution-plan.md)。
+后续体验见 [round-3-execution-plan.md §十七](./round-1-4/round-3-execution-plan.md#十七后续规划mcp-实测反馈与体验增强)。  
+**进度：** §十七 **P0 已合入**（Round 4 T13）；**P1 + Book 写最小集**见 Round 5 [T5 方案](./round-5/round-5-t5-mcp-p1.md)（`create_book` / `update_book`；无 `delete_book`）。整体轮次进度见 [docs/README.md](./README.md) / [round-5-execution-plan.md](./round-5/round-5-execution-plan.md)。

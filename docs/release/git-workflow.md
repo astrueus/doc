@@ -180,7 +180,7 @@ ci/<简述>          ci/gitea-release
 - **不要带版本号**（不要 `feat/v2.3.0-vite`）。
 - 轮次可写在简述里：`feat/r5-object-storage`。Round 只是排期，不是前缀。
 - 功能类统一 `feat/`，不要混用 `feature/`。
-- 合进 `master` 后 **删掉远程分支**。
+- 合进 `master` 后 **不要立刻删**功能分支；按 §8.4 大约保留最近 3 条。
 - 个人临时草稿可以用任意本地名，但 **推远程、开 PR 前** 改成上表格式。
 - 热修生产用 `hotfix/`（见 6.4），不要用 `fix/` 从旧 tag 上直接发版。`fix/` 是合进 `master` 的常规修复。
 
@@ -253,10 +253,33 @@ git checkout -b feat/r5-vite
 - 跑通你改动相关的测试（至少 `go test` 能跑的包）。
 - 用户可见变化写进 `CHANGELOG.md` 的 `Unreleased`（或在 PR 里写，由维护者代填）。
 
-### 8.4 合入后
+### 8.4 合入后（保留约 3 条功能分支）
 
-- 删除远程功能分支。
-- 本地：`git checkout master && git pull && git branch -d feat/r5-vite`。
+用户确认合入 `master` 之后：
+
+1. `git checkout master && git pull`（或快进合入后拉最新）。
+2. **不要立刻删除**刚合入的功能分支（本地、远程都先留着，方便对照与回查）。
+3. 按合入时间大约保留最近 **3** 条**已合入** `master` 的功能分支（`feat/` / `fix/` / `chore/` / `ci/` 等；不含 `master`、`release/*`、`hotfix/*`）。
+4. 将出现第 4 条时：列出最旧的一条（本地 + `origin`），**确认后再删**；未合入的、或用户点名要留的，不要当可删项。
+
+```bat
+:: 合入后先切回 master，不删刚合入的分支
+git checkout master
+git pull origin master
+
+:: 查看已合入 master、仍留着的功能分支（按提交时间，新的在上）
+git branch --merged master --sort=-committerdate
+git branch -r --merged origin/master --sort=-committerdate
+```
+
+超过 3 条、用户确认删除最旧的一条时（示例名请换成实际分支）：
+
+```bat
+git branch -d feat/最旧短名
+git push origin --delete feat/最旧短名
+```
+
+Agent 未获「合入 master」的明确指示时，不得自行合主线或删分支。权威摘要见仓库根 [AGENTS.md](../../AGENTS.md)「功能分支保留」。
 
 ---
 
@@ -495,11 +518,11 @@ git push -u origin HEAD
 
 :: 开 PR：Gitea 上从 feat/短名 合入 master
 
-:: 合入后
+:: 合入后（先留着刚合入的分支；约保留 3 条，见 §8.4）
 git checkout master
 git pull
-git branch -d feat/短名
-git push origin --delete feat/短名
+:: 不要马上 git branch -d / push --delete
+:: 超过 3 条时，确认后再删最旧的一条
 
 :: 推当前功能分支（不要写裸版本号）
 git push origin HEAD

@@ -176,7 +176,7 @@ func classifyToolKindFromBody(body []byte) string {
 	case "delete_document":
 		return "delete"
 	case "create_document", "update_document_content", "append_document_content",
-		"update_document_meta", "release_document":
+		"update_document_meta", "release_document", "create_book", "update_book":
 		return "write"
 	default:
 		return "read"

@@ -9,12 +9,12 @@ func newServer() *sdkmcp.Server {
 
 	sdkmcp.AddTool(srv, &sdkmcp.Tool{
 		Name:        "search_document",
-		Description: "Search documents by keyword; returns brief items with book/title/snippet.",
+		Description: "Search documents by keyword; returns brief items with book_identify/doc_identify.",
 	}, handleSearchDocument)
 
 	sdkmcp.AddTool(srv, &sdkmcp.Tool{
 		Name:        "get_document",
-		Description: "Get a document by document_id or book_identify+doc_identify.",
+		Description: "Get a document by document_id or book_identify+doc_identify. Optional max_chars truncation.",
 	}, handleGetDocument)
 
 	sdkmcp.AddTool(srv, &sdkmcp.Tool{
@@ -29,7 +29,7 @@ func newServer() *sdkmcp.Server {
 
 	sdkmcp.AddTool(srv, &sdkmcp.Tool{
 		Name:        "create_document",
-		Description: "Create a document in a book. Requires BookEditor or higher.",
+		Description: "Create a document, or update when if_exists=update. Optional auto_release. Requires BookEditor or higher.",
 	}, handleCreateDocument)
 
 	sdkmcp.AddTool(srv, &sdkmcp.Tool{
@@ -56,6 +56,16 @@ func newServer() *sdkmcp.Server {
 		Name:        "delete_document",
 		Description: "Delete a document tree. Requires confirm=true; writes a history snapshot first.",
 	}, handleDeleteDocument)
+
+	sdkmcp.AddTool(srv, &sdkmcp.Tool{
+		Name:        "create_book",
+		Description: "Create an empty book; caller becomes founder. Cover/members stay on Web.",
+	}, handleCreateBook)
+
+	sdkmcp.AddTool(srv, &sdkmcp.Tool{
+		Name:        "update_book",
+		Description: "Update book title/description/private. Founder/admin for meta; founder-only for private.",
+	}, handleUpdateBook)
 
 	return srv
 }

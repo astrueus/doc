@@ -611,8 +611,8 @@ type Cache interface {
 - [x] `internal/dto/mcpdto/`：工具 In/Out struct（为 Round 4 Repository/Service 分层铺路）
 - [x] `docs/mcp-integration.md`：Claude Desktop / Cursor stdio + HTTP 接入示例
 - [x] **MCP 体验收尾（§十七）P0**：stdio 静默 stdout、append 乐观锁/`auto_release`、长文写入约定（Round 4 T13 / `c70d4c1`）
-- [ ] **MCP 体验 P1（按需）**：upsert / get 截断 / search 带 identify — **→ Round 5 T5**
-- [x] **明确不做**：MCP `create_book` / `update_book`（项目生命周期继续走 Web）
+- [ ] **MCP 体验 P1（按需）**：upsert / get 截断 / search 带 identify + Book 写最小集 — **→ Round 5 T5**（`feat/r5-mcp-p1`）
+- [x] **Round 3 当时不做** MCP `create_book` / `update_book`；**Round 5 T5 起做最小集**（仍不做 `delete_book` / 封面）
 
 **风险：** 中。MCP 是新增功能，不影响存量；写工具通过现有 `BookRole` + 乐观锁 + `confirm` 参数控制风险。搜索改动限于 `models/DocumentSearchResult.go` + 建索引。
 
@@ -630,7 +630,7 @@ type Cache interface {
 - [x] **测试基线**：`pkg/`* + errs/auth/logging/i18n/repository（见 [round-4-coverage.md](./round-1-4/round-4-coverage.md)）
 - [ ] （可选）T7「维持 A」缓存评估报告；T12 ORM 评估报告 — **→ Round 5 T1/T2**
 - [ ] （可选）根据 MCP 使用反馈评估倒排索引（bleve / meilisearch）— **→ Round 5 T4**
-- [x] （可选）**T13 MCP 体验 P0** 已收口；P1 → Round 5 T5（**不含** Book 写工具）
+- [x] （可选）**T13 MCP 体验 P0** 已收口；P1 + Book 写最小集 → Round 5 T5
 
 **风险：** 较高，但可拆多个小 PR。**ORM 迁移建议单独立项**，别混进来。
 
@@ -824,7 +824,7 @@ type Cache interface {
 | **2026-08-18** | **Round 5 T2：本轮 ORM/分层结论？** | **A：维持 beego/orm + 扩 Repo**；Round 6+ **既定** ① 数据层（生成 model + `data`）→ ② 业务层（`biz`）；③ 全量 kratos HTTP 默认不做。ent vs gorm gen 开工前 spike，默认倾向 gorm gen | 见 [round-5-orm-migration-evaluation.md](./round-5/round-5-orm-migration-evaluation.md) |
 | **2026-08-18** | **model 文件 PascalCase → snake_case？** | **与 T8 合并 `git mv`**，不单开本批 PR | 避免 Result 迁 dto 前搬两次 |
 | **2026-07-31** | **MCP MVP 之后还要不要扩工具面？**                                             | **先补体验，不大扩工具**                                                            | Cursor 实测：10 工具读写闭环已够用；痛点是长文写入、stdio stdout 污染、`append` 缺锁/`auto_release`。详见 round-3 §十七 P0/P1/P2                                                                                                                                                                             |
-| **2026-07-31** | **是否增加 MCP** `create_book` **/** `update_book`**？**                 | **当前阶段不做**                                                                | MVP 定位「在已有项目里改文档」；Book 创建/设置字段重、误操作面大；建项目继续走 Web。出现「AI/CI 一键建空项目」稳定需求后再做最小集（title/identify/private ± description；默认不做 delete_book）                                                                                                                                            |
+| **2026-07-31** | **是否增加 MCP** `create_book` **/** `update_book`**？**                 | Round 3：**不做**。**2026-08-18 Round 5 T5：做最小集** | 当时 MVP 只改文档。R5 出现 AI/CI 建空项目需求；`create_book`/`update_book` 元数据最小集；仍不做 `delete_book`、封面。见 [round-5-t5-mcp-p1.md](./round-5/round-5-t5-mcp-p1.md) |
 | **2026-08-03** | **Round 4 T5：是否上 go-i18n/v2 + toml？**                               | **否**；落地 `internal/i18n` 读既有 `.ini`                                       | 保持 `section.key` + `Sprintf` 与模板 `{{i18n}}` 零改动；去掉 11 年前的 `beego/i18n` 即可。复数/ICU 需求出现后再迁                                                                                                                                                                                      |
 | **2026-08-03** | **Round 4 T2：是否同时建 Service 层？**                                     | **本轮不建**；MCP 写工具直接调 Repository                                            | 渐进原则；controller 暂不改。编排层可后续按业务需要再加                                                                                                                                                                                                                                             |
 

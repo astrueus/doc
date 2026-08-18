@@ -11,6 +11,8 @@ func TestClassifyToolKindFromBody(t *testing.T) {
 		{`{"method":"tools/list"}`, "read"},
 		{`{"method":"tools/call","params":{"name":"search_document"}}`, "read"},
 		{`{"method":"tools/call","params":{"name":"create_document"}}`, "write"},
+		{`{"method":"tools/call","params":{"name":"create_book"}}`, "write"},
+		{`{"method":"tools/call","params":{"name":"update_book"}}`, "write"},
 		{`{"method":"tools/call","params":{"name":"delete_document"}}`, "delete"},
 	}
 	for _, c := range cases {

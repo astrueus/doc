@@ -2,7 +2,8 @@
 
 > 对应 [round-5-execution-plan.md §七 T5](./round-5-execution-plan.md#七t5--mcp-体验-p10.5~1-天)。  
 > 承接 Round 3 §十七 P1，并**纳入 Book 写工具最小集**（修订原 §17.3「当前阶段不做」——本轮做 create/update；delete 仍默认不做）。  
-> **状态：** ⏳ 待实施。
+> **状态：** 🔶 实施中（`feat/r5-mcp-p1`）。  
+> **2026-08-18 增补：** `create_document` 增加可选 `auto_release`（与 update/append 对齐）；**不**读取项目级 `book.auto_release`。
 
 ---
 
@@ -10,13 +11,13 @@
 
 | 项 | 位置 | 说明 |
 |---|---|---|
-| 工具注册 | [`internal/mcp/server.go`](../../internal/mcp/server.go) | 10 工具；无 upsert / `if_exists`；无 Book 写 |
-| 读 | [`internal/mcp/tools_read.go`](../../internal/mcp/tools_read.go) | `list_books` / `get_document` / `search_document` 等 |
-| 写 | [`internal/mcp/tools_write.go`](../../internal/mcp/tools_write.go) | 仅 Document 写 |
-| DTO | [`internal/dto/mcpdto/`](../../internal/dto/mcpdto/) | 已有 `BookBrief`；缺 Create/Update Book In/Out |
+| 工具注册 | [`internal/mcp/server.go`](../../internal/mcp/server.go) | 12 工具（+ `create_book` / `update_book`）；`create_document` 支持 `if_exists` / `auto_release` |
+| 读 | [`internal/mcp/tools_read.go`](../../internal/mcp/tools_read.go) | `get_document` 可截断；`search_document` 带 identify |
+| 写 | [`internal/mcp/tools_write.go`](../../internal/mcp/tools_write.go) / [`tools_book.go`](../../internal/mcp/tools_book.go) | Document 写 + Book 写最小集 |
+| DTO | [`internal/dto/mcpdto/`](../../internal/dto/mcpdto/) | 含 Create/Update Book In；`DocumentBrief` 含 identify |
 | 乐观锁 | `ExpectVersion` + `DocumentRepo.UpdateMarkdownWithVersion` | 冲突码 `6100`（文档） |
-| 权限 | [`internal/mcp/authz.go`](../../internal/mcp/authz.go) | `canReadBook` / `ensureWritable`（书内编辑）；**无**「能否建书」校验 |
-| 搜索 Out | `DocumentBrief` | **无** `book_identify` / `doc_identify` |
+| 权限 | [`internal/mcp/authz.go`](../../internal/mcp/authz.go) | `canReadBook` / `ensureWritable` / `ensureCanCreateBook` / `ensureBookMetaWritable` |
+| 搜索 Out | `DocumentBrief` | 含 `book_identify` / `doc_identify` |
 
 ---
 
@@ -35,13 +36,17 @@
 
 ```text
 create_document:
-  book_identify   string  required
-  doc_identify    string  required
-  title           string  optional（update 时缺省保留原标题）
+  book_id         int     optional  // 与 book_identify 二选一（兼容现网）
+  book_identify   string  optional
+  identify        string  optional  // 文档 identify；与 doc_identify 同义，upsert 时必填其一
+  doc_identify    string  optional
+  title           string  optional（新建必填；update 时缺省保留原标题）
   markdown        string  optional
-  parent_identify string  optional（仅 create 路径生效）
-  if_exists       string  optional  // "error" | "update"
-  expect_version  int     optional  // 仅 if_exists=update 时生效；与 update_document_content 一致
+  parent_id       int     optional  // 仅 create 路径生效
+  parent_identify string  optional  // 仅 create；与 parent_id 二选一
+  if_exists       string  optional  // "error"（缺省）| "update"
+  expect_version  int     optional  // 仅 if_exists=update 且写入 markdown 时必填；与 update_document_content 一致
+  auto_release    bool    optional  // 默认 false；见下
 ```
 
 ### 实现要点
@@ -49,14 +54,28 @@ create_document:
 1. 先 `FindByIdentify(book, doc)`（经 Repo，配合 T9）。  
 2. 不存在 → 现有 `create` 逻辑。  
 3. 存在 + `if_exists=update` → 调与 `update_document_content` 相同的写路径（含 `ensureWritable`、乐观锁）。  
-4. **不做**：改 `parent`、改 `identify`、静默覆盖无版本号的「强制写」（除非显式不传 `expect_version`，与现网 `update` 行为对齐）。  
+4. **不做**：改 `parent`、改 `identify`、无 `expect_version` 时覆盖 markdown（与现网 `update_document_content` 一致：写正文必须带版本）。  
 5. 文档：[`mcp-integration.md`](../mcp-integration.md) 增示例与错误码说明。
+
+### `auto_release`（创建 / upsert 共用）
+
+与 `update_document_content` / `append_document_content` **同一字段、同一默认值**：
+
+| 值 | 行为 |
+|---|---|
+| 缺省 / `false` | 只写 Markdown（及标题等），不生成读者可见 HTML |
+| `true` | `Save` / 更新成功后调用现有 `releaseOneDocument`（Markdown → HTML → `release`） |
+
+- **不**读取项目设置里的 `book.auto_release`（那只影响 Web 编辑器保存）。  
+- 发布失败：打 warning，**创建/更新仍算成功**（与现网 update/append 一致）。  
+- 空 Markdown + `auto_release=true`：允许，读者页可能是空 HTML。
 
 ### 验收
 
 - [ ] 新 identify → 创建成功  
 - [ ] 已存在 + `if_exists=update` → 内容更新；版本冲突返回 `6100`  
 - [ ] 已存在 + 缺省 → 仍报错，不静默覆盖  
+- [ ] `auto_release=true` 后 `get_document.release` 有 HTML；省略则 `release` 仍空/旧值  
 
 ---
 
@@ -206,7 +225,7 @@ Token / stdio 身份与现网一致；私有书创建后，`list_books` 应对�
 
 | PR | 内容 |
 |---|---|
-| T5-a | P1-1~3（document upsert / 截断 / search identify）+ 文档 + 单测 |
+| T5-a | P1-1~3（document upsert / `auto_release` / 截断 / search identify）+ 文档 + 单测 |
 | T5-b | P1-4 `create_book` / `update_book` + authz + BookRepo 薄封装 + 文档 |
 
 测试建议：

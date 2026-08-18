@@ -1,0 +1,17 @@
+---
+description: 合入 master 后保留约 3 条功能分支，不要立刻删除
+alwaysApply: true
+---
+
+# 功能分支保留
+
+**权威全文见 [AGENTS.md](../../AGENTS.md)「功能分支保留」与 [git-workflow.md](../../docs/release/git-workflow.md) §8.4。**
+
+用户确认合入 `master` 之后：
+
+- **不要立刻删除**刚合入的功能分支（本地、远程都先留）
+- 按合入时间大约保留最近 **3** 条已合入功能分支
+- 将出现第 4 条时：列出最旧的一条，**AskQuestion 确认后再删**
+- 未合入的分支、用户点名要留的分支，不要当可删项
+
+未获「合入 master」的明确指示时：不 `commit`、不 `push`、不合主线（见决策确认）。

@@ -30,7 +30,7 @@ func setupDocumentTestDB(t *testing.T) repository.DocumentRepo {
 		if err := orm.RegisterDataBase(testDBAlias, "sqlite3", ":memory:"); err != nil {
 			panic(err)
 		}
-		orm.RegisterModelWithPrefix("", new(model.Document))
+		orm.RegisterModelWithPrefix("", new(model.Document), new(model.Book))
 		if err := orm.RunSyncdb(testDBAlias, false, true); err != nil {
 			panic(err)
 		}
@@ -38,6 +38,9 @@ func setupDocumentTestDB(t *testing.T) repository.DocumentRepo {
 	})
 	if _, err := testOrm.Raw("DELETE FROM documents").Exec(); err != nil {
 		t.Fatalf("clear documents: %v", err)
+	}
+	if _, err := testOrm.Raw("DELETE FROM books").Exec(); err != nil {
+		t.Fatalf("clear books: %v", err)
 	}
 	return repository.NewDocumentRepo(testOrm)
 }
@@ -162,6 +165,56 @@ func TestDocumentRepo_FindByIdentify(t *testing.T) {
 	}
 	if found.DocumentId != doc.DocumentId {
 		t.Fatalf("expected document_id %d, got %d", doc.DocumentId, found.DocumentId)
+	}
+}
+
+func TestBookRepo_FindByIdentify(t *testing.T) {
+	_ = setupDocumentTestDB(t)
+	repo := repository.NewBookRepo(testOrm)
+	ctx := context.Background()
+
+	book := &model.Book{BookName: "手册", Identify: "manual", PrivatelyOwned: 0}
+	id, err := testOrm.Insert(book)
+	if err != nil {
+		t.Fatalf("insert: %v", err)
+	}
+	book.BookId = int(id)
+
+	found, err := repo.FindByIdentify(ctx, "manual")
+	if err != nil {
+		t.Fatalf("FindByIdentify: %v", err)
+	}
+	if found.BookId != book.BookId || found.BookName != "手册" {
+		t.Fatalf("unexpected: %+v", found)
+	}
+
+	if _, err := repo.FindByIdentify(ctx, "missing"); err != model.ErrDataNotExist {
+		t.Fatalf("expected ErrDataNotExist, got %v", err)
+	}
+}
+
+func TestBookRepo_IdentifiesByIDs(t *testing.T) {
+	_ = setupDocumentTestDB(t)
+	repo := repository.NewBookRepo(testOrm)
+	ctx := context.Background()
+
+	a := &model.Book{BookName: "A", Identify: "book-a"}
+	b := &model.Book{BookName: "B", Identify: "book-b"}
+	idA, err := testOrm.Insert(a)
+	if err != nil {
+		t.Fatalf("insert a: %v", err)
+	}
+	idB, err := testOrm.Insert(b)
+	if err != nil {
+		t.Fatalf("insert b: %v", err)
+	}
+
+	got, err := repo.IdentifiesByIDs(ctx, []int{int(idA), int(idB), int(idA), 0})
+	if err != nil {
+		t.Fatalf("IdentifiesByIDs: %v", err)
+	}
+	if got[int(idA)] != "book-a" || got[int(idB)] != "book-b" {
+		t.Fatalf("got=%v", got)
 	}
 }
 

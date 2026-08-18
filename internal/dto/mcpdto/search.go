@@ -7,11 +7,13 @@ type SearchDocumentIn struct {
 }
 
 type DocumentBrief struct {
-	ID      int    `json:"id"`
-	BookID  int    `json:"book_id"`
-	Title   string `json:"title"`
-	Snippet string `json:"snippet"`
-	Version int64  `json:"version"`
+	ID           int    `json:"id"`
+	BookID       int    `json:"book_id"`
+	BookIdentify string `json:"book_identify"`
+	DocIdentify  string `json:"doc_identify"`
+	Title        string `json:"title"`
+	Snippet      string `json:"snippet"`
+	Version      int64  `json:"version"`
 }
 
 type SearchDocumentOut struct {

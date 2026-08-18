@@ -8,3 +8,7 @@ import (
 func documentRepo() repository.DocumentRepo {
 	return repository.NewDocumentRepo(orm.NewOrm())
 }
+
+func bookRepo() repository.BookRepo {
+	return repository.NewBookRepo(orm.NewOrm())
+}

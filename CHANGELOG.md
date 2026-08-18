@@ -13,6 +13,12 @@
 - T7：新增 `deployments/scripts/test.sh` / `test.ps1`、覆盖率基线、`.gitea/workflows/test.yml` 白名单硬闸
 - T2：ORM/分层评估结论入库（本轮维持 beego/orm + 扩 Repo；Round 6+ 既定 ① data → ② biz）
 
+### Added
+
+- MCP T5：`create_book` / `update_book`（元数据最小集，无删书、无封面）
+- MCP：`create_document` 支持 `if_exists=update`、可选 `auto_release`（默认不发布，不读项目自动发布开关）
+- MCP：`get_document` 按 Unicode 字符截断；`search_document` 返回 `book_identify` / `doc_identify`
+
 ## Unreleased / Round 4
 
 > ⚠️ **Breaking（T6 Session）**：升级后需**清空 session 存储**（file/redis 等 SessionProvider 目录或键），并视为旧「记住我」cookie 失效；用户需重新登录。  
