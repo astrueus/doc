@@ -234,4 +234,5 @@ Gitea Actions：
 
 - [release-gitea-actions.md](../release/release-gitea-actions.md)：Actions workflow 详解
 - [release-local.md](../release/release-local.md)：本地脚本发版（Runner 故障时备选）
-- [deploy-spug-local.md](./deploy-spug-local.md)：服务器侧脚本与目录约定（本文复用）
+- [deploy-spug-local.md](./deploy-spug-local.md)：服务器侧脚本与目录约定（自定义发布）
+- [deploy-spug-standard.md](./deploy-spug-standard.md)：常规发布（自动保留历史版本）
