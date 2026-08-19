@@ -396,13 +396,14 @@ ls -1dt "$BAK_ROOT"/*/ 2>/dev/null | tail -n +11 | xargs -r rm -rf
 - 检查 `app.conf` 的 `httpport` 与防火墙
 - 检查 DB 连接
 
-### Q4：用户上传文件丢失
-- 一定要把 `uploads` 软链到 `$REPO/uploads`（脚本已做）
-- 检查 `WWW/uploads` 是软链还是真实目录：`ls -l "$WWW/uploads"`
+### Q4：用户上传文件丢失 / `uploads` 套娃
+- 正确形态：`$WWW/uploads` **本身**是指向 `$REPO/uploads` 的软链
+- 若 `ls -l` 看到 `uploads/` 是目录，里面还有一条 `uploads -> .../resource/uploads`，是发布包空目录导致 `ln -sfn` 套娃
+- 当前 `spug_run.sh` 会把真实目录里的文件迁到 `$REPO/uploads`，再改成一层软链；下次发布自动处理
 
 ### Q5：app.conf 改了不生效
 - 改的应该是 `$REPO/app.conf`（权威配置），不是 `$WWW/conf/app.conf`
-- 改后需要再 Spug 发布一次或手工 `cp -f` 再 `systemctl restart`
+- 每次发布 `spug_run.sh` 都会用 REPO 覆盖 WWW；改 REPO 后重新发布或手工 `cp -f` 再 `systemctl restart`
 
 ### Q6：私有仓库下载 401
 - 在 Spug 应用密文中加 `GITEA_TOKEN`
