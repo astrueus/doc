@@ -324,7 +324,7 @@ DRAFT_JSON=false
 [[ "$DRAFT" -eq 1 ]] && DRAFT_JSON=true
 
 create_body=$(cat <<EOF
-{"tag_name":"$TAG","name":"Doc $TAG","body":"Auto release $TAG","draft":$DRAFT_JSON,"prerelease":false}
+{"tag_name":"$TAG","name":"doc $TAG","body":"Auto release $TAG","draft":$DRAFT_JSON,"prerelease":false}
 EOF
 )
 

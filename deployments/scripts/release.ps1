@@ -307,7 +307,7 @@ $headers = @{ Authorization = "token $Token" }
 
 $body = @{
   tag_name   = $Tag
-  name       = "Doc $Tag"
+  name       = "doc $Tag"
   body       = "Auto release $Tag"
   draft      = [bool]$Draft
   prerelease = $false

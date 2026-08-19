@@ -186,7 +186,7 @@ go env -w GONOSUMDB=git.itopcms.com
 
 | 程序内 | `X.Y.Z` | `1.0.0` | `-ldflags` → `internal/config.VERSION` |
 
-| Release 名 | `Doc vX.Y.Z` | `Doc v1.0.0` | 脚本生成 |
+| Release 名 | `doc vX.Y.Z` | `doc v1.0.0` | 脚本生成 |
 
 | 发布包文件名 | `doc_<version>_windows_amd64.zip` / `doc_<version>_linux_amd64.tar.gz` | `doc_1.0.0_windows_amd64.zip` | 输出到 `release/`（gitignore） |
 
