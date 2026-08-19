@@ -17,6 +17,46 @@ SERVICE_LINK="/etc/systemd/system/$SERVICE_NAME"
 
 log() { echo "[spug] $*"; }
 
+# 把 dest 变成指向 persist 的一层软链。
+# 发布包常带空 uploads/ 目录，直接 ln -sfn 会变成 uploads/uploads 套娃。
+ensure_persist_link() {
+  local dest="$1"
+  local persist="$2"
+  local base nested n
+
+  mkdir -p "$persist"
+  base="$(basename "$dest")"
+
+  if [ -L "$dest" ]; then
+    ln -sfn "$persist" "$dest"
+    log "软链 $dest -> $persist"
+    return 0
+  fi
+
+  if [ -d "$dest" ]; then
+    log "$dest 是真实目录，迁移到 $persist 后改为软链"
+    for nested in "$dest"/* "$dest"/.[!.]* "$dest"/..?*; do
+      if [ ! -e "$nested" ] && [ ! -L "$nested" ]; then
+        continue
+      fi
+      n="$(basename "$nested")"
+      # 跳过已套娃的同名软链（uploads/uploads -> persist）
+      if [ -L "$nested" ] && [ "$n" = "$base" ]; then
+        log "跳过套娃软链 $nested"
+        continue
+      fi
+      cp -a "$nested" "$persist/"
+    done
+    rm -rf "$dest"
+  elif [ -e "$dest" ]; then
+    log "错误：$dest 存在且不是目录或软链"
+    exit 1
+  fi
+
+  ln -sfn "$persist" "$dest"
+  log "软链 $dest -> $persist"
+}
+
 # ===== 0. Round 2 目录形态预检 =====
 if [ ! -d "$WWW/conf" ] || [ ! -d "$WWW/web/static" ] || [ ! -d "$WWW/web/views" ]; then
   log "错误：WWW 缺少 Round 2 目录（需要 conf/、web/static/、web/views/）。请检查发布包结构。"
@@ -34,21 +74,31 @@ fi
 
 # ===== 1. 持久化目录（uploads / runtime）=====
 mkdir -p "$REPO/uploads" "$REPO/runtime" "$REPO/scripts"
-
-ln -sfn "$REPO/uploads" "$WWW/uploads"
-ln -sfn "$REPO/runtime" "$WWW/runtime"
+ensure_persist_link "$WWW/uploads" "$REPO/uploads"
+ensure_persist_link "$WWW/runtime" "$REPO/runtime"
 
 # ===== 2. 应用配置 app.conf =====
+# 权威配置只在 $REPO/app.conf（改数据库/端口请改这一份）。
+# 每次发布用它覆盖 $WWW/conf/app.conf，避免被发布包里的 example 冲掉。
+mkdir -p "$WWW/conf"
 if [ ! -e "$REPO/app.conf" ]; then
-  if [ -e "$WWW/conf/app.conf.example" ]; then
-    log "首次部署，使用 app.conf.example 初始化 app.conf"
-    cp "$WWW/conf/app.conf.example" "$REPO/app.conf"
+  if [ -f "$WWW/conf/app.conf" ]; then
+    log "首次部署：将现有 $WWW/conf/app.conf 收为权威配置"
+    cp -f "$WWW/conf/app.conf" "$REPO/app.conf"
+  elif [ -e "$WWW/conf/app.conf.example" ]; then
+    log "首次部署：用 app.conf.example 初始化 $REPO/app.conf（请随后改数据库等）"
+    cp -f "$WWW/conf/app.conf.example" "$REPO/app.conf"
   else
-    log "缺少 $WWW/conf/app.conf.example，无法初始化 app.conf"
+    log "缺少权威配置且没有 app.conf.example，无法初始化 app.conf"
     exit 1
   fi
 fi
+log "同步权威配置 $REPO/app.conf -> $WWW/conf/app.conf"
 cp -f "$REPO/app.conf" "$WWW/conf/app.conf"
+if [ ! -f "$WWW/conf/app.conf" ]; then
+  log "错误：同步后 $WWW/conf/app.conf 不存在"
+  exit 1
+fi
 
 # ===== 3. 同步 systemd unit 到 resource =====
 mkdir -p "$REPO/scripts"
