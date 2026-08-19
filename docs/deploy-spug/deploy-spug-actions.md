@@ -19,7 +19,7 @@ flowchart LR
     C --> D[产物：Gitea Release<br/>doc_VERSION_linux_amd64.tar.gz]
     D -.手动触发.-> E[Spug 发布任务<br/>下载 + 部署]
     D -.可选 webhook.-> E
-    E --> F[spug_pre 内联命令<br/>下载 + 解压]
+    E --> F[spug_pre.sh<br/>下载 + 解压 + 自检]
     F --> G[spug_run.sh<br/>软链 + 配置 + systemd]
     G --> H[健康检查 :8181]
 ```
@@ -50,8 +50,8 @@ flowchart LR
 直接复用：
 
 - 目录约定：见 [deploy-spug-local.md 第二节](./deploy-spug-local.md#二服务器目录约定与现有-spug_runsh-一致)
-- 前置脚本：见 [deploy-spug-local.md 第四节](./deploy-spug-local.md#四spug-前置脚本spug_presh)
-- `deployments/spug/spug_run.sh`：仓库已有
+- 前置脚本：仓库 [`deployments/spug/spug_pre.sh`](../../deployments/spug/spug_pre.sh)，说明见 [deploy-spug-local.md 第四节](./deploy-spug-local.md#四spug-前置脚本deploymentsspugspug_presh)
+- 后置脚本：[`deployments/spug/spug_run.sh`](../../deployments/spug/spug_run.sh)
 - `deployments/systemd/doc.service`：仓库已有（调整建议见 [deploy-spug-local.md 第六节](./deploy-spug-local.md#六docservice-调整建议)）
 
 > 两个方案的服务器侧逻辑相同，**前置脚本创建一份即可两种方案共用**。
@@ -74,53 +74,23 @@ flowchart LR
 
 Spug 应用「Doc 文档系统」中新建发布配置：
 
-### 1. 应用变量
+### 1. 申请单与配置中心
 
 | 变量 | 示例 | 说明 |
 |------|------|------|
-| `TAG` | `v1.0.0` | 必填，要部署的 Release tag（带 `v`） |
-| `GITEA_OWNER` | `astrueus` | 仓库 owner |
-| `GITEA_REPO` | `doc` | 仓库名 |
-| `GITEA_URL` | `https://git.itopcms.com` | Gitea 站点 |
-| `GITEA_TOKEN` | 密文 | 仅私有仓库需要 |
+| `SPUG_RELEASE` | `v1.0.0` | 申请单填写；自定义发布不要用 `SPUG_GIT_TAG` |
+| `GITEA_TOKEN` | PAT | 配在配置中心（与发布同一环境）；脚本经 API 拉取 |
+| `GITEA_OWNER` / `GITEA_REPO` / `GITEA_URL` | 可省略 | 见 `spug_pre.sh` 默认值 |
+| `SPUG_URL` | `https://spug.itopcms.com` | 目标机访问配置中心；可省略 |
 
 ### 2. 发布步骤
 
-只用一段「自定义命令」串起来即可：
+不要加「本地执行」和「数据传输」。两条**目标主机**动作即可，与 [`deploy-spug-local.md` 第七节](./deploy-spug-local.md#七spug-控制台配置示例自定义发布) 相同：
 
-```bash
-set -euo pipefail
+1. 前置：首次把 [`spug_pre.sh`](../../deployments/spug/spug_pre.sh) 全文粘贴；之后可 `bash /data/wwwroot/doc.itopcms.com/deployments/spug/spug_pre.sh`
+2. 后置：`bash /data/wwwroot/doc.itopcms.com/deployments/spug/spug_run.sh`
 
-TAG="${TAG:?TAG 未设置，例如 v1.0.0}"
-OWNER="${GITEA_OWNER:-astrueus}"
-REPO="${GITEA_REPO:-doc}"
-BASE="${GITEA_URL:-https://git.itopcms.com}"
-TOKEN="${GITEA_TOKEN:-}"
-
-WWW=/data/wwwroot/doc.itopcms.com
-VERSION="${TAG#v}"
-PKG="doc_${VERSION}_linux_amd64.tar.gz"
-URL="$BASE/$OWNER/$REPO/releases/download/$TAG/$PKG"
-
-echo "[1/4] 下载 $URL"
-mkdir -p "$WWW"
-CURL_OPTS=(-fL --retry 3 --retry-delay 2)
-[ -n "$TOKEN" ] && CURL_OPTS+=(-H "Authorization: token $TOKEN")
-curl "${CURL_OPTS[@]}" "$URL" -o "/tmp/$PKG"
-
-echo "[2/4] 解压到 $WWW"
-tar -xzf "/tmp/$PKG" -C "$WWW"
-chmod 755 "$WWW/doc"
-
-echo "[3/4] 二进制自检"
-"$WWW/doc" version
-
-echo "[4/4] 后置脚本"
-export TAG
-bash "$WWW/deployments/spug/spug_run.sh"
-```
-
-> 与 [`deploy-spug-local.md`](./deploy-spug-local.md#七spug-控制台配置示例) 中的「推荐：直接在 Spug 自定义命令里串成一条」一致，区别只在「包是谁产出」。
+> 区别只在「包是谁产出」，服务器侧脚本共用。
 
 ---
 
@@ -209,7 +179,7 @@ Gitea Actions：
 
 ### Q2：Spug 拉包 404
 - Release 未生成完成；等 Actions Run 结束再发布
-- 附件文件名应为 `doc_<version>_linux_amd64.tar.gz`（`TAG=v1.0.0` → `doc_1.0.0_linux_amd64.tar.gz`），与 workflow 中产物一致
+- 附件文件名应为 `doc_<version>_linux_amd64.tar.gz`（申请单 `SPUG_RELEASE=v1.0.0` → `doc_1.0.0_linux_amd64.tar.gz`）
 
 ### Q3：解压后找不到 `WWW/doc`
 - 检查 workflow 打包步骤是否把二进制放在包根并命名为 `doc`（见 [release-gitea-actions.md](../release/release-gitea-actions.md)）
@@ -220,7 +190,7 @@ Gitea Actions：
 - 重点排查：`app.conf` DB 连接、`httpport` 占用、`uploads` 权限
 
 ### Q5：私有仓库的 Release 附件不能匿名下载
-- Spug 必须带 `GITEA_TOKEN`（应用密文）
+- 把 `GITEA_TOKEN` 配在配置中心（与发布同一环境）；`spug_pre.sh` 用 `$SPUG_API_TOKEN` 拉取，详见 [deploy-spug-local.md Q6](./deploy-spug-local.md)
 
 ### Q6：想限制只有特定分支打的 tag 才发布
 
