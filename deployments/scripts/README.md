@@ -63,8 +63,9 @@ JSON 解析使用 `deployments/scripts/lib/json.sh`（纯 bash）。单测：`ba
 
 部署相关仍在：
 
+- `deployments/spug/spug_pre.sh`
 - `deployments/spug/spug_run.sh`
 - `deployments/systemd/doc.service`
 - `deployments/Dockerfile` / `docker-compose.yml` / `start.sh` / `sync_host.sh`
 
-Spug 后置脚本请用仓库内 `deployments/spug/spug_run.sh`（或发布包解压后的同路径）。服务器上 `$REPO/scripts/` 是运维习惯目录，与本目录无耦合。
+Spug 自定义发布：前置 [`spug_pre.sh`](../spug/spug_pre.sh)、后置 [`spug_run.sh`](../spug/spug_run.sh)（或发布包解压后的同路径）。服务器上 `$REPO/scripts/` 是运维习惯目录，与本目录无耦合。
