@@ -63,9 +63,13 @@ JSON 解析使用 `deployments/scripts/lib/json.sh`（纯 bash）。单测：`ba
 
 部署相关仍在：
 
-- `deployments/spug/spug_pre.sh`
-- `deployments/spug/spug_run.sh`
+- `deployments/spug/spug_pre.sh` — 自定义发布：下包解压到 WWW
+- `deployments/spug/spug_strip.sh` — 常规发布：代码迁出后去掉 Git 源码
+- `deployments/spug/spug_unpack.sh` — 常规发布：应用发布前解开 Release 包
+- `deployments/spug/spug_run.sh` — 两种方式共用：软链 / app.conf / systemd
 - `deployments/systemd/doc.service`
 - `deployments/Dockerfile` / `docker-compose.yml` / `start.sh` / `sync_host.sh`
 
-Spug 自定义发布：前置 [`spug_pre.sh`](../spug/spug_pre.sh)、后置 [`spug_run.sh`](../spug/spug_run.sh)（或发布包解压后的同路径）。服务器上 `$REPO/scripts/` 是运维习惯目录，与本目录无耦合。
+自定义发布：[`spug_pre.sh`](../spug/spug_pre.sh) + [`spug_run.sh`](../spug/spug_run.sh)。  
+常规发布：[`spug_strip.sh`](../spug/spug_strip.sh) + [`spug_unpack.sh`](../spug/spug_unpack.sh) + [`spug_run.sh`](../spug/spug_run.sh)。  
+服务器上 `$REPO/scripts/` 是运维习惯目录，与本目录无耦合。

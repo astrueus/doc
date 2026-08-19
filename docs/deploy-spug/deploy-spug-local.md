@@ -398,4 +398,5 @@ ls -1dt "$BAK_ROOT"/*/ 2>/dev/null | tail -n +11 | xargs -r rm -rf
 ## 十三、相关文档
 
 - [release-local.md](../release/release-local.md)：本地发版脚本与包结构
+- [deploy-spug-standard.md](./deploy-spug-standard.md)：改用常规发布以自动保留历史版本
 - [deploy-spug-actions.md](./deploy-spug-actions.md)：如果改用 Gitea Actions 自动发版，再走 Spug 部署
