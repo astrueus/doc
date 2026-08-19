@@ -2,7 +2,24 @@
 
 ## Unreleased / Round 5
 
-其余任务（T6 Vite、T8/T9、T12、T14、T16 等）见 [round-5-execution-plan.md](docs/round-5/round-5-execution-plan.md)。已交付项见 **2.3.0**。
+其余任务（T6 Vite、T8/T9、T12、T14、T16 等）见 [round-5-execution-plan.md](docs/round-5/round-5-execution-plan.md)。已交付项见 **2.3.0** / **2.3.1**。
+
+## 2.3.1 — 2026-08-19
+
+无 Breaking。应用行为与 2.3.0 相同；本版补部署脚本与文档，供 Spug 按 Tag 下 Release 包（含常规发布保留历史版本）。
+
+### Added
+
+- Spug 自定义发布前置脚本 `deployments/spug/spug_pre.sh`
+- Spug 常规发布：`spug_strip.sh`（代码迁出后）/ `spug_unpack.sh`（应用发布前）；说明见 [deploy-spug-standard.md](docs/deploy-spug/deploy-spug-standard.md)
+
+### Fixed
+
+- `spug_run.sh`：权威配置固定为 REPO 的 `app.conf`；纠正 uploads 套娃软链
+
+### Changed
+
+- Gitea Release 标题改为小写 `doc`，与包名一致
 
 ## 2.3.0 — 2026-08-18
 
