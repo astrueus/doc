@@ -4,21 +4,25 @@ setlocal EnableExtensions EnableDelayedExpansion
 REM Usage:
 REM   deployments\scripts\release.bat <version> [all^|linux^|windows] [options...]
 REM Options:
-REM   --env=PATH     env file (default: deployments\scripts\.env.release if present)
-REM   --draft        create draft release
-REM   --dry-run      build+zip only
-REM   --skip-tag     skip git tag/push
+REM   --env=PATH           env file (default: deployments\scripts\.env.release if present)
+REM   --draft              create draft release
+REM   --dry-run            build+zip only
+REM   --skip-tag           skip git tag/push
+REM   --github             after Gitea, wait for mirrored tag then publish GitHub
+REM   --github-only        GitHub only (Gitea tag+assets must already exist)
+REM   --github-wait=SEC    GitHub tag wait timeout seconds (default 90)
 REM
 REM Examples:
 REM   deployments\scripts\release.bat 0.0.1-test windows --dry-run
-REM   deployments\scripts\release.bat 0.0.1-test windows --env=deployments\scripts\.env.release --draft
+REM   deployments\scripts\release.bat 2.3.2 linux --github
+REM   deployments\scripts\release.bat 2.3.2 linux --github-only
 
 REM 必须在任何 shift 之前保存：shift 后 %~dp0 会变成当前目录
 set "SCRIPT_DIR=%~dp0"
 set "PS1=%SCRIPT_DIR%release.ps1"
 
 if "%~1"=="" (
-  echo Usage: release.bat ^<version^> [all^|linux^|windows] [--env=PATH] [--draft] [--dry-run] [--skip-tag]
+  echo Usage: release.bat ^<version^> [all^|linux^|windows] [--env=PATH] [--draft] [--dry-run] [--skip-tag] [--github] [--github-only] [--github-wait=SEC]
   exit /b 1
 )
 
@@ -30,6 +34,9 @@ set "ENVFILE="
 set "DRAFT=0"
 set "DRYRUN=0"
 set "SKIPTAG=0"
+set "GITHUB=0"
+set "GITHUBONLY=0"
+set "GITHUBWAIT="
 
 :parse
 if "%~1"=="" goto :run
@@ -41,6 +48,15 @@ if /i "!ARG!"=="windows" set "TARGET=windows" & shift & goto :parse
 if /i "!ARG!"=="--draft" set "DRAFT=1" & shift & goto :parse
 if /i "!ARG!"=="--dry-run" set "DRYRUN=1" & shift & goto :parse
 if /i "!ARG!"=="--skip-tag" set "SKIPTAG=1" & shift & goto :parse
+if /i "!ARG!"=="--github-only" set "GITHUBONLY=1" & shift & goto :parse
+if /i "!ARG!"=="--github" set "GITHUB=1" & shift & goto :parse
+
+echo !ARG!| findstr /b /i /c:"--github-wait=" >nul
+if not errorlevel 1 (
+  set "GITHUBWAIT=!ARG:~14!"
+  shift
+  goto :parse
+)
 
 echo !ARG!| findstr /b /i /c:"--env=" >nul
 if not errorlevel 1 (
@@ -65,10 +81,15 @@ set "SWITCHES="
 if "!DRAFT!"=="1" set "SWITCHES=!SWITCHES! -Draft"
 if "!DRYRUN!"=="1" set "SWITCHES=!SWITCHES! -DryRun"
 if "!SKIPTAG!"=="1" set "SWITCHES=!SWITCHES! -SkipTagPush"
+if "!GITHUB!"=="1" set "SWITCHES=!SWITCHES! -GitHub"
+if "!GITHUBONLY!"=="1" set "SWITCHES=!SWITCHES! -GitHubOnly"
+
+set "WAITSWITCH="
+if defined GITHUBWAIT set "WAITSWITCH=-GitHubWait !GITHUBWAIT!"
 
 if defined ENVFILE (
-  powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1%" -Version "%VERSION%" -Target "%TARGET%" -EnvFile "!ENVFILE!" !SWITCHES!
+  powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1%" -Version "%VERSION%" -Target "%TARGET%" -EnvFile "!ENVFILE!" !SWITCHES! !WAITSWITCH!
 ) else (
-  powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1%" -Version "%VERSION%" -Target "%TARGET%" !SWITCHES!
+  powershell -NoProfile -ExecutionPolicy Bypass -File "%PS1%" -Version "%VERSION%" -Target "%TARGET%" !SWITCHES! !WAITSWITCH!
 )
 exit /b !ERRORLEVEL!

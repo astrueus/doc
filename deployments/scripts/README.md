@@ -6,7 +6,7 @@
 |------|------|
 | `build.sh` / `build.bat` | 多平台编译（Zig / MinGW） |
 | `test.sh` / `test.ps1` | 白名单包 `go test` + 覆盖率门槛（T7） |
-| `release.sh` / `release.bat` / `release.ps1` | 一键发版（编译 → 打包 → tag → Gitea Release） |
+| `release.sh` / `release.bat` / `release.ps1` | 一键发版（编译 → 打包 → tag → Gitea Release；可选 `--github`） |
 | `lib/json.sh` / `lib/json_test.sh` | 纯 bash JSON 解析 + 单测 |
 | `.env.release.example` | 发版环境变量模板 |
 
@@ -36,6 +36,12 @@ deployments\scripts\release.bat 0.0.1-test windows --dry-run
 
 REM 3) 草稿发版
 deployments\scripts\release.bat 0.0.1-test windows --draft
+
+REM 4) Gitea 成功后再发 GitHub（需 .env.release 里 GITHUB_TOKEN；等镜像 tag）
+deployments\scripts\release.bat 2.3.2 linux --github
+
+REM 5) 只补 GitHub（Gitea 上已有该 tag 和包）
+deployments\scripts\release.bat 2.3.2 linux --github-only
 ```
 
 PowerShell：
@@ -53,6 +59,8 @@ cp deployments/scripts/.env.release.example deployments/scripts/.env.release
 ./deployments/scripts/release.sh 0.0.1-test --dry-run
 ./deployments/scripts/release.sh 0.0.1-test linux --draft
 ./deployments/scripts/release.sh 1.0.0 all
+./deployments/scripts/release.sh 2.3.2 linux --github
+./deployments/scripts/release.sh 2.3.2 linux --github-only
 ```
 
 依赖：`bash`、`curl`、`tar`；打 Windows zip 时需 `zip`。  
