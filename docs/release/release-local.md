@@ -51,9 +51,9 @@
 
     ├─ git tag vX.Y.Z && git push origin refs/tags/vX.Y.Z   （可用 --dry-run 跳过）
 
-    ├─ 调 Gitea API 创建 Release
+    ├─ 调 Gitea API 创建 Release 并上传附件
 
-    └─ 调 Gitea API 上传附件
+    └─ （可选 --github）等 GitHub 镜像到同一 tag 后，上传同一批附件
 
                                 ↓
 
@@ -132,6 +132,14 @@ GITEA_TOKEN=你的PAT
 GITEA_OWNER=astrueus
 
 GITEA_REPO=doc
+
+# 仅当命令行加 --github / --github-only 时需要；默认只发 Gitea
+
+GITHUB_TOKEN=你的GitHub_PAT
+
+# GITHUB_OWNER=  # 可省略，默认与 GITEA_OWNER 相同
+
+# GITHUB_REPO=doc
 
 ```
 
@@ -288,7 +296,41 @@ powershell -ExecutionPolicy Bypass -File scripts\release.ps1 `
 
 
 
-常用开关：`--dry-run` / `--draft` / `--skip-tag` / `--env=PATH`
+常用开关：`--dry-run` / `--draft` / `--skip-tag` / `--env=PATH` / `--github` / `--github-only` / `--github-wait=秒`
+
+
+
+默认只发 **Gitea**。Gitea 推送镜像不会带上 Release 附件，要用 GitHub Releases 时：
+
+
+
+```bat
+
+REM Gitea 发完后，等镜像 tag 再发 GitHub（超时默认 90s，commit 必须与 Gitea 一致）
+
+deployments\scripts\release.bat 2.3.2 linux --github
+
+
+
+REM 只补 GitHub：Gitea 上必须已有该 tag 和对应包（不重新编译）
+
+deployments\scripts\release.bat 2.3.2 linux --github-only
+
+```
+
+
+
+```bash
+
+./deployments/scripts/release.sh 2.3.2 linux --github
+
+./deployments/scripts/release.sh 2.3.2 linux --github-only
+
+```
+
+
+
+`--github` 时若 Gitea 已成功、GitHub 超时或上传失败：不要改 tag，稍后用 `--github-only` 补发。脚本**不会**向 GitHub `git push`（源码/tag 仍靠 Gitea 推送镜像）。
 
 
 
