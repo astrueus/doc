@@ -24,7 +24,7 @@
 | [deploy-spug/](./deploy-spug/) | Spug 部署 |
 | [release/](./release/) | 本地 / Actions 发版；[小团队协作草案](./release/git-workflow.md) · [切换执行（A～C 已完成，D/E 待做）](./release/git-workflow-cutover.md) · [大团队参考](./release/git-workflow-large-team.md) |
 
-> **阅读顺序建议**：先看 [refactor-roadmap.md](./refactor-roadmap.md) → 已完成轮次看 [round-1-4/](./round-1-4/) → 进行中看 [round-5/](./round-5/) → 接入 MCP 看 [mcp-integration.md](./mcp-integration.md)。AI 协作约定见仓库根目录 [AGENTS.md](../AGENTS.md)。
+> **阅读顺序建议**：先看 [refactor-roadmap.md](./refactor-roadmap.md) → 已完成轮次看 [round-1-4/](./round-1-4/) → 进行中看 [round-5/](./round-5/) → 接入 MCP 看 [mcp-integration.md](./mcp-integration.md)。AI 协作约定见仓库根目录 [AGENTS.md](../AGENTS.md)（含项目执行标准与 `.cursor/rules/` 索引）。
 
 ## 多轮进度一览
 

@@ -1,0 +1,45 @@
+---
+description: "本仓库执行标准：目录分层、命名、错误与安全。"
+globs:
+  - "**/*.go"
+  - cmd/**
+  - internal/**
+  - pkg/**
+alwaysApply: false
+---
+
+# 项目执行标准
+
+协作约定见 [AGENTS.md](../../AGENTS.md)。任务闸门与协议细节在 `docs/`。
+
+## 目录与分层
+
+```text
+cmd/doc/          # 唯一 main
+internal/         # 应用代码
+pkg/              # 工具库；新建代码不要 import internal/
+conf/             # 运行时配置（app.conf 不入库）；Go 在 internal/config
+web/              # static + views
+deployments/ docs/
+```
+
+不要在 `internal/` 根堆文件，不要恢复根目录 `models/`、`controllers/`、`static/`。当前没有 `internal/logic` / `internal/biz`，不要按其它项目新建。
+
+```text
+router → controller / mcp → repository → model
+repository 不依赖 controller、mcp、Beego web.Context
+model 不引用 controller / mcp / repository
+```
+
+- **controller**：HTTP 编解码与鉴权入口；路由只写在 `internal/router/`；JSON 为 `errcode` / `message` / `data`
+- **repository**：持久化接口；有 Repo 的域，新查询补 Repo，不要扩大 `model.Find*` 直调（存量是债，小改不借机全迁）
+- **cache**：经 `internal/cache.Cache`，不要新引入 `beego/cache`
+- **mcp**：工具与传输；错误 JSON 用 `code` / `message`（不要用 Web 的 `errcode`）；stdio 占用 stdout，日志走 stderr
+
+## 编码
+
+- Go **1.25** + Beego v2；提交前 `gofmt`（**tab** 缩进）
+- **新文件** `lower_snake_case.go`；不要顺手全仓重命名存量 PascalCase 文件
+- 业务错误用 `internal/errs`；包装 `%w`；不要丢弃 error
+- 禁止拼接 SQL；LIKE 用 `pkg/sqltil.EscapeLike`
+- 不要提交 `conf/app.conf`、Token、`.env.release`；不要留 `fmt.Print` 调试
