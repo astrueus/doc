@@ -64,6 +64,10 @@ fix(round4): 修复日志控制台体验与 Session 登录过滤器误判
 
 本仓库当前仅有 `docs/`，因此默认写入 `docs/`。
 
+## 项目执行标准
+
+写代码时看 `.cursor/rules/project-standards.mdc`。新功能先出实施文档：`.cursor/skills/feature-impl-doc/`（落盘 `docs/{预定版本}-{短名}/`）。代码审查：`.cursor/skills/code-review/`。
+
 ## 测试
 
 白名单包一键跑测（权威脚本在 `deployments/scripts/`）：
@@ -102,3 +106,6 @@ Windows：`just test` 或 `powershell -File deployments/scripts/test.ps1`。
 | `.cursor/rules/doc-output-location.mdc` | 文档输出目录（Cursor 摘要） |
 | `.cursor/rules/decision-confirm.mdc` | 决策确认（Cursor 全文） |
 | `.cursor/rules/git-branch-retention.mdc` | 已合入功能分支保留约 3 条（Cursor 摘要） |
+| `.cursor/rules/project-standards.mdc` | 项目执行标准（目录、分层、编码） |
+| `.cursor/skills/feature-impl-doc/` | 先文档后代码（`docs/{版本}-{短名}/`） |
+| `.cursor/skills/code-review/` | 按执行标准做代码审查 |
