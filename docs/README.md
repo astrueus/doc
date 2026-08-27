@@ -19,6 +19,7 @@
 | 目录 | 内容 |
 |------|------|
 | [round-1-4/](./round-1-4/) | Round 1–4 执行计划、升级说明、前后端拆分清单 |
+| [issue-log/](./issue-log/) | 问题收集（序号递增，待排期） |
 | [round-5/](./round-5/) | Round 5 执行计划、评估与任务细化 |
 | [router/](./router/) | 路由分类参考与拆分计划 |
 | [deploy-spug/](./deploy-spug/) | Spug 部署 |
