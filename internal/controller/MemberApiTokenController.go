@@ -1,4 +1,4 @@
-﻿package controller
+package controller
 
 import (
 	"crypto/rand"
@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
+	"git.itopcms.com/astrueus/doc/internal/i18n"
 	"git.itopcms.com/astrueus/doc/internal/mcp"
 	"git.itopcms.com/astrueus/doc/internal/model"
-	"git.itopcms.com/astrueus/doc/internal/i18n"
 )
 
 type MemberApiTokenController struct {

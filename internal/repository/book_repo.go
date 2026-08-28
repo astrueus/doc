@@ -3,6 +3,8 @@ package repository
 import (
 	"context"
 
+	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/dto"
 	"git.itopcms.com/astrueus/doc/internal/model"
 	"github.com/beego/beego/v2/client/orm"
 )
@@ -14,6 +16,16 @@ type BookRepo interface {
 	Create(ctx context.Context, book *model.Book, lang string) error
 	Update(ctx context.Context, book *model.Book, cols ...string) error
 	IdentifiesByIDs(ctx context.Context, ids []int) (map[int]string, error)
+	FindForRoleId(ctx context.Context, bookID, memberID int) (config.BookRole, error)
+	ListAllIDs(ctx context.Context) ([]int, error)
+	ListVisibleIDs(ctx context.Context, memberID int) ([]int, error)
+	FindByIdentifyForMember(ctx context.Context, identify string, memberID int, lang string) (*dto.BookResult, error)
+	FindToPagerForMember(ctx context.Context, pageIndex, pageSize, memberID int, lang string) ([]*dto.BookResult, int, error)
+	FindToPagerAll(ctx context.Context, pageIndex, pageSize int) ([]*dto.BookResult, int, error)
+	FindForHomeToPager(ctx context.Context, pageIndex, pageSize, memberID int) ([]*dto.BookResult, int, error)
+	FindForLabelToPager(ctx context.Context, keyword string, pageIndex, pageSize, memberID int) ([]*dto.BookResult, int, error)
+	FindToPagerByItemKey(ctx context.Context, key string, pageIndex, pageSize, memberID int) ([]*dto.BookResult, int, error)
+	BookToResult(ctx context.Context, book model.Book) *dto.BookResult
 }
 
 type bookRepo struct {

@@ -1,38 +1,18 @@
-package model
+package repository
 
 import (
+	"context"
 	"fmt"
-	"time"
-
 	"strings"
 
 	"git.itopcms.com/astrueus/doc/internal/config"
-	"github.com/beego/beego/v2/client/orm"
+	"git.itopcms.com/astrueus/doc/internal/dto"
 	"github.com/beego/beego/v2/core/logs"
 )
 
-type DocumentSearchResult struct {
-	DocumentId   int    `json:"doc_id"`
-	DocumentName string `json:"doc_name"`
-	// Identify 文档唯一标识
-	Identify     string    `json:"identify"`
-	Description  string    `json:"description"`
-	Author       string    `json:"author"`
-	ModifyTime   time.Time `json:"modify_time"`
-	CreateTime   time.Time `json:"create_time"`
-	BookId       int       `json:"book_id"`
-	BookName     string    `json:"book_name"`
-	BookIdentify string    `json:"book_identify"`
-	SearchType   string    `json:"search_type"`
-}
-
-func NewDocumentSearchResult() *DocumentSearchResult {
-	return &DocumentSearchResult{}
-}
-
-// 分页全局搜索.
-func (m *DocumentSearchResult) FindToPager(keyword string, pageIndex, pageSize, memberId int) (searchResult []*DocumentSearchResult, totalCount int, err error) {
-	o := orm.NewOrm()
+// SearchToPager 分页全局搜索（SQL 与原 model.DocumentSearchResult.FindToPager 一致）。
+func (r *documentRepo) SearchToPager(ctx context.Context, keyword string, pageIndex, pageSize, memberId int) (searchResult []*dto.DocumentSearchResult, totalCount int, err error) {
+	o := r.ormer(ctx)
 
 	offset := (pageIndex - 1) * pageSize
 
@@ -270,17 +250,5 @@ WHERE (book.privately_owned = 0 OR rel1.relationship_id > 0 or team.team_member_
 			return
 		}
 	}
-	return
-}
-
-// 项目内搜索.
-func (m *DocumentSearchResult) SearchDocument(keyword string, bookId int) (docs []*DocumentSearchResult, err error) {
-	o := orm.NewOrm()
-
-	sql := fmt.Sprintf("SELECT * FROM %s WHERE book_id = ? AND (document_name LIKE ? OR `release` LIKE ?) ", NewDocument().TableNameWithPrefix())
-	keyword = "%" + keyword + "%"
-
-	_, err = o.Raw(sql, bookId, keyword, keyword).QueryRows(&docs)
-
 	return
 }

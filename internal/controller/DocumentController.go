@@ -1,4 +1,4 @@
-﻿package controller
+package controller
 
 import (
 	"context"
@@ -17,14 +17,16 @@ import (
 	"time"
 
 	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/dto"
+	"git.itopcms.com/astrueus/doc/internal/i18n"
 	"git.itopcms.com/astrueus/doc/internal/model"
+	"git.itopcms.com/astrueus/doc/internal/repository"
 	"git.itopcms.com/astrueus/doc/pkg/cryptil"
 	"git.itopcms.com/astrueus/doc/pkg/filetil"
 	"git.itopcms.com/astrueus/doc/pkg/gopool"
 	"git.itopcms.com/astrueus/doc/pkg/pagination"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
-	"git.itopcms.com/astrueus/doc/internal/i18n"
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/qr"
 	"github.com/russross/blackfriday/v2"
@@ -59,7 +61,7 @@ func (c *DocumentController) Index() {
 	selected := 0
 
 	if bookResult.IsUseFirstDocument {
-		doc, err := bookResult.FindFirstDocumentByBookId(bookResult.BookId)
+		doc, err := documentRepo().FindFirstByBookID(c.requestContext(), bookResult.BookId)
 		if err == nil {
 			selected = doc.DocumentId
 			c.Data["Title"] = doc.DocumentName
@@ -190,7 +192,7 @@ func (c *DocumentController) Edit() {
 		c.ShowErrorPage(404, i18n.Tr(c.Lang, "message.project_id_error"))
 	}
 
-	bookResult := model.NewBookResult()
+	bookResult := dto.NewBookResult()
 
 	var err error
 	// 如果是管理者，则不判断权限
@@ -200,9 +202,9 @@ func (c *DocumentController) Edit() {
 			c.JsonResult(6002, i18n.Tr(c.Lang, "message.item_not_exist_or_no_permit"))
 		}
 
-		bookResult = model.NewBookResult().ToBookResult(*book)
+		bookResult = bookRepo().BookToResult(c.requestContext(), *book)
 	} else {
-		bookResult, err = model.NewBookResult().FindByIdentify(identify, c.Member.MemberId)
+		bookResult, err = bookRepo().FindByIdentifyForMember(c.requestContext(), identify, c.Member.MemberId, c.Lang)
 
 		if err != nil {
 			if err == orm.ErrNoRows || err == model.ErrPermissionDenied {
@@ -289,7 +291,7 @@ func (c *DocumentController) Create() {
 
 		bookId = book.BookId
 	} else {
-		bookResult, err := model.NewBookResult().FindByIdentify(identify, c.Member.MemberId)
+		bookResult, err := bookRepo().FindByIdentifyForMember(c.requestContext(), identify, c.Member.MemberId, c.Lang)
 
 		if err != nil || bookResult.RoleId == config.BookObserver {
 			logs.Error("FindByIdentify => ", err)
@@ -401,7 +403,7 @@ func (c *DocumentController) Upload() {
 
 		bookId = book.BookId
 	} else {
-		book, err := model.NewBookResult().FindByIdentify(identify, c.Member.MemberId)
+		book, err := bookRepo().FindByIdentifyForMember(c.requestContext(), identify, c.Member.MemberId, c.Lang)
 
 		if err != nil {
 			logs.Error("DocumentController.Edit => ", err)
@@ -525,7 +527,7 @@ func (c *DocumentController) DownloadAttachment() {
 	bookId := 0
 
 	// 判断用户是否参与了项目
-	bookResult, err := model.NewBookResult().FindByIdentify(identify, memberId)
+	bookResult, err := bookRepo().FindByIdentifyForMember(c.requestContext(), identify, memberId, c.Lang)
 
 	if err != nil {
 		// 判断项目公开状态
@@ -637,7 +639,7 @@ func (c *DocumentController) Delete() {
 
 		bookId = book.BookId
 	} else {
-		bookResult, err := model.NewBookResult().FindByIdentify(identify, c.Member.MemberId)
+		bookResult, err := bookRepo().FindByIdentifyForMember(c.requestContext(), identify, c.Member.MemberId, c.Lang)
 
 		if err != nil || bookResult.RoleId == config.BookObserver {
 			logs.Error("FindByIdentify => ", err)
@@ -698,7 +700,7 @@ func (c *DocumentController) Content() {
 		bookId = book.BookId
 		autoRelease = book.AutoRelease == 1
 	} else {
-		bookResult, err := model.NewBookResult().FindByIdentify(identify, c.Member.MemberId)
+		bookResult, err := bookRepo().FindByIdentifyForMember(c.requestContext(), identify, c.Member.MemberId, c.Lang)
 
 		if err != nil || bookResult.RoleId == config.BookObserver {
 			logs.Error("项目不存在或权限不足 -> ", err)
@@ -719,7 +721,7 @@ func (c *DocumentController) Content() {
 		version, _ := c.GetInt64("version", 0)
 		isCover := c.GetString("cover")
 
-		doc, err := model.NewDocument().Find(docId)
+		doc, err := documentRepo().Find(c.requestContext(), docId)
 		if err != nil || doc == nil {
 			c.JsonResult(6003, i18n.Tr(c.Lang, "message.read_file_error"))
 			return
@@ -786,7 +788,7 @@ func (c *DocumentController) Content() {
 		c.JsonResult(0, "ok", doc)
 	}
 
-	doc, err := model.NewDocument().Find(docId)
+	doc, err := documentRepo().Find(c.requestContext(), docId)
 	if err != nil {
 		c.JsonResult(6003, i18n.Tr(c.Lang, "message.doc_not_exist"))
 		return
@@ -821,7 +823,7 @@ func (c *DocumentController) Export() {
 		c.ShowErrorPage(500, i18n.Tr(c.Lang, "export_func_disable"))
 	}
 
-	bookResult := model.NewBookResult()
+	bookResult := dto.NewBookResult()
 	if c.Member != nil && c.Member.IsAdministrator() {
 		book, err := model.NewBook().FindByIdentify(identify)
 		if err != nil {
@@ -832,7 +834,7 @@ func (c *DocumentController) Export() {
 				c.ShowErrorPage(500, i18n.Tr(c.Lang, "message.system_error"))
 			}
 		}
-		bookResult = model.NewBookResult().ToBookResult(*book)
+		bookResult = bookRepo().BookToResult(c.requestContext(), *book)
 	} else {
 		bookResult = c.isReadable(identify, token)
 	}
@@ -848,7 +850,7 @@ func (c *DocumentController) Export() {
 		if bookResult.Editor != "markdown" {
 			c.ShowErrorPage(500, i18n.Tr(c.Lang, "message.cur_project_not_support_md"))
 		}
-		p, err := bookResult.ExportMarkdown(c.CruSession.SessionID(context.TODO()))
+		p, err := repository.ExportBookMarkdown(c.CruSession.SessionID(context.TODO()), bookResult)
 
 		if err != nil {
 			c.ShowErrorPage(500, i18n.Tr(c.Lang, "message.failed"))
@@ -883,7 +885,7 @@ func (c *DocumentController) Export() {
 		c.Abort("200")
 
 	} else if output == "pdf" || output == "epub" || output == "docx" || output == "mobi" {
-		if err := model.BackgroundConvert(c.CruSession.SessionID(context.TODO()), bookResult); err != nil && err != gopool.ErrHandlerIsExist {
+		if err := repository.BackgroundConvert(c.CruSession.SessionID(context.TODO()), bookResult); err != nil && err != gopool.ErrHandlerIsExist {
 			c.ShowErrorPage(500, i18n.Tr(c.Lang, "message.export_failed"))
 		}
 
@@ -949,7 +951,7 @@ func (c *DocumentController) Search() {
 
 	bookResult := c.isReadable(identify, token)
 
-	docs, err := model.NewDocumentSearchResult().SearchDocument(keyword, bookResult.BookId)
+	docs, err := documentRepo().SearchInBook(c.requestContext(), keyword, bookResult.BookId)
 	if err != nil {
 		logs.Error(err)
 		c.JsonResult(6002, i18n.Tr(c.Lang, "message.search_result_error"))
@@ -993,7 +995,7 @@ func (c *DocumentController) History() {
 		bookId = book.BookId
 		c.Data["Model"] = book
 	} else {
-		bookResult, err := model.NewBookResult().FindByIdentify(identify, c.Member.MemberId)
+		bookResult, err := bookRepo().FindByIdentifyForMember(c.requestContext(), identify, c.Member.MemberId, c.Lang)
 		if err != nil || bookResult.RoleId == config.BookObserver {
 			logs.Error("查找项目失败 ->", err)
 			c.Data["ErrorMessage"] = i18n.Tr(c.Lang, "message.item_not_exist_or_no_permit")
@@ -1022,7 +1024,7 @@ func (c *DocumentController) History() {
 		return
 	}
 
-	histories, totalCount, err := model.NewDocumentHistory().FindToPager(docId, pageIndex, config.PageSize)
+	histories, totalCount, err := documentRepo().FindHistoryToPager(c.requestContext(), docId, pageIndex, config.PageSize)
 	if err != nil {
 		logs.Error("分页查找文档历史失败 ->", err)
 		c.Data["ErrorMessage"] = i18n.Tr(c.Lang, "message.get_doc_his_failed")
@@ -1064,7 +1066,7 @@ func (c *DocumentController) DeleteHistory() {
 
 		bookId = book.BookId
 	} else {
-		bookResult, err := model.NewBookResult().FindByIdentify(identify, c.Member.MemberId)
+		bookResult, err := bookRepo().FindByIdentifyForMember(c.requestContext(), identify, c.Member.MemberId, c.Lang)
 		if err != nil || bookResult.RoleId == config.BookObserver {
 			logs.Error("查找项目失败 ->", err)
 			c.JsonResult(6002, i18n.Tr(c.Lang, "message.item_not_exist_or_no_permit"))
@@ -1122,7 +1124,7 @@ func (c *DocumentController) RestoreHistory() {
 
 		bookId = book.BookId
 	} else {
-		bookResult, err := model.NewBookResult().FindByIdentify(identify, c.Member.MemberId)
+		bookResult, err := bookRepo().FindByIdentifyForMember(c.requestContext(), identify, c.Member.MemberId, c.Lang)
 		if err != nil || bookResult.RoleId == config.BookObserver {
 			logs.Error("FindByIdentify => ", err)
 			c.JsonResult(6002, i18n.Tr(c.Lang, "message.item_not_exist_or_no_permit"))
@@ -1179,7 +1181,7 @@ func (c *DocumentController) Compare() {
 		c.Data["Model"] = book
 		editor = book.Editor
 	} else {
-		bookResult, err := model.NewBookResult().FindByIdentify(identify, c.Member.MemberId)
+		bookResult, err := bookRepo().FindByIdentifyForMember(c.requestContext(), identify, c.Member.MemberId, c.Lang)
 		if err != nil || bookResult.RoleId == config.BookObserver {
 			logs.Error("FindByIdentify => ", err)
 			c.ShowErrorPage(403, i18n.Tr(c.Lang, "message.no_permission"))
@@ -1220,18 +1222,18 @@ func (c *DocumentController) Compare() {
 }
 
 // 判断用户是否可以阅读文档
-func (c *DocumentController) isReadable(identify, token string) *model.BookResult {
+func (c *DocumentController) isReadable(identify, token string) *dto.BookResult {
 	book, err := model.NewBook().FindByFieldFirst("identify", identify)
 
 	if err != nil {
 		logs.Error(err)
 		c.ShowErrorPage(500, i18n.Tr(c.Lang, "message.item_not_exist"))
 	}
-	bookResult := model.NewBookResult().ToBookResult(*book)
+	bookResult := bookRepo().BookToResult(c.requestContext(), *book)
 	isOk := false
 
 	if c.isUserLoggedIn() {
-		roleId, err := model.NewBook().FindForRoleId(book.BookId, c.Member.MemberId)
+		roleId, err := bookRepo().FindForRoleId(c.requestContext(), book.BookId, c.Member.MemberId)
 		if err == nil {
 			isOk = true
 			bookResult.MemberId = c.Member.MemberId

@@ -29,9 +29,9 @@ func sharedHTTPServer() *sdkmcp.Server {
 		streamHandler = sdkmcp.NewStreamableHTTPHandler(
 			func(*http.Request) *sdkmcp.Server { return sharedHTTPSrv },
 			&sdkmcp.StreamableHTTPOptions{
-				Stateless:                    true,
-				JSONResponse:                 true,
-				DisableLocalhostProtection:   true,
+				Stateless:                  true,
+				JSONResponse:               true,
+				DisableLocalhostProtection: true,
 			},
 		)
 	})

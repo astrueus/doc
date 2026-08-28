@@ -1,4 +1,4 @@
-﻿package controller
+package controller
 
 import (
 	"fmt"
@@ -9,11 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"git.itopcms.com/astrueus/doc/pkg/graphics"
 	"git.itopcms.com/astrueus/doc/internal/config"
-	"git.itopcms.com/astrueus/doc/internal/model"
-	"github.com/beego/beego/v2/core/logs"
 	"git.itopcms.com/astrueus/doc/internal/i18n"
+	"git.itopcms.com/astrueus/doc/internal/model"
+	"git.itopcms.com/astrueus/doc/pkg/graphics"
+	"github.com/beego/beego/v2/core/logs"
 )
 
 type SettingController struct {

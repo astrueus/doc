@@ -2,14 +2,10 @@
 package model
 
 import (
+	"os"
 	"time"
 
-	"os"
-
-	"strings"
-
 	"git.itopcms.com/astrueus/doc/internal/config"
-	"git.itopcms.com/astrueus/doc/pkg/filetil"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
 )
@@ -88,68 +84,5 @@ func (m *Attachment) FindListByDocumentId(docId int) (attaches []*Attachment, er
 	o := orm.NewOrm()
 
 	_, err = o.QueryTable(m.TableNameWithPrefix()).Filter("document_id", docId).Filter("book_id__gt", 0).OrderBy("-attachment_id").All(&attaches)
-	return
-}
-
-// 分页查询附件
-func (m *Attachment) FindToPager(pageIndex, pageSize int) (attachList []*AttachmentResult, totalCount int, err error) {
-	o := orm.NewOrm()
-
-	total, err := o.QueryTable(m.TableNameWithPrefix()).Count()
-
-	if err != nil {
-
-		return nil, 0, err
-	}
-	totalCount = int(total)
-	offset := (pageIndex - 1) * pageSize
-
-	var list []*Attachment
-
-	_, err = o.QueryTable(m.TableNameWithPrefix()).OrderBy("-attachment_id").Offset(offset).Limit(pageSize).All(&list)
-
-	if err != nil {
-		if err == orm.ErrNoRows {
-			logs.Info("没有查到附件 ->", err)
-			err = nil
-		}
-		return
-	}
-
-	for _, item := range list {
-		attach := &AttachmentResult{}
-		attach.Attachment = *item
-		attach.FileShortSize = filetil.FormatBytes(int64(attach.FileSize))
-		//当项目ID为0标识是文章的附件
-		if item.BookId == 0 && item.DocumentId > 0 {
-			blog := NewBlog()
-			if err := o.QueryTable(blog.TableNameWithPrefix()).Filter("blog_id", item.DocumentId).One(blog, "blog_title"); err == nil {
-				attach.BookName = blog.BlogTitle
-			} else {
-				attach.BookName = "[文章不存在]"
-			}
-		} else {
-			book := NewBook()
-
-			if e := o.QueryTable(book.TableNameWithPrefix()).Filter("book_id", item.BookId).One(book, "book_name"); e == nil {
-				attach.BookName = book.BookName
-
-				doc := NewDocument()
-
-				if e := o.QueryTable(doc.TableNameWithPrefix()).Filter("document_id", item.DocumentId).One(doc, "document_name"); e == nil {
-					attach.DocumentName = doc.DocumentName
-				} else {
-					attach.DocumentName = "[文档不存在]"
-				}
-
-			} else {
-				attach.BookName = "[项目不存在]"
-			}
-		}
-		attach.LocalHttpPath = strings.Replace(item.FilePath, "\\", "/", -1)
-
-		attachList = append(attachList, attach)
-	}
-
 	return
 }

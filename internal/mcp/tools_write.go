@@ -22,11 +22,11 @@ func handleCreateDocument(ctx context.Context, _ *sdkmcp.CallToolRequest, in mcp
 		return toolBizErrorOut[mcpdto.CreateDocumentOut](errs.New(errs.CodeUnauthorized, "unauthorized"))
 	}
 
-	bookID, _, err := resolveBookID(m, in.BookID, in.BookIdentify)
+	bookID, _, err := resolveBookID(ctx, m, in.BookID, in.BookIdentify)
 	if err != nil {
 		return toolBizErrorOut[mcpdto.CreateDocumentOut](err)
 	}
-	if err := ensureWritable(m, bookID); err != nil {
+	if err := ensureWritable(ctx, m, bookID); err != nil {
 		return toolBizErrorOut[mcpdto.CreateDocumentOut](err)
 	}
 
@@ -181,7 +181,7 @@ func handleUpdateDocumentContent(ctx context.Context, _ *sdkmcp.CallToolRequest,
 	if err != nil {
 		return toolBizErrorOut[mcpdto.UpdateDocumentContentOut](errs.Wrap(errs.CodeNotFound, "document not found", err))
 	}
-	if err := ensureWritable(m, doc.BookId); err != nil {
+	if err := ensureWritable(ctx, m, doc.BookId); err != nil {
 		return toolBizErrorOut[mcpdto.UpdateDocumentContentOut](err)
 	}
 
@@ -219,7 +219,7 @@ func handleAppendDocumentContent(ctx context.Context, _ *sdkmcp.CallToolRequest,
 	if err != nil {
 		return toolBizErrorOut[mcpdto.AppendDocumentContentOut](errs.Wrap(errs.CodeNotFound, "document not found", err))
 	}
-	if err := ensureWritable(m, doc.BookId); err != nil {
+	if err := ensureWritable(ctx, m, doc.BookId); err != nil {
 		return toolBizErrorOut[mcpdto.AppendDocumentContentOut](err)
 	}
 
@@ -253,7 +253,7 @@ func handleUpdateDocumentMeta(ctx context.Context, _ *sdkmcp.CallToolRequest, in
 	if err != nil {
 		return toolBizErrorOut[mcpdto.UpdateDocumentMetaOut](errs.Wrap(errs.CodeNotFound, "document not found", err))
 	}
-	if err := ensureWritable(m, doc.BookId); err != nil {
+	if err := ensureWritable(ctx, m, doc.BookId); err != nil {
 		return toolBizErrorOut[mcpdto.UpdateDocumentMetaOut](err)
 	}
 
@@ -296,7 +296,7 @@ func handleReleaseDocument(ctx context.Context, _ *sdkmcp.CallToolRequest, in mc
 		if err != nil {
 			return toolBizErrorOut[mcpdto.ReleaseDocumentOut](errs.Wrap(errs.CodeNotFound, "document not found", err))
 		}
-		if err := ensureWritable(m, doc.BookId); err != nil {
+		if err := ensureWritable(ctx, m, doc.BookId); err != nil {
 			return toolBizErrorOut[mcpdto.ReleaseDocumentOut](err)
 		}
 		if err := releaseOneDocument(ctx, in.DocumentID); err != nil {
@@ -305,7 +305,7 @@ func handleReleaseDocument(ctx context.Context, _ *sdkmcp.CallToolRequest, in mc
 		return nil, mcpdto.ReleaseDocumentOut{ReleasedCount: 1}, nil
 	}
 
-	if err := ensureWritable(m, in.BookID); err != nil {
+	if err := ensureWritable(ctx, m, in.BookID); err != nil {
 		return toolBizErrorOut[mcpdto.ReleaseDocumentOut](err)
 	}
 	docs, err := documentRepo().FindListByBookID(ctx, in.BookID)
@@ -339,7 +339,7 @@ func handleDeleteDocument(ctx context.Context, _ *sdkmcp.CallToolRequest, in mcp
 	if err != nil {
 		return toolBizErrorOut[mcpdto.DeleteDocumentOut](errs.Wrap(errs.CodeNotFound, "document not found", err))
 	}
-	if err := ensureWritable(m, doc.BookId); err != nil {
+	if err := ensureWritable(ctx, m, doc.BookId); err != nil {
 		return toolBizErrorOut[mcpdto.DeleteDocumentOut](err)
 	}
 

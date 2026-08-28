@@ -1,4 +1,4 @@
-﻿package controller
+package controller
 
 import (
 	"context"
@@ -15,11 +15,11 @@ import (
 	"time"
 
 	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/i18n"
 	"git.itopcms.com/astrueus/doc/internal/model"
 	"git.itopcms.com/astrueus/doc/pkg/pagination"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
-	"git.itopcms.com/astrueus/doc/internal/i18n"
 )
 
 type BlogController struct {
@@ -192,7 +192,7 @@ func (c *BlogController) ManageSetting() {
 
 			// 如果不是超级管理员，则校验权限
 			if !c.Member.IsAdministrator() {
-				bookResult, err := model.NewBookResult().FindByIdentify(book.Identify, c.Member.MemberId)
+				bookResult, err := bookRepo().FindByIdentifyForMember(c.requestContext(), book.Identify, c.Member.MemberId, c.Lang)
 
 				if err != nil || bookResult.RoleId == config.BookObserver {
 					c.JsonResult(6002, i18n.Tr(c.Lang, "message.ref_doc_not_exist_or_no_permit"))
@@ -323,7 +323,7 @@ func (c *BlogController) ManageEdit() {
 
 			// 如果不是超级管理员，则校验权限
 			if !c.Member.IsAdministrator() {
-				bookResult, err := model.NewBookResult().FindByIdentify(book.Identify, c.Member.MemberId)
+				bookResult, err := bookRepo().FindByIdentifyForMember(c.requestContext(), book.Identify, c.Member.MemberId, c.Lang)
 
 				if err != nil || bookResult.RoleId == config.BookObserver {
 					logs.Error("FindByIdentify => ", err)

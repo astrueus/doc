@@ -218,6 +218,80 @@ func TestBookRepo_IdentifiesByIDs(t *testing.T) {
 	}
 }
 
+func TestDocumentRepo_FindFirstByBookID(t *testing.T) {
+	repo := setupDocumentTestDB(t)
+	ctx := context.Background()
+
+	first := &model.Document{
+		DocumentName: "first",
+		BookId:       7,
+		ParentId:     0,
+		Identify:     "first-doc",
+		OrderSort:    1,
+		MemberId:     1,
+		Version:      1,
+	}
+	second := &model.Document{
+		DocumentName: "second",
+		BookId:       7,
+		ParentId:     0,
+		Identify:     "second-doc",
+		OrderSort:    2,
+		MemberId:     1,
+		Version:      1,
+	}
+	insertTestDocument(t, testOrm, first)
+	insertTestDocument(t, testOrm, second)
+
+	got, err := repo.FindFirstByBookID(ctx, 7)
+	if err != nil {
+		t.Fatalf("FindFirstByBookID: %v", err)
+	}
+	if got.DocumentId != first.DocumentId {
+		t.Fatalf("expected first document %d, got %d", first.DocumentId, got.DocumentId)
+	}
+}
+
+func TestDocumentRepo_SearchLike(t *testing.T) {
+	repo := setupDocumentTestDB(t)
+	ctx := context.Background()
+
+	match := &model.Document{
+		DocumentName: "alpha search",
+		BookId:       8,
+		Identify:     "alpha",
+		Release:      "body",
+		MemberId:     1,
+		Version:      1,
+	}
+	otherBook := &model.Document{
+		DocumentName: "alpha search",
+		BookId:       9,
+		Identify:     "other",
+		Release:      "body",
+		MemberId:     1,
+		Version:      1,
+	}
+	insertTestDocument(t, testOrm, match)
+	insertTestDocument(t, testOrm, otherBook)
+
+	docs, err := repo.SearchLike(ctx, "alpha", []int{8}, 10)
+	if err != nil {
+		t.Fatalf("SearchLike: %v", err)
+	}
+	if len(docs) != 1 || docs[0].DocumentId != match.DocumentId {
+		t.Fatalf("unexpected SearchLike result: %+v", docs)
+	}
+
+	empty, err := repo.SearchLike(ctx, "alpha", nil, 10)
+	if err != nil {
+		t.Fatalf("SearchLike empty books: %v", err)
+	}
+	if len(empty) != 0 {
+		t.Fatalf("expected empty result, got %+v", empty)
+	}
+}
+
 func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }

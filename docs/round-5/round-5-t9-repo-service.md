@@ -2,7 +2,7 @@
 
 > 对应 [round-5-execution-plan.md §十一 T9](./round-5-execution-plan.md#十一t9--repository-扩面--可选-service3~5-天)。  
 > 方向对齐 [T2](./round-5-orm-migration-evaluation.md)：朝未来 `internal/data` / `internal/biz` 靠拢，**本轮不换 ORM**。  
-> **状态：** ⏳ 待实施。
+> **状态：** ✅ 已实施（与 T8 同批）。本轮**未**建 `internal/service/`。
 
 ---
 
@@ -11,11 +11,11 @@
 | 项 | 状态 |
 |---|---|
 | [`internal/repository/document_repo.go`](../../internal/repository/document_repo.go) | CRUD + 乐观锁较完整 |
-| `book_repo.go` | 仅薄封装（如 `Find`） |
-| `member_repo.go` | 有 |
-| MCP 写路径 | 多经 `documentRepo()` |
-| MCP 读 / authz / 搜索 | **仍直调** `model.*` |
-| `internal/service/` | **不存在** |
+| `book_repo.go` | 读列表 / 权限 / 展示 Result 已扩面 |
+| `member_repo.go` | 含账号、API Token、项目成员查询 |
+| MCP 写路径 | 经 `documentRepo()` / `bookRepo()` |
+| MCP 读 / authz / 搜索 | **经 Repo**（`DocumentRepo` / `BookRepo` / `MemberRepo`） |
+| `internal/service/` | **不存在**（本轮未建） |
 
 ---
 
@@ -109,10 +109,11 @@ internal/service/
 
 ## 五、验收
 
-- [ ] MCP 读+写均经 Repo（例外须在本文或代码注释标明）  
-- [ ] 权限 / 乐观锁行为与现网一致  
-- [ ] `go test` 相关包不回退  
-- [ ] **无** ORM 替换  
+- [x] MCP 读+写均经 Repo（例外：`resolveItemID` 仍读 `Itemsets` 实体；导出 HTML 仍调用 beego `ExecuteViewPathTemplate`）
+- [x] 权限 / 乐观锁行为与现网对齐（`FindForRoleId` / `UpdateMarkdownWithVersion` 原 SQL 搬迁）
+- [x] `go test` 相关包不回退（`internal/repository`、`internal/mcp`）
+- [x] **无** ORM 替换
+- [x] Web 试点：`DocumentController.Content` 的文档 `Find` 走 `DocumentRepo`；阅读页 `Read` 仍走 model 缓存（待 T12）
 
 ---
 

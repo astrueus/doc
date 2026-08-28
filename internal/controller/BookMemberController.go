@@ -1,13 +1,15 @@
-﻿package controller
+package controller
 
 import (
 	"errors"
 
 	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/dto"
+	"git.itopcms.com/astrueus/doc/internal/i18n"
 	"git.itopcms.com/astrueus/doc/internal/model"
+	"git.itopcms.com/astrueus/doc/internal/repository"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
-	"git.itopcms.com/astrueus/doc/internal/i18n"
 )
 
 type BookMemberController struct {
@@ -48,7 +50,7 @@ func (c *BookMemberController) AddMember() {
 	relationship.RoleId = config.BookRole(roleId)
 
 	if err := relationship.Insert(); err == nil {
-		memberRelationshipResult := model.NewMemberRelationshipResult().FromMember(member)
+		memberRelationshipResult := repository.MemberToRelationship(member)
 		memberRelationshipResult.RoleId = config.BookRole(roleId)
 		memberRelationshipResult.RelationshipId = relationship.RelationshipId
 		memberRelationshipResult.BookId = book.BookId
@@ -71,7 +73,7 @@ func (c *BookMemberController) ChangeRole() {
 	if memberId == c.Member.MemberId {
 		c.JsonResult(6006, i18n.Tr(c.Lang, "message.cannot_change_own_priv"))
 	}
-	book, err := model.NewBookResult().FindByIdentify(identify, c.Member.MemberId)
+	book, err := bookRepo().FindByIdentifyForMember(c.requestContext(), identify, c.Member.MemberId, c.Lang)
 
 	if err != nil {
 		if err == model.ErrPermissionDenied {
@@ -102,7 +104,7 @@ func (c *BookMemberController) ChangeRole() {
 		c.JsonResult(6005, err.Error())
 	}
 
-	memberRelationshipResult := model.NewMemberRelationshipResult().FromMember(member)
+	memberRelationshipResult := repository.MemberToRelationship(member)
 	memberRelationshipResult.RoleId = relationship.RoleId
 	memberRelationshipResult.RelationshipId = relationship.RelationshipId
 	memberRelationshipResult.BookId = book.BookId
@@ -122,7 +124,7 @@ func (c *BookMemberController) RemoveMember() {
 	if member_id == c.Member.MemberId {
 		c.JsonResult(6006, i18n.Tr(c.Lang, "message.cannot_delete_self"))
 	}
-	book, err := model.NewBookResult().FindByIdentify(identify, c.Member.MemberId)
+	book, err := bookRepo().FindByIdentifyForMember(c.requestContext(), identify, c.Member.MemberId, c.Lang)
 
 	if err != nil {
 		if err == model.ErrPermissionDenied {
@@ -145,9 +147,9 @@ func (c *BookMemberController) RemoveMember() {
 	c.JsonResult(0, "ok")
 }
 
-func (c *BookMemberController) IsPermission() (*model.BookResult, error) {
+func (c *BookMemberController) IsPermission() (*dto.BookResult, error) {
 	identify := c.GetString("identify")
-	book, err := model.NewBookResult().FindByIdentify(identify, c.Member.MemberId)
+	book, err := bookRepo().FindByIdentifyForMember(c.requestContext(), identify, c.Member.MemberId, c.Lang)
 
 	if err != nil {
 		if err == model.ErrPermissionDenied {
