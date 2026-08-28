@@ -30,7 +30,7 @@ func setupDocumentTestDB(t *testing.T) repository.DocumentRepo {
 		if err := orm.RegisterDataBase(testDBAlias, "sqlite3", ":memory:"); err != nil {
 			panic(err)
 		}
-		orm.RegisterModelWithPrefix("", new(model.Document), new(model.Book))
+		orm.RegisterModelWithPrefix("", new(model.Document), new(model.Book), new(model.Member))
 		if err := orm.RunSyncdb(testDBAlias, false, true); err != nil {
 			panic(err)
 		}
@@ -41,6 +41,9 @@ func setupDocumentTestDB(t *testing.T) repository.DocumentRepo {
 	}
 	if _, err := testOrm.Raw("DELETE FROM books").Exec(); err != nil {
 		t.Fatalf("clear books: %v", err)
+	}
+	if _, err := testOrm.Raw("DELETE FROM members").Exec(); err != nil {
+		t.Fatalf("clear members: %v", err)
 	}
 	return repository.NewDocumentRepo(testOrm)
 }
@@ -165,6 +168,124 @@ func TestDocumentRepo_FindByIdentify(t *testing.T) {
 	}
 	if found.DocumentId != doc.DocumentId {
 		t.Fatalf("expected document_id %d, got %d", doc.DocumentId, found.DocumentId)
+	}
+}
+
+func TestDocumentRepo_FindListByBookID(t *testing.T) {
+	repo := setupDocumentTestDB(t)
+	ctx := context.Background()
+
+	inBook := &model.Document{
+		DocumentName: "in",
+		BookId:       3,
+		Identify:     "in-book",
+		OrderSort:    2,
+		MemberId:     1,
+		Version:      1,
+	}
+	also := &model.Document{
+		DocumentName: "also",
+		BookId:       3,
+		Identify:     "also-in",
+		OrderSort:    1,
+		MemberId:     1,
+		Version:      1,
+	}
+	other := &model.Document{
+		DocumentName: "other",
+		BookId:       4,
+		Identify:     "other-book",
+		MemberId:     1,
+		Version:      1,
+	}
+	insertTestDocument(t, testOrm, inBook)
+	insertTestDocument(t, testOrm, also)
+	insertTestDocument(t, testOrm, other)
+
+	got, err := repo.FindListByBookID(ctx, 3)
+	if err != nil {
+		t.Fatalf("FindListByBookID: %v", err)
+	}
+	if len(got) != 2 || got[0].DocumentId != also.DocumentId || got[1].DocumentId != inBook.DocumentId {
+		t.Fatalf("expected order_sort then in-book, got %+v", got)
+	}
+}
+
+func TestBookRepo_Find(t *testing.T) {
+	_ = setupDocumentTestDB(t)
+	repo := repository.NewBookRepo(testOrm)
+	ctx := context.Background()
+
+	if _, err := repo.Find(ctx, 0); err != model.ErrInvalidParameter {
+		t.Fatalf("expected ErrInvalidParameter, got %v", err)
+	}
+
+	book := &model.Book{BookName: "找到我", Identify: "find-me"}
+	id, err := testOrm.Insert(book)
+	if err != nil {
+		t.Fatalf("insert: %v", err)
+	}
+
+	found, err := repo.Find(ctx, int(id))
+	if err != nil {
+		t.Fatalf("Find: %v", err)
+	}
+	if found.Identify != "find-me" || found.BookName != "找到我" {
+		t.Fatalf("unexpected: %+v", found)
+	}
+}
+
+func TestBookRepo_ListAllIDs(t *testing.T) {
+	_ = setupDocumentTestDB(t)
+	repo := repository.NewBookRepo(testOrm)
+	ctx := context.Background()
+
+	a := &model.Book{BookName: "A", Identify: "list-a"}
+	b := &model.Book{BookName: "B", Identify: "list-b"}
+	idA, err := testOrm.Insert(a)
+	if err != nil {
+		t.Fatalf("insert a: %v", err)
+	}
+	idB, err := testOrm.Insert(b)
+	if err != nil {
+		t.Fatalf("insert b: %v", err)
+	}
+
+	ids, err := repo.ListAllIDs(ctx)
+	if err != nil {
+		t.Fatalf("ListAllIDs: %v", err)
+	}
+	want := map[int]bool{int(idA): true, int(idB): true}
+	if len(ids) != 2 || !want[ids[0]] || !want[ids[1]] {
+		t.Fatalf("ids=%v want {%d,%d}", ids, idA, idB)
+	}
+}
+
+func TestMemberRepo_FindAndAccount(t *testing.T) {
+	_ = setupDocumentTestDB(t)
+	repo := repository.NewMemberRepo(testOrm)
+	ctx := context.Background()
+
+	m := &model.Member{Account: "alice", Email: "alice@example.com", Password: "x", Role: 2}
+	id, err := testOrm.Insert(m)
+	if err != nil {
+		t.Fatalf("insert member: %v", err)
+	}
+
+	found, err := repo.Find(ctx, int(id))
+	if err != nil {
+		t.Fatalf("Find: %v", err)
+	}
+	if found.Account != "alice" {
+		t.Fatalf("unexpected: %+v", found)
+	}
+
+	byAcc, err := repo.FindByAccount(ctx, "alice")
+	if err != nil {
+		t.Fatalf("FindByAccount: %v", err)
+	}
+	if byAcc.MemberId != int(id) {
+		t.Fatalf("expected member_id %d, got %d", id, byAcc.MemberId)
 	}
 }
 

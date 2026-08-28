@@ -113,7 +113,7 @@ go tool cover -func=coverage.out | tee coverage.txt
 
 - [x] 本地一键：`deployments/scripts/test.sh` / `test.ps1` 绿（Windows 本机 2026-08-18）  
 - [x] CI workflow 入库（`.gitea/workflows/test.yml` 硬闸白名单）；**Runner 就绪后**再确认云端绿  
-- [x] 覆盖率快照入库；门槛策略写明（不低于 28.5%）  
+- [x] 覆盖率快照入库；门槛见 [coverage-baseline.txt](./coverage-baseline.txt)（T8/T9 后重测为 22.5%）  
 - [x] 路径与 T15 方案 A 一致  
 
 ---

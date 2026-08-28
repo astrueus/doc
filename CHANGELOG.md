@@ -16,6 +16,7 @@
 
 - T8：`BookResult` / `DocumentSearchResult` / `AttachmentResult` / `CommentResult` / `DocumentHistorySimpleResult` / `ConvertBookResult` / `BlogResult` 迁入 `internal/dto/`；查询进 Repo。`SelectMemberResult` 暂留 model（选择器查询仍在 Team/Itemsets）
 - T9：MCP 读路径（get/tree/search/list_books/authz/token）与 Web 文档 `Content` 读走 Repository；导出改为 `repository.ConvertBook` / `ExportBookMarkdown`。本轮未建 `internal/service/`
+- T8/T9 迁入 `repository` 后重测覆盖率基线为 22.5%（原 28.5% 是搬家前的分母）；补 tx / Book.Find / Member.Find 等单测。`book_query` / `book_export` 等大段仍无测
 - example / 演示文案去掉硬编码密钥：`beegoserversessionkey`、`http_login_secret`、`ldap_password`、`db_password` 仅走 `DOC_*`；删除未引用的 `internal/thirdparty/ldap` 演示代码
 
 ## 2.3.1 — 2026-08-19
