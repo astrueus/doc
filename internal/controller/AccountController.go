@@ -1,4 +1,4 @@
-﻿package controller
+package controller
 
 import (
 	"net/url"
@@ -14,9 +14,9 @@ import (
 	"git.itopcms.com/astrueus/doc/internal/config"
 	"git.itopcms.com/astrueus/doc/internal/model"
 	"git.itopcms.com/astrueus/doc/internal/thirdparty/dingtalk"
-	"git.itopcms.com/astrueus/doc/pkg/mail"
 	"git.itopcms.com/astrueus/doc/pkg/gob"
 	"git.itopcms.com/astrueus/doc/pkg/krand"
+	"git.itopcms.com/astrueus/doc/pkg/mail"
 	passutil "git.itopcms.com/astrueus/doc/pkg/password"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/lifei6671/gocaptcha"

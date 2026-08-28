@@ -16,7 +16,6 @@ import (
 	"git.itopcms.com/astrueus/doc/internal/cache"
 	"git.itopcms.com/astrueus/doc/internal/config"
 	"git.itopcms.com/astrueus/doc/internal/model"
-	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
 )
 
@@ -81,7 +80,7 @@ func verifyBearer(r *http.Request, cfg *config.MCPSection) (*authIdentity, error
 		var cached model.Member
 		if err := cache.Get(r.Context(), tokenCacheKey(hash), &cached); err == nil && cached.MemberId > 0 {
 			// Cache stores member only; re-resolve token id lightly from DB if needed for rate limit.
-			t, err := model.NewMemberApiToken().FindByHash(hash)
+			t, err := memberRepo().FindAPITokenByHash(r.Context(), hash)
 			if err == nil && !t.IsRevoked() && !t.IsExpired(time.Now()) {
 				return &authIdentity{Member: &cached, TokenID: t.TokenId, TokenHash: hash}, nil
 			}
@@ -89,7 +88,7 @@ func verifyBearer(r *http.Request, cfg *config.MCPSection) (*authIdentity, error
 		}
 	}
 
-	t, err := model.NewMemberApiToken().FindByHash(hash)
+	t, err := memberRepo().FindAPITokenByHash(r.Context(), hash)
 	if err != nil {
 		return nil, errUnauthorized
 	}
@@ -97,7 +96,7 @@ func verifyBearer(r *http.Request, cfg *config.MCPSection) (*authIdentity, error
 		return nil, errUnauthorized
 	}
 
-	member, err := model.NewMember().Find(t.MemberId)
+	member, err := memberRepo().Find(r.Context(), t.MemberId)
 	if err != nil || member.MemberId <= 0 {
 		return nil, errUnauthorized
 	}
@@ -116,7 +115,7 @@ func identityFromStdioMember(cfg *config.MCPSection) (*authIdentity, error) {
 	if account == "" {
 		return nil, errUnauthorized
 	}
-	member, err := model.NewMember().FindByAccount(account)
+	member, err := memberRepo().FindByAccount(context.Background(), account)
 	if err != nil {
 		return nil, errUnauthorized
 	}
@@ -129,13 +128,7 @@ func updateLastUsed(tokenID int, ip string) {
 			logs.Error("updateLastUsed panic: %v", rec)
 		}
 	}()
-	o := orm.NewOrm()
-	_, err := o.QueryTable(model.NewMemberApiToken().TableNameWithPrefix()).
-		Filter("token_id", tokenID).
-		Update(orm.Params{
-			"last_used_at": time.Now(),
-			"last_used_ip": ip,
-		})
+	err := memberRepo().TouchAPITokenLastUsed(context.Background(), tokenID, ip)
 	if err != nil {
 		logs.Warning("updateLastUsed token=%d: %v", tokenID, err)
 	}

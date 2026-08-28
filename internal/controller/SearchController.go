@@ -1,4 +1,4 @@
-﻿package controller
+package controller
 
 import (
 	"git.itopcms.com/astrueus/doc/pkg/htmlutil"
@@ -7,11 +7,11 @@ import (
 
 	"git.itopcms.com/astrueus/doc/internal/config"
 	"git.itopcms.com/astrueus/doc/internal/errs"
+	"git.itopcms.com/astrueus/doc/internal/i18n"
 	"git.itopcms.com/astrueus/doc/internal/model"
 	"git.itopcms.com/astrueus/doc/pkg/pagination"
 	"git.itopcms.com/astrueus/doc/pkg/sqltil"
 	"github.com/beego/beego/v2/core/logs"
-	"git.itopcms.com/astrueus/doc/internal/i18n"
 )
 
 type SearchController struct {
@@ -40,7 +40,7 @@ func (c *SearchController) Index() {
 		if c.Member != nil {
 			memberId = c.Member.MemberId
 		}
-		searchResult, totalCount, err := model.NewDocumentSearchResult().FindToPager(sqltil.EscapeLike(keyword), pageIndex, config.PageSize, memberId)
+		searchResult, totalCount, err := documentRepo().SearchToPager(c.requestContext(), sqltil.EscapeLike(keyword), pageIndex, config.PageSize, memberId)
 
 		if err != nil {
 			logs.Error("搜索失败 ->", err)
@@ -94,7 +94,7 @@ func (c *SearchController) User() {
 	}
 	keyword = sqltil.EscapeLike(keyword)
 
-	book, err := model.NewBookResult().FindByIdentify(key, c.Member.MemberId)
+	book, err := bookRepo().FindByIdentifyForMember(c.requestContext(), key, c.Member.MemberId, c.Lang)
 	if err != nil {
 		if err == model.ErrPermissionDenied {
 			c.JsonError(errs.New(errs.CodeForbidden, i18n.Tr(c.Lang, "message.no_permission")))
@@ -105,7 +105,7 @@ func (c *SearchController) User() {
 	}
 
 	//members, err := model.NewMemberRelationshipResult().FindNotJoinUsersByAccount(book.BookId, 10, "%"+keyword+"%")
-	members, err := model.NewMemberRelationshipResult().FindNotJoinUsersByAccountOrRealName(book.BookId, 10, "%"+keyword+"%")
+	members, err := memberRepo().FindNotJoinUsersByAccountOrRealName(c.requestContext(), book.BookId, 10, "%"+keyword+"%")
 	if err != nil {
 		logs.Error("查询用户列表出错：" + err.Error())
 		c.JsonError(errs.Wrap(errs.CodeInternal, err.Error(), err))

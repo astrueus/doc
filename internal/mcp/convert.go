@@ -5,6 +5,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"git.itopcms.com/astrueus/doc/internal/dto"
 	"git.itopcms.com/astrueus/doc/internal/dto/mcpdto"
 	"git.itopcms.com/astrueus/doc/internal/model"
 )
@@ -121,7 +122,7 @@ func toGetDocumentOut(doc *model.Document, bookIdentify string, maxChars int, in
 	}
 }
 
-func toBookBrief(b *model.BookResult) mcpdto.BookBrief {
+func toBookBrief(b *dto.BookResult) mcpdto.BookBrief {
 	return mcpdto.BookBrief{
 		BookID:      b.BookId,
 		Identify:    b.Identify,

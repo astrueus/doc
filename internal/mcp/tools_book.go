@@ -93,11 +93,11 @@ func handleUpdateBook(ctx context.Context, _ *sdkmcp.CallToolRequest, in mcpdto.
 		return toolBizErrorOut[mcpdto.BookBrief](errs.New(errs.CodeUnauthorized, "unauthorized"))
 	}
 
-	bookID, _, err := resolveBookID(m, in.BookID, in.BookIdentify)
+	bookID, _, err := resolveBookID(ctx, m, in.BookID, in.BookIdentify)
 	if err != nil {
 		return toolBizErrorOut[mcpdto.BookBrief](err)
 	}
-	if err := ensureBookMetaWritable(m, bookID, in.Private != nil); err != nil {
+	if err := ensureBookMetaWritable(ctx, m, bookID, in.Private != nil); err != nil {
 		return toolBizErrorOut[mcpdto.BookBrief](err)
 	}
 
@@ -139,7 +139,7 @@ func handleUpdateBook(ctx context.Context, _ *sdkmcp.CallToolRequest, in mcpdto.
 		return toolBizErrorOut[mcpdto.BookBrief](errs.Wrap(errs.CodeInternal, "update book failed", err))
 	}
 
-	role, err := bookRoleOf(m, book.BookId)
+	role, err := bookRoleOf(ctx, m, book.BookId)
 	if err != nil {
 		role = config.BookFounder
 	}

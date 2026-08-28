@@ -9,6 +9,7 @@ import (
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
 )
+
 // 复制项目
 func (book *Book) Copy(identify string) error {
 	o := orm.NewOrm()

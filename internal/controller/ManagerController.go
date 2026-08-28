@@ -1,4 +1,4 @@
-﻿package controller
+package controller
 
 import (
 	"encoding/json"
@@ -13,6 +13,7 @@ import (
 	"os"
 
 	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/i18n"
 	"git.itopcms.com/astrueus/doc/internal/model"
 	"git.itopcms.com/astrueus/doc/pkg/filetil"
 	"git.itopcms.com/astrueus/doc/pkg/htmlutil"
@@ -22,7 +23,6 @@ import (
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
-	"git.itopcms.com/astrueus/doc/internal/i18n"
 	"github.com/russross/blackfriday/v2"
 )
 
@@ -289,7 +289,7 @@ func (c *ManagerController) Books() {
 	c.Data["Action"] = "books"
 	pageIndex, _ := c.GetInt("page", 1)
 
-	books, totalCount, err := model.NewBookResult().FindToPager(pageIndex, config.PageSize)
+	books, totalCount, err := bookRepo().FindToPagerAll(c.requestContext(), pageIndex, config.PageSize)
 
 	if err != nil {
 		c.Abort("500")
@@ -396,8 +396,7 @@ func (c *ManagerController) EditBook() {
 	if book.PrivateToken != "" {
 		book.PrivateToken = config.URLFor("DocumentController.Index", ":key", book.Identify, "token", book.PrivateToken)
 	}
-	bookResult := model.NewBookResult()
-	bookResult.ToBookResult(*book)
+	bookResult := bookRepo().BookToResult(c.requestContext(), *book)
 
 	c.Data["Model"] = bookResult
 }
@@ -611,7 +610,7 @@ func (c *ManagerController) AttachList() {
 
 	pageIndex, _ := c.GetInt("page", 1)
 
-	attachList, totalCount, err := model.NewAttachment().FindToPager(pageIndex, config.PageSize)
+	attachList, totalCount, err := attachmentRepo().FindToPager(c.requestContext(), pageIndex, config.PageSize)
 
 	if err != nil {
 		c.Abort("500")
@@ -645,7 +644,7 @@ func (c *ManagerController) AttachDetailed() {
 		c.Abort("404")
 	}
 
-	attach, err := model.NewAttachmentResult().Find(attach_id)
+	attach, err := attachmentRepo().FindResult(c.requestContext(), attach_id)
 	if err != nil {
 		logs.Error("AttachDetailed => ", err)
 		if err == orm.ErrNoRows {

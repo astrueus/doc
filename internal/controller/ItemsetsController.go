@@ -74,7 +74,7 @@ func (c *ItemsetsController) List() {
 	if c.Member != nil {
 		memberId = c.Member.MemberId
 	}
-	searchResult, totalCount, err := model.NewItemsets().FindItemsetsByItemKey(itemKey, pageIndex, pageSize, memberId)
+	searchResult, totalCount, err := bookRepo().FindToPagerByItemKey(c.requestContext(), itemKey, pageIndex, pageSize, memberId)
 
 	if err != nil && err != orm.ErrNoRows {
 		c.ShowErrorPage(500, "查询文档列表时出错")

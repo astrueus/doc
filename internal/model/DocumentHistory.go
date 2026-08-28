@@ -25,17 +25,6 @@ type DocumentHistory struct {
 	IsOpen       int       `orm:"column(is_open);type(int);default(0)" json:"is_open"`
 }
 
-type DocumentHistorySimpleResult struct {
-	HistoryId  int       `json:"history_id"`
-	ActionName string    `json:"action_name"`
-	MemberId   int       `json:"member_id"`
-	Account    string    `json:"account"`
-	ModifyAt   int       `json:"modify_at"`
-	ModifyName string    `json:"modify_name"`
-	ModifyTime time.Time `json:"modify_time"`
-	Version    int64     `json:"version"`
-}
-
 // TableName 获取对应数据库表名.
 func (m *DocumentHistory) TableName() string {
 	return "document_history"
@@ -155,42 +144,5 @@ func (m *DocumentHistory) InsertOrUpdate() (history *DocumentHistory, err error)
 
 		}
 	}
-	return
-}
-
-// 分页查询指定文档的历史.
-func (m *DocumentHistory) FindToPager(docId, pageIndex, pageSize int) (docs []*DocumentHistorySimpleResult, totalCount int, err error) {
-
-	o := orm.NewOrm()
-
-	offset := (pageIndex - 1) * pageSize
-
-	totalCount = 0
-
-	p := config.GetDatabasePrefix()
-	sql := fmt.Sprintf(`SELECT history.*,m1.account,m2.account as modify_name
-FROM %sdocument_history AS history
-LEFT JOIN %smembers AS m1 ON history.member_id = m1.member_id
-LEFT JOIN %smembers AS m2 ON history.modify_at = m2.member_id
-WHERE history.document_id = ? ORDER BY history.history_id DESC LIMIT ?,?;`, p, p, p)
-
-	_, err = o.Raw(sql, docId, offset, pageSize).QueryRows(&docs)
-
-	if err != nil {
-		return
-	}
-	for _, doc := range docs {
-		if doc != nil && !doc.ModifyTime.IsZero() {
-			doc.ModifyTime = doc.ModifyTime.In(time.Local)
-		}
-	}
-	var count int64
-	count, err = o.QueryTable(m.TableNameWithPrefix()).Filter("document_id", docId).Count()
-
-	if err != nil {
-		return
-	}
-	totalCount = int(count)
-
 	return
 }

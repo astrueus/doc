@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/dto"
 	"git.itopcms.com/astrueus/doc/internal/dto/mcpdto"
 	"git.itopcms.com/astrueus/doc/internal/errs"
 	"git.itopcms.com/astrueus/doc/internal/model"
@@ -15,7 +16,7 @@ func handleSearchDocument(ctx context.Context, _ *sdkmcp.CallToolRequest, in mcp
 	if m == nil {
 		return toolBizErrorOut[mcpdto.SearchDocumentOut](errs.New(errs.CodeUnauthorized, "unauthorized"))
 	}
-	bookIDs, err := visibleBookIDs(m, in.BookID)
+	bookIDs, err := visibleBookIDs(ctx, m, in.BookID)
 	if err != nil {
 		return toolBizErrorOut[mcpdto.SearchDocumentOut](err)
 	}
@@ -41,7 +42,7 @@ func handleGetDocument(ctx context.Context, _ *sdkmcp.CallToolRequest, in mcpdto
 		return toolBizErrorOut[mcpdto.GetDocumentOut](errs.New(errs.CodeUnauthorized, "unauthorized"))
 	}
 
-	doc, bookIdentify, err := resolveDocument(m, in)
+	doc, bookIdentify, err := resolveDocument(ctx, m, in)
 	if err != nil {
 		return toolBizErrorOut[mcpdto.GetDocumentOut](err)
 	}
@@ -52,16 +53,16 @@ func handleGetDocument(ctx context.Context, _ *sdkmcp.CallToolRequest, in mcpdto
 	return nil, toGetDocumentOut(doc, bookIdentify, in.MaxChars, includeTruncated), nil
 }
 
-func resolveDocument(m *model.Member, in mcpdto.GetDocumentIn) (*model.Document, string, error) {
+func resolveDocument(ctx context.Context, m *model.Member, in mcpdto.GetDocumentIn) (*model.Document, string, error) {
 	if in.DocumentID > 0 {
-		doc, err := model.NewDocument().Find(in.DocumentID)
+		doc, err := documentRepo().Find(ctx, in.DocumentID)
 		if err != nil {
 			return nil, "", errs.Wrap(errs.CodeNotFound, "document not found", err)
 		}
-		if err := canReadBook(m, doc.BookId); err != nil {
+		if err := canReadBook(ctx, m, doc.BookId); err != nil {
 			return nil, "", err
 		}
-		book, err := model.NewBook().Find(doc.BookId)
+		book, err := bookRepo().Find(ctx, doc.BookId)
 		if err != nil {
 			return nil, "", errs.Wrap(errs.CodeNotFound, "book not found", err)
 		}
@@ -70,11 +71,11 @@ func resolveDocument(m *model.Member, in mcpdto.GetDocumentIn) (*model.Document,
 	if in.BookIdentify == "" || in.DocIdentify == "" {
 		return nil, "", errs.New(errs.CodeInvalidParam, "document_id or book_identify+doc_identify required")
 	}
-	bookID, bookIdentify, err := resolveBookID(m, 0, in.BookIdentify)
+	bookID, bookIdentify, err := resolveBookID(ctx, m, 0, in.BookIdentify)
 	if err != nil {
 		return nil, "", err
 	}
-	doc, err := model.NewDocument().FindByIdentityFirst(in.DocIdentify, bookID)
+	doc, err := documentRepo().FindByIdentify(ctx, in.DocIdentify, bookID)
 	if err != nil {
 		return nil, "", errs.Wrap(errs.CodeNotFound, "document not found", err)
 	}
@@ -89,14 +90,14 @@ func handleListBooks(ctx context.Context, _ *sdkmcp.CallToolRequest, in mcpdto.L
 	page := defaultPage(in.Page)
 	pageSize := defaultLimit(in.PageSize, 20, 100)
 	var (
-		books []*model.BookResult
+		books []*dto.BookResult
 		total int
 		err   error
 	)
 	if m.IsAdministrator() {
-		books, total, err = model.NewBookResult().FindToPager(page, pageSize)
+		books, total, err = bookRepo().FindToPagerAll(ctx, page, pageSize)
 	} else {
-		books, total, err = model.NewBook().FindToPager(page, pageSize, m.MemberId, config.GetDefaultLang())
+		books, total, err = bookRepo().FindToPagerForMember(ctx, page, pageSize, m.MemberId, config.GetDefaultLang())
 	}
 	if err != nil {
 		return toolBizErrorOut[mcpdto.ListBooksOut](errs.Wrap(errs.CodeInternal, "list books failed", err))
@@ -113,11 +114,11 @@ func handleListDocumentTree(ctx context.Context, _ *sdkmcp.CallToolRequest, in m
 	if m == nil {
 		return toolBizErrorOut[mcpdto.ListDocumentTreeOut](errs.New(errs.CodeUnauthorized, "unauthorized"))
 	}
-	bookID, bookIdentify, err := resolveBookID(m, in.BookID, in.BookIdentify)
+	bookID, bookIdentify, err := resolveBookID(ctx, m, in.BookID, in.BookIdentify)
 	if err != nil {
 		return toolBizErrorOut[mcpdto.ListDocumentTreeOut](err)
 	}
-	docs, err := model.NewDocument().FindListByBookId(bookID)
+	docs, err := documentRepo().FindListByBookID(ctx, bookID)
 	if err != nil {
 		return toolBizErrorOut[mcpdto.ListDocumentTreeOut](errs.Wrap(errs.CodeInternal, "list document tree failed", err))
 	}

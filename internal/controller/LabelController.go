@@ -48,7 +48,7 @@ func (c *LabelController) Index() {
 	if c.Member != nil {
 		memberId = c.Member.MemberId
 	}
-	searchResult, totalCount, err := model.NewBook().FindForLabelToPager(labelName, pageIndex, config.PageSize, memberId)
+	searchResult, totalCount, err := bookRepo().FindForLabelToPager(c.requestContext(), labelName, pageIndex, config.PageSize, memberId)
 
 	if err != nil && err != orm.ErrNoRows {
 		logs.Error("查询标签时出错 ->", err)

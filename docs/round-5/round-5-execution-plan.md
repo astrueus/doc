@@ -273,7 +273,8 @@
 
 ### 验收
 
-- [ ] 清单完成或标明暂留原因；冒烟通过；B1 决策日志更新  
+- [x] 清单完成或标明暂留原因；编译与相关包测试通过
+- [ ] 页面 / MCP 冒烟（人工）
 
 ---
 
@@ -289,7 +290,8 @@
 
 ### 验收
 
-- [ ] MCP 读写经 Repo（或文档化例外）；测试不回退  
+- [x] MCP 读写经 Repo（或文档化例外）；`go test ./internal/repository ./internal/mcp` 通过
+- [ ] 线上/预发冒烟（人工）
 
 ---
 
@@ -436,8 +438,8 @@ CORS / CSP / HSTS（可关）；建议 T6 后再收紧 CSP。
 | T5 | MCP P1 + Book 写最小集 | — | `80ee298` | ✅ 已合入；分支 `feat/r5-mcp-p1` 按约 3 条保留 |
 | T6 | Vite P2 | | | ⏳ |
 | T7 | 测试 CI / 覆盖率门槛 | — | `602ddb4` | ✅ 脚本+workflow 已合入；待 Runner 勾云端绿 |
-| T8 | `*Result` → dto | | | ⏳ |
-| T9 | Repo 扩面 + 可选 Service | | | ⏳ |
+| T8 | `*Result` → dto | | | ✅ 已实施（`SelectMemberResult` 暂留 model） |
+| T9 | Repo 扩面 + 可选 Service | | | ✅ 已实施（未建 service） |
 | T10 | Controller 域拆分 | — | — | ⏸ **暂不拆**（解冻后勿平铺） |
 | T11 | 安全头 middleware | | | ⏳ 可选 |
 | T12 | 缓存完全重构实施 | | | ⏳ |

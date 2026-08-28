@@ -2,7 +2,7 @@
 
 > 对应 [round-5-execution-plan.md §十 T8](./round-5-execution-plan.md#十t8--result--internaldto2~4-天)。  
 > 承接 Round 2 收尾 B1。  
-> **状态：** ⏳ 待实施。
+> **状态：** ✅ 已实施（与 T9 同批）。`SelectMemberResult` / `KeyValueItem` **暂留** `internal/model/`（见第三节）。
 
 ---
 
@@ -18,7 +18,7 @@
 |---|---|---|---|
 | `BookResult` | `BookResult.go` | 混合（结构 + `Find*`） | 结构 → dto；查询 → BookRepo |
 | `BlogResult` | `BlogResult.go` | 混合 | 同上 |
-| `MemberRelationshipResult` / `SelectMemberResult` | `MemberResult.go` | 混合 | 同上 |
+| `MemberRelationshipResult` / `SelectMemberResult` | `MemberResult.go` | 混合 | `MemberRelationshipResult` → dto + MemberRepo；**`SelectMemberResult` 暂留 model**（TeamMember / Itemsets / TeamRelationship 返回该类型，model 禁止 import dto） |
 | `DocumentSearchResult` | `DocumentSearchResult.go` | 混合 + raw SQL | 结构 → dto；查询暂留 Repo/搜索模块（T3 冻结期不动引擎） |
 | `ConvertBookResult` | `ConvertBookResult.go` | 偏纯展示 | → dto |
 | `AttachmentResult` | `AttachmentResult.go` | 混合 | 结构 → dto；查询 → Repo |
@@ -80,10 +80,14 @@ internal/dto/
 
 ## 五、验收
 
-- [ ] 上表类型均已迁出或文档标明「暂留原因」  
-- [ ] `internal/model` 不再被纯展示 dto 反向依赖  
-- [ ] 相关页面 / MCP 冒烟通过  
-- [ ] Round 2 B1 / 本追踪表更新  
+- [x] 上表类型均已迁出或文档标明「暂留原因」（`SelectMemberResult` / `KeyValueItem` 暂留 model）
+- [x] `internal/model` 不再被纯展示 dto 反向依赖（dto 不 import model；model 不 import dto）
+- [ ] 相关页面 / MCP 冒烟通过（需人工点选阅读 / 搜索 / 导出 / 管理附件）
+- [x] Round 2 B1 / 本追踪表更新
+
+`CommentResult.FindForDocumentToPager` 已迁 `CommentRepo`，Web 评论页仍为空实现，无调用方。
+
+导出 `Converter` / `ExportMarkdown` 不能作为 `dto.BookResult` 方法（跨包），改为 `repository.ConvertBook` / `ExportBookMarkdown` / `BackgroundConvert`。
 
 ---
 

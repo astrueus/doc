@@ -1,8 +1,8 @@
-﻿package model
+package repository
 
 import (
 	"bytes"
-	"fmt"
+	"context"
 	"io"
 	"os"
 	"path/filepath"
@@ -10,12 +10,13 @@ import (
 	"strings"
 	"time"
 
-	"encoding/json"
 	"net/http"
 	"regexp"
 
-	"git.itopcms.com/astrueus/doc/internal/converter"
 	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/converter"
+	"git.itopcms.com/astrueus/doc/internal/dto"
+	"git.itopcms.com/astrueus/doc/internal/model"
 	"git.itopcms.com/astrueus/doc/pkg/cryptil"
 	"git.itopcms.com/astrueus/doc/pkg/filetil"
 	"git.itopcms.com/astrueus/doc/pkg/gopool"
@@ -25,7 +26,6 @@ import (
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
-	"git.itopcms.com/astrueus/doc/internal/i18n"
 	"github.com/russross/blackfriday/v2"
 )
 
@@ -33,226 +33,14 @@ var (
 	exportLimitWorkerChannel = gopool.NewChannelPool(config.GetExportLimitNum(), config.GetExportQueueLimitNum())
 )
 
-type BookResult struct {
-	BookId         int       `json:"book_id"`
-	BookName       string    `json:"book_name"`
-	ItemId         int       `json:"item_id"`
-	ItemName       string    `json:"item_name"`
-	Identify       string    `json:"identify"`
-	OrderIndex     int       `json:"order_index"`
-	Description    string    `json:"description"`
-	Publisher      string    `json:"publisher"`
-	PrivatelyOwned int       `json:"privately_owned"`
-	PrivateToken   string    `json:"private_token"`
-	BookPassword   string    `json:"book_password"`
-	DocCount       int       `json:"doc_count"`
-	CommentStatus  string    `json:"comment_status"`
-	CommentCount   int       `json:"comment_count"`
-	CreateTime     time.Time `json:"create_time"`
-	CreateName     string    `json:"create_name"`
-	RealName       string    `json:"real_name"`
-	ModifyTime     time.Time `json:"modify_time"`
-	Cover          string    `json:"cover"`
-	Theme          string    `json:"theme"`
-	Label          string    `json:"label"`
-	MemberId       int       `json:"member_id"`
-	Editor         string    `json:"editor"`
-	AutoRelease    bool      `json:"auto_release"`
-	HistoryCount   int       `json:"history_count"`
-
-	//RelationshipId     int           `json:"relationship_id"`
-	//TeamRelationshipId int           `json:"team_relationship_id"`
-	RoleId             config.BookRole `json:"role_id"`
-	RoleName           string          `json:"role_name"`
-	Status             int             `json:"status"`
-	IsEnableShare      bool            `json:"is_enable_share"`
-	IsUseFirstDocument bool            `json:"is_use_first_document"`
-
-	LastModifyText   string `json:"last_modify_text"`
-	IsDisplayComment bool   `json:"is_display_comment"`
-	IsDownload       bool   `json:"is_download"`
-	AutoSave         bool   `json:"auto_save"`
-	Lang             string
-}
-
-func NewBookResult() *BookResult {
-	return &BookResult{}
-}
-
-func (m *BookResult) String() string {
-	ret, err := json.Marshal(*m)
-
-	if err != nil {
-		return ""
-	}
-	return string(ret)
-}
-
-func (m *BookResult) SetLang(lang string) *BookResult {
-	m.Lang = lang
-	return m
-}
-
-// 根据项目标识查询项目以及指定用户权限的信息.
-func (m *BookResult) FindByIdentify(identify string, memberId int) (*BookResult, error) {
-	if identify == "" || memberId <= 0 {
-		return m, ErrInvalidParameter
-	}
-	o := orm.NewOrm()
-
-	var book Book
-
-	err := NewBook().QueryTable().Filter("identify", identify).One(&book)
-
-	if err != nil {
-		logs.Error("获取项目失败 ->", err)
-		return m, err
-	}
-
-	roleId, err := NewBook().FindForRoleId(book.BookId, memberId)
-
-	if err != nil {
-		return m, ErrPermissionDenied
-	}
-	var relationship2 Relationship
-
-	//查找项目创始人
-	err = NewRelationship().QueryTable().Filter("book_id", book.BookId).Filter("role_id", 0).One(&relationship2)
-
-	if err != nil {
-		logs.Error("根据项目标识查询项目以及指定用户权限的信息 -> ", err)
-		return m, ErrPermissionDenied
-	}
-
-	member, err := NewMember().Find(relationship2.MemberId)
-	if err != nil {
-		return m, err
-	}
-
-	m.ToBookResult(book)
-	m.RoleId = roleId
-	m.MemberId = memberId
-	m.CreateName = member.Account
-
-	if member.RealName != "" {
-		m.RealName = member.RealName
-	}
-
-	if m.RoleId == config.BookFounder {
-		m.RoleName = i18n.Tr(m.Lang, "common.creator")
-	} else if m.RoleId == config.BookAdmin {
-		m.RoleName = i18n.Tr(m.Lang, "common.administrator")
-	} else if m.RoleId == config.BookEditor {
-		m.RoleName = i18n.Tr(m.Lang, "common.editor")
-	} else if m.RoleId == config.BookObserver {
-		m.RoleName = i18n.Tr(m.Lang, "common.observer")
-	}
-
-	doc := NewDocument()
-
-	err = o.QueryTable(doc.TableNameWithPrefix()).Filter("book_id", book.BookId).OrderBy("modify_time").One(doc)
-
-	if err == nil {
-		member2 := NewMember()
-		member2.Find(doc.ModifyAt)
-
-		m.LastModifyText = member2.Account + " 于 " + doc.ModifyTime.Local().Format("2006-01-02 15:04:05")
-	}
-
-	return m, nil
-}
-
-func (m *BookResult) FindToPager(pageIndex, pageSize int) (books []*BookResult, totalCount int, err error) {
-	o := orm.NewOrm()
-
-	count, err := o.QueryTable(NewBook().TableNameWithPrefix()).Count()
-
-	if err != nil {
-		return
-	}
-	totalCount = int(count)
-
-	sql := fmt.Sprintf(`SELECT
-			book.*,rel.relationship_id,rel.role_id,m.account AS create_name,m.real_name
-		FROM %sbooks AS book
-			LEFT JOIN %srelationship AS rel ON rel.book_id = book.book_id AND rel.role_id = 0
-			LEFT JOIN %smembers AS m ON rel.member_id = m.member_id
-		ORDER BY book.order_index DESC ,book.book_id DESC  LIMIT ?,?`, config.GetDatabasePrefix(), config.GetDatabasePrefix(), config.GetDatabasePrefix())
-
-	offset := (pageIndex - 1) * pageSize
-
-	_, err = o.Raw(sql, offset, pageSize).QueryRows(&books)
-
-	return
-}
-
-// 实体转换
-func (m *BookResult) ToBookResult(book Book) *BookResult {
-
-	m.BookId = book.BookId
-	m.BookName = book.BookName
-	m.Identify = book.Identify
-	m.OrderIndex = book.OrderIndex
-	m.Description = strings.Replace(book.Description, "\r\n", "<br/>", -1)
-	m.PrivatelyOwned = book.PrivatelyOwned
-	m.PrivateToken = book.PrivateToken
-	m.BookPassword = book.BookPassword
-	m.DocCount = book.DocCount
-	m.CommentStatus = book.CommentStatus
-	m.CommentCount = book.CommentCount
-	m.CreateTime = book.CreateTime
-	m.ModifyTime = book.ModifyTime
-	m.Cover = book.Cover
-	m.Label = book.Label
-	m.Status = book.Status
-	m.Editor = book.Editor
-	m.Theme = book.Theme
-	m.AutoRelease = book.AutoRelease == 1
-	m.IsEnableShare = book.IsEnableShare == 0
-	m.IsUseFirstDocument = book.IsUseFirstDocument == 1
-	m.Publisher = book.Publisher
-	m.HistoryCount = book.HistoryCount
-	m.IsDownload = book.IsDownload == 0
-	m.AutoSave = book.AutoSave == 1
-	m.ItemId = book.ItemId
-
-	if book.Theme == "" {
-		m.Theme = "default"
-	}
-	if book.Editor == "" {
-		m.Editor = "markdown"
-	}
-
-	doc := NewDocument()
-
-	o := orm.NewOrm()
-
-	err := o.QueryTable(doc.TableNameWithPrefix()).Filter("book_id", book.BookId).OrderBy("modify_time").One(doc)
-
-	if err == nil {
-		member2 := NewMember()
-		member2.Find(doc.ModifyAt)
-
-		m.LastModifyText = member2.Account + " 于 " + doc.ModifyTime.Local().Format("2006-01-02 15:04:05")
-	}
-
-	if m.ItemId > 0 {
-		if item, err := NewItemsets().First(m.ItemId); err == nil {
-			m.ItemName = item.ItemName
-		}
-	}
-	return m
-}
-
-// 后台转换
-func BackgroundConvert(sessionId string, bookResult *BookResult) error {
+func BackgroundConvert(sessionId string, bookResult *dto.BookResult) error {
 
 	if err := converter.CheckConvertCommand(); err != nil {
 		logs.Error("检查转换程序失败 -> ", err)
 		return err
 	}
 	err := exportLimitWorkerChannel.LoadOrStore(bookResult.Identify, func() {
-		bookResult.Converter(sessionId)
+		ConvertBook(sessionId, bookResult)
 	})
 
 	if err != nil {
@@ -264,13 +52,13 @@ func BackgroundConvert(sessionId string, bookResult *BookResult) error {
 	return nil
 }
 
-// 导出PDF、word等格式
-func (m *BookResult) Converter(sessionId string) (ConvertBookResult, error) {
+// ConvertBook 导出 PDF、word 等格式（原 BookResult.Converter；dto 不能挂方法）。
+func ConvertBook(sessionId string, m *dto.BookResult) (dto.ConvertBookResult, error) {
 
-	convertBookResult := ConvertBookResult{}
+	convertBookResult := dto.ConvertBookResult{}
 
 	outputPath := filepath.Join(config.GetExportOutputPath(), strconv.Itoa(m.BookId))
-	viewPath := web.BConfig.WebConfig.ViewsPath
+	viewPath := config.WorkingDir("web", "views")
 
 	pdfpath := filepath.Join(outputPath, "book.pdf")
 	epubpath := filepath.Join(outputPath, "book.epub")
@@ -305,7 +93,7 @@ func (m *BookResult) Converter(sessionId string) (ConvertBookResult, error) {
 		return convertBookResult, nil
 	}
 
-	docs, err := NewDocument().FindListByBookId(m.BookId)
+	docs, err := NewDocumentRepo(nil).FindListByBookID(context.Background(), m.BookId)
 	if err != nil {
 		return convertBookResult, err
 	}
@@ -511,8 +299,8 @@ func (m *BookResult) Converter(sessionId string) (ConvertBookResult, error) {
 	return convertBookResult, nil
 }
 
-// 导出Markdown原始文件
-func (m *BookResult) ExportMarkdown(sessionId string) (string, error) {
+// ExportBookMarkdown 导出 Markdown 原始文件（原 BookResult.ExportMarkdown）。
+func ExportBookMarkdown(sessionId string, m *dto.BookResult) (string, error) {
 	outputPath := filepath.Join(config.WorkingDirectory, "uploads", "books", strconv.Itoa(m.BookId), "book.zip")
 
 	os.MkdirAll(filepath.Dir(outputPath), 0644)
@@ -540,9 +328,9 @@ func (m *BookResult) ExportMarkdown(sessionId string) (string, error) {
 func exportMarkdown(p string, parentId int, bookId int, baseDir string, bookUrl string) error {
 	o := orm.NewOrm()
 
-	var docs []*Document
+	var docs []*model.Document
 
-	_, err := o.QueryTable(NewDocument().TableNameWithPrefix()).Filter("book_id", bookId).Filter("parent_id", parentId).All(&docs)
+	_, err := o.QueryTable(model.NewDocument().TableNameWithPrefix()).Filter("book_id", bookId).Filter("parent_id", parentId).All(&docs)
 
 	if err != nil {
 		logs.Error("导出Markdown失败->", err)
@@ -550,7 +338,7 @@ func exportMarkdown(p string, parentId int, bookId int, baseDir string, bookUrl 
 	}
 	for _, doc := range docs {
 		//获取当前文档的子文档数量，如果数量不为0，则将当前文档命名为READMD.md并设置成目录。
-		subDocCount, err := o.QueryTable(NewDocument().TableNameWithPrefix()).Filter("parent_id", doc.DocumentId).Count()
+		subDocCount, err := o.QueryTable(model.NewDocument().TableNameWithPrefix()).Filter("parent_id", doc.DocumentId).Count()
 
 		if err != nil {
 			logs.Error("导出Markdown失败->", err)
@@ -624,15 +412,15 @@ func exportMarkdown(p string, parentId int, bookId int, baseDir string, bookUrl 
 					//如果当前链接位于当前项目内
 					if strings.HasPrefix(originalLink, bookUrl) {
 						docIdentify := strings.TrimSpace(strings.TrimPrefix(originalLink, bookUrl))
-						tempDoc := NewDocument()
+						tempDoc := model.NewDocument()
 						if id, err := strconv.Atoi(docIdentify); err == nil && id > 0 {
-							err := o.QueryTable(NewDocument().TableNameWithPrefix()).Filter("document_id", id).One(tempDoc, "identify", "parent_id", "document_id")
+							err := o.QueryTable(model.NewDocument().TableNameWithPrefix()).Filter("document_id", id).One(tempDoc, "identify", "parent_id", "document_id")
 							if err != nil {
 								logs.Error(err)
 								return link
 							}
 						} else {
-							err := o.QueryTable(NewDocument().TableNameWithPrefix()).Filter("identify", docIdentify).One(tempDoc, "identify", "parent_id", "document_id")
+							err := o.QueryTable(model.NewDocument().TableNameWithPrefix()).Filter("identify", docIdentify).One(tempDoc, "identify", "parent_id", "document_id")
 							if err != nil {
 								logs.Error(err)
 								return link
@@ -679,9 +467,9 @@ func exportMarkdown(p string, parentId int, bookId int, baseDir string, bookUrl 
 func recursiveJoinDocumentIdentify(parentDocId int, identify string) string {
 	o := orm.NewOrm()
 
-	doc := NewDocument()
+	doc := model.NewDocument()
 
-	err := o.QueryTable(NewDocument().TableNameWithPrefix()).Filter("document_id", parentDocId).One(doc, "identify", "parent_id", "document_id")
+	err := o.QueryTable(model.NewDocument().TableNameWithPrefix()).Filter("document_id", parentDocId).One(doc, "identify", "parent_id", "document_id")
 
 	if err != nil {
 		logs.Error(err)
@@ -697,16 +485,4 @@ func recursiveJoinDocumentIdentify(parentDocId int, identify string) string {
 		identify = recursiveJoinDocumentIdentify(doc.ParentId, identify)
 	}
 	return identify
-}
-
-// 查询项目的第一篇文档
-func (m *BookResult) FindFirstDocumentByBookId(bookId int) (*Document, error) {
-
-	o := orm.NewOrm()
-
-	doc := NewDocument()
-
-	err := o.QueryTable(doc.TableNameWithPrefix()).Filter("book_id", bookId).Filter("parent_id", 0).OrderBy("order_sort").One(doc)
-
-	return doc, err
 }

@@ -1,13 +1,13 @@
-﻿package controller
+package controller
 
 import (
 	"errors"
 	"strings"
 
 	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/i18n"
 	"git.itopcms.com/astrueus/doc/internal/model"
 	"github.com/beego/beego/v2/client/orm"
-	"git.itopcms.com/astrueus/doc/internal/i18n"
 )
 
 type TemplateController struct {
@@ -25,7 +25,7 @@ func (c *TemplateController) isPermission() error {
 	}
 
 	if !c.Member.IsAdministrator() {
-		book, err := model.NewBookResult().FindByIdentify(bookIdentify, c.Member.MemberId)
+		book, err := bookRepo().FindByIdentifyForMember(c.requestContext(), bookIdentify, c.Member.MemberId, c.Lang)
 		if err != nil {
 			if err == orm.ErrNoRows {
 				return errors.New("项目不存在或没有权限")

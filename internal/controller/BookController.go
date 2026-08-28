@@ -1,4 +1,4 @@
-﻿package controller
+package controller
 
 import (
 	"context"
@@ -13,15 +13,16 @@ import (
 	"strings"
 	"time"
 
+	"git.itopcms.com/astrueus/doc/internal/i18n"
 	"git.itopcms.com/astrueus/doc/pkg/htmlutil"
 	"git.itopcms.com/astrueus/doc/pkg/sqltil"
-	"git.itopcms.com/astrueus/doc/internal/i18n"
 
 	"net/http"
 
-	"git.itopcms.com/astrueus/doc/pkg/graphics"
 	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/dto"
 	"git.itopcms.com/astrueus/doc/internal/model"
+	"git.itopcms.com/astrueus/doc/pkg/graphics"
 	"git.itopcms.com/astrueus/doc/pkg/pagination"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
@@ -38,7 +39,7 @@ func (c *BookController) Index() {
 
 	pageIndex, _ := c.GetInt("page", 1)
 
-	books, totalCount, err := model.NewBook().FindToPager(pageIndex, config.PageSize, c.Member.MemberId, c.Lang)
+	books, totalCount, err := bookRepo().FindToPagerForMember(c.requestContext(), pageIndex, config.PageSize, c.Member.MemberId, c.Lang)
 
 	if err != nil {
 		logs.Error("BookController.Index => ", err)
@@ -80,7 +81,7 @@ func (c *BookController) Dashboard() {
 		c.Abort("404")
 	}
 
-	book, err := model.NewBookResult().SetLang(c.Lang).FindByIdentify(key, c.Member.MemberId)
+	book, err := bookRepo().FindByIdentifyForMember(c.requestContext(), key, c.Member.MemberId, c.Lang)
 	if err != nil {
 		if err == model.ErrPermissionDenied {
 			c.Abort("403")
@@ -104,7 +105,7 @@ func (c *BookController) Setting() {
 		c.Abort("404")
 	}
 
-	book, err := model.NewBookResult().FindByIdentify(key, c.Member.MemberId)
+	book, err := bookRepo().FindByIdentifyForMember(c.requestContext(), key, c.Member.MemberId, c.Lang)
 	if err != nil {
 		if err == orm.ErrNoRows {
 			c.Abort("404")
@@ -408,7 +409,7 @@ func (c *BookController) Users() {
 		c.ShowErrorPage(404, i18n.Tr(c.Lang, "message.item_not_exist"))
 	}
 
-	book, err := model.NewBookResult().FindByIdentify(key, c.Member.MemberId)
+	book, err := bookRepo().FindByIdentifyForMember(c.requestContext(), key, c.Member.MemberId, c.Lang)
 	if err != nil {
 		if err == model.ErrPermissionDenied {
 			c.Abort("403")
@@ -422,7 +423,7 @@ func (c *BookController) Users() {
 	}
 	c.Data["Model"] = *book
 
-	members, totalCount, err := model.NewMemberRelationshipResult().FindForUsersByBookId(c.Lang, book.BookId, pageIndex, config.PageSize)
+	members, totalCount, err := memberRepo().FindForUsersByBookID(c.requestContext(), c.Lang, book.BookId, pageIndex, config.PageSize)
 
 	if totalCount > 0 {
 		pager := pagination.NewPagination(c.Ctx.Request, totalCount, config.PageSize, c.BaseUrl())
@@ -532,7 +533,7 @@ func (c *BookController) Create() {
 			logs.Error("Insert => ", err)
 			c.JsonResult(6005, i18n.Tr(c.Lang, "message.failed"))
 		}
-		bookResult, err := model.NewBookResult().FindByIdentify(book.Identify, c.Member.MemberId)
+		bookResult, err := bookRepo().FindByIdentifyForMember(c.requestContext(), book.Identify, c.Member.MemberId, c.Lang)
 
 		if err != nil {
 			logs.Error(err)
@@ -561,7 +562,7 @@ func (c *BookController) Copy() {
 		if err != nil {
 			c.JsonResult(6002, "复制项目出错")
 		} else {
-			bookResult, err := model.NewBookResult().FindByIdentify(book.Identify, c.Member.MemberId)
+			bookResult, err := bookRepo().FindByIdentifyForMember(c.requestContext(), book.Identify, c.Member.MemberId, c.Lang)
 			if err != nil {
 				logs.Error("查询失败")
 			}
@@ -738,7 +739,7 @@ func (c *BookController) Release() {
 		}
 		bookId = book.BookId
 	} else {
-		book, err := model.NewBookResult().FindByIdentify(identify, c.Member.MemberId)
+		book, err := bookRepo().FindByIdentifyForMember(c.requestContext(), identify, c.Member.MemberId, c.Lang)
 
 		if err != nil {
 			if err == model.ErrPermissionDenied {
@@ -778,7 +779,7 @@ func (c *BookController) SaveSort() {
 		}
 		bookId = book.BookId
 	} else {
-		bookResult, err := model.NewBookResult().FindByIdentify(identify, c.Member.MemberId)
+		bookResult, err := bookRepo().FindByIdentifyForMember(c.requestContext(), identify, c.Member.MemberId, c.Lang)
 		if err != nil {
 			logs.Error("DocumentController.Edit => ", err)
 
@@ -852,7 +853,7 @@ func (c *BookController) Team() {
 		c.ShowErrorPage(404, i18n.Tr(c.Lang, "message.item_not_exist"))
 	}
 
-	book, err := model.NewBookResult().FindByIdentify(key, c.Member.MemberId)
+	book, err := bookRepo().FindByIdentifyForMember(c.requestContext(), key, c.Member.MemberId, c.Lang)
 	if err != nil || book == nil {
 		if err == model.ErrPermissionDenied {
 			c.ShowErrorPage(403, i18n.Tr(c.Lang, "message.no_permission"))
@@ -989,14 +990,14 @@ func (c *BookController) ItemsetsSearch() {
 
 }
 
-func (c *BookController) IsPermission() (*model.BookResult, error) {
+func (c *BookController) IsPermission() (*dto.BookResult, error) {
 	identify := c.GetString("identify")
 
 	if identify == "" {
 		return nil, errors.New(i18n.Tr(c.Lang, "message.param_error"))
 	}
 
-	book, err := model.NewBookResult().FindByIdentify(identify, c.Member.MemberId)
+	book, err := bookRepo().FindByIdentifyForMember(c.requestContext(), identify, c.Member.MemberId, c.Lang)
 
 	if err != nil {
 		if err == model.ErrPermissionDenied {

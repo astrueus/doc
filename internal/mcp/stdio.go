@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"git.itopcms.com/astrueus/doc/internal/config"
-	"git.itopcms.com/astrueus/doc/internal/model"
 	"github.com/beego/beego/v2/core/logs"
 	sdkmcp "github.com/modelcontextprotocol/go-sdk/mcp"
 )
@@ -20,7 +19,7 @@ func RunStdio(ctx context.Context, cfg *config.MCPSection) error {
 	if account == "" {
 		return fmt.Errorf("mcp_stdio_member is empty")
 	}
-	member, err := model.NewMember().FindByAccount(account)
+	member, err := memberRepo().FindByAccount(ctx, account)
 	if err != nil {
 		return fmt.Errorf("stdio member %q not found: %w", account, err)
 	}

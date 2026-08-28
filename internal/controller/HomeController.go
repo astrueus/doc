@@ -4,7 +4,6 @@ import (
 	"math"
 
 	"git.itopcms.com/astrueus/doc/internal/config"
-	"git.itopcms.com/astrueus/doc/internal/model"
 	"git.itopcms.com/astrueus/doc/pkg/pagination"
 	"github.com/beego/beego/v2/core/logs"
 )
@@ -32,7 +31,7 @@ func (c *HomeController) Index() {
 	if c.Member != nil {
 		memberId = c.Member.MemberId
 	}
-	books, totalCount, err := model.NewBook().FindForHomeToPager(pageIndex, pageSize, memberId)
+	books, totalCount, err := bookRepo().FindForHomeToPager(c.requestContext(), pageIndex, pageSize, memberId)
 	if err != nil {
 		logs.Error(err)
 		c.Abort("500")
