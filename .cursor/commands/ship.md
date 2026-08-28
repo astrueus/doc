@@ -1,6 +1,6 @@
 # 提交、合入并推送
 
-用户说「提交并合并推送」、或执行本命令时，按本仓库 Git 约定一次做完。权威细则：[AGENTS.md](../../AGENTS.md)「功能分支保留」、[docs/release/git-workflow.md](../../docs/release/git-workflow.md) §8。
+用户说「提交并合并推送」、执行 `/ship`、或执行本命令时，按本仓库 Git 约定一次做完。权威细则：[AGENTS.md](../../AGENTS.md)「功能分支保留」、[docs/release/git-workflow.md](../../docs/release/git-workflow.md) §8。
 
 ## 步骤
 
