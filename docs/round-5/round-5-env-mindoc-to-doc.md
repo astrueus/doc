@@ -129,7 +129,7 @@
 
 | 位置 | 动作 |
 |---|---|
-| `conf/app.conf.example` / `app.conf.dev.example` | 占位符全部 `DOC_*`；`app_key` / `sessionname` / redis 默认前缀改 `doc*` |
+| `conf/app.conf.example` / `app.conf.dev.example` | 占位符全部 `DOC_*`；`app_key` / `sessionname` / redis 默认前缀改 `doc*`；Session / 库密码 / LDAP / HTTP 登录密钥 **无明文默认**，只走 `${DOC_*}` |
 | `internal/config/config.go` | 上述三项代码默认值与 example 对齐 |
 | `deployments/docker-compose.yml` | 环境变量改 `DOC_*`；sqlite 示例库名 `doc.db` |
 | `deployments/sync_host.sh` / `start.sh` | `DOC_SYNC` |
@@ -161,6 +161,7 @@
 - [x] 默认 `sessionname=doc_id`、`app_key=doc`（example + `config.go`）；升级后旧登录态失效且可重新登录（运行时验证）
 - [x] compose / sync / systemd / README 示例已为 `DOC_*`
 - [x] CHANGELOG Breaking 已写
+- [x] `app.conf.example` 中 Session / `db_password` / LDAP / HTTP 登录密钥无明文默认值
 - [ ] 仅设 `DOC_DB_HOST` 等关键项时可启动并连库（部署侧仍须勾）
 - [ ] 冒烟清单对应项可勾选
 

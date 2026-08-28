@@ -72,6 +72,7 @@ db_host = "${DOC_DB_HOST||127.0.0.1}"
 db_port = "${DOC_DB_PORT||3306}"
 db_database = "${DOC_DB_DATABASE||doc}"
 db_username = "${DOC_DB_USERNAME||doc}"
+# 数据库密码；MySQL 生产必须通过环境变量设置，不要提交明文
 db_password = "${DOC_DB_PASSWORD}"
 db_prefix = "${DOC_DB_PREFIX||md_}"
 # sqlite3 示例：

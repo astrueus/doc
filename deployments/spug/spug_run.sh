@@ -86,7 +86,7 @@ if [ ! -e "$REPO/app.conf" ]; then
     log "首次部署：将现有 $WWW/conf/app.conf 收为权威配置"
     cp -f "$WWW/conf/app.conf" "$REPO/app.conf"
   elif [ -e "$WWW/conf/app.conf.example" ]; then
-    log "首次部署：用 app.conf.example 初始化 $REPO/app.conf（请随后改数据库等）"
+    log "首次部署：用 app.conf.example 初始化 $REPO/app.conf（请随后填写数据库密码、DOC_SESSION_KEY 等，example 无明文默认）"
     cp -f "$WWW/conf/app.conf.example" "$REPO/app.conf"
   else
     log "缺少权威配置且没有 app.conf.example，无法初始化 app.conf"
