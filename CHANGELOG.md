@@ -8,6 +8,7 @@
 
 - T8：`BookResult` / `DocumentSearchResult` / `AttachmentResult` / `CommentResult` / `DocumentHistorySimpleResult` / `ConvertBookResult` / `BlogResult` 迁入 `internal/dto/`；查询进 Repo。`SelectMemberResult` 暂留 model（选择器查询仍在 Team/Itemsets）
 - T9：MCP 读路径（get/tree/search/list_books/authz/token）与 Web 文档 `Content` 读走 Repository；导出改为 `repository.ConvertBook` / `ExportBookMarkdown`。本轮未建 `internal/service/`
+- example / 演示文案去掉硬编码密钥：`beegoserversessionkey`、`http_login_secret`、`ldap_password`、`db_password` 仅走 `DOC_*`；删除未引用的 `internal/thirdparty/ldap` 演示代码
 
 ## 2.3.1 — 2026-08-19
 

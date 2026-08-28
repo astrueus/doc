@@ -43,7 +43,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="user-email">邮箱<strong class="text-danger">*</strong></label>
-                                <input type="email" class="form-control" value="longfei6671@163.com" id="user-email" name="userEmail" max="100" placeholder="邮箱">
+                                <input type="email" class="form-control" value="" id="user-email" name="userEmail" max="100" placeholder="邮箱">
                             </div>
                             <div class="form-group">
                                 <label>手机号</label>
