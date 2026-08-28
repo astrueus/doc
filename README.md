@@ -93,7 +93,7 @@ bash deployments/scripts/test.sh
 ```
 
 Windows：`just test` 或 `powershell -File deployments\scripts\test.ps1`。  
-默认闸 `pkg/`、`internal/{errs,auth,logging,i18n,repository}`；覆盖率不低于 [docs/round-5/coverage-baseline.txt](docs/round-5/coverage-baseline.txt)。CI 见 `.gitea/workflows/test.yml`。
+默认闸 `pkg/`、`internal/{errs,auth,logging,i18n,repository}`；覆盖率不低于 [docs/round-5/coverage-baseline.txt](docs/round-5/coverage-baseline.txt)。CI 见 `.github/workflows/test.yml`。
 
 ### 开发运行
 

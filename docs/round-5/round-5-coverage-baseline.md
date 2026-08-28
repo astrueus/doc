@@ -25,6 +25,6 @@
 
 门槛：**不低于本基线文件中的数字**（当前 **22.5%**；脚本未设 `COVER_MIN` 时读取 `coverage-baseline.txt`）。暂不设全仓 ≥ 40%（Round 6+）。旧的 28.5% 不再作闸，避免把「代码搬家」当成覆盖率回退。
 
-CI（`.gitea/workflows/test.yml`）在 Linux 上默认开 `-race`。若 Runner 跑出来的 total 与基线有小幅偏差，以 CI 实测微调基线文件，避免无意义抖动挡 PR。
+CI（`.github/workflows/test.yml`）在 Linux 上默认开 `-race`。若 Runner 跑出来的 total 与基线有小幅偏差，以 CI 实测微调基线文件，避免无意义抖动挡 PR。
 
 继承：[round-4-coverage.md](../round-1-4/round-4-coverage.md)（包级说明，不作本门禁数字）。

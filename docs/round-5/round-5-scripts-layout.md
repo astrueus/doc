@@ -36,7 +36,7 @@
 - [x] 迁后**删除**根 `scripts/`（不留目录、不留 README）  
 - [x] `docs/release/release-local.md` / `docs/deploy-spug-*.md` / `README.md` — 批量替换为 `make`/`just` 或权威路径  
 - [x] `release.*` 内部相对路径（`lib/`、调用 `build.*`）— 随迁改  
-- [x] Gitea Actions：`.gitea/workflows/test.yml` 调用 `deployments/scripts/test.sh`；发版文档示例已改路径  
+- [x] GitHub Actions：`.github/workflows/test.yml` 调用 `deployments/scripts/test.sh`；发版文档示例已改路径  
 
 **结论：** 仓库内没有生产运行时依赖根 `scripts/` 的硬编码；搬迁主要是**文档 + 脚本自引用**。
 

@@ -28,7 +28,7 @@ Windows 未装 Make 时：`just test` / `just run`，或直接 `powershell -File
 
 `go run` 的二进制在临时目录，脚本会固定 `--dir` 为仓库根；不要用裸 `go run ./cmd/doc`。sqlite 需要 CGO；Windows 未设 `CC` 时优先 `gcc`，否则 Zig。just 自身的 flag 写成 `just run -- --help`。
 
-CI 直接调用权威路径：`bash deployments/scripts/test.sh`（见 `.gitea/workflows/test.yml`）。
+CI 直接调用权威路径：`bash deployments/scripts/test.sh`（见 `.github/workflows/test.yml`）。
 
 ## 本地发版（Windows）
 
