@@ -76,6 +76,7 @@ vi /data/repos/doc.itopcms.com/resource/app.conf
 #   httpport     = "8181"
 #   db_adapter   = mysql 或 sqlite3
 #   db_host/db_user/db_password/db_database
+#   beegoserversessionkey（或环境变量 DOC_SESSION_KEY；example 无明文默认）
 #   site_name / app_key 等
 
 # 3. 必要工具（Linux 包为 tar.gz，不再依赖 unzip）

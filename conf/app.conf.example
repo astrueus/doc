@@ -44,8 +44,8 @@ HTTPSKeyFile = "conf/ssl.key"
 [session]
 sessionon = true
 sessionname = doc_id
-# 默认 Session 生成 Key 的秘钥
-beegoserversessionkey = NY1B$28pms12JM&c
+# Session 签名密钥；生产必须通过环境变量设置，不要提交明文
+beegoserversessionkey = "${DOC_SESSION_KEY}"
 sessionprovider = "${DOC_SESSION_PROVIDER||file}"
 sessionproviderconfig = "${DOC_SESSION_PROVIDER_CONFIG||./runtime/session}"
 # 默认过期时间（秒）
@@ -72,7 +72,8 @@ db_host = "${DOC_DB_HOST||127.0.0.1}"
 db_port = "${DOC_DB_PORT||3306}"
 db_database = "${DOC_DB_DATABASE||doc}"
 db_username = "${DOC_DB_USERNAME||doc}"
-db_password = "${DOC_DB_PASSWORD||doc@123456}"
+# 数据库密码；MySQL 生产必须通过环境变量设置，不要提交明文
+db_password = "${DOC_DB_PASSWORD}"
 db_prefix = "${DOC_DB_PREFIX||md_}"
 # sqlite3 示例：
 # db_adapter = sqlite3
@@ -95,15 +96,15 @@ enable_mail = "${DOC_ENABLE_MAIL||false}"
 #每小时限制指定邮箱邮件发送次数
 mail_number = "${DOC_MAIL_NUMBER||5}"
 #smtp服务用户名
-smtp_user_name = "${DOC_SMTP_USER_NAME||admin@admincms.top}"
+smtp_user_name = "${DOC_SMTP_USER_NAME||admin@example.com}"
 #smtp服务器地址
-smtp_host = "${DOC_SMTP_HOST||smtp.163.com}"
+smtp_host = "${DOC_SMTP_HOST||smtp.example.com}"
 #smtp密码
 smtp_password = "${DOC_SMTP_PASSWORD}"
 #端口号
 smtp_port = "${DOC_SMTP_PORT||25}"
 #发送邮件的显示名称
-form_user_name = "${DOC_FORM_USERNAME||admin@iminho.me}"
+form_user_name = "${DOC_FORM_USERNAME||admin@example.com}"
 #邮件有效期30分钟
 mail_expired = "${DOC_MAIL_EXPIRED||30}"
 #加密类型NONE 无认证、SSL 加密、LOGIN 普通用户登录
@@ -136,7 +137,7 @@ ldap_base = DC=example,DC=com
 #第一次绑定ldap用户dn
 ldap_user = CN=ldap helper,OU=example.com,DC=example,DC=com
 #第一次绑定ldap用户密码
-ldap_password = superSecret
+ldap_password = "${DOC_LDAP_PASSWORD}"
 #自动注册用户角色：0 超级管理员 /1 管理员/ 2 普通用户
 ldap_user_role = 2
 #ldap搜索filter规则,AD服务器: objectClass=User, openldap服务器: objectClass=posixAccount ,也可以定义为其他属性,如: title=doc
@@ -145,8 +146,8 @@ ldap_filter = objectClass=posixAccount
 ############# HTTP自定义接口登录 ################
 [oauth]
 http_login_url =
-#md5计算的秘钥
-http_login_secret = hzsp*THJUqwbCU%s
+# HTTP 自定义登录签名密钥；生产必须设置
+http_login_secret = "${DOC_HTTP_LOGIN_SECRET}"
 
 ###############配置CDN加速##################
 [cdn]

@@ -137,6 +137,8 @@ go env -w GONOSUMDB=git.itopcms.com
 
 如果 `conf` 目录下不存在 `app.conf`，请将 `app.conf.example` 重命名为 `app.conf`。
 
+example 里的密钥（Session、数据库、LDAP、HTTP 自定义登录、SMTP）只有 `${DOC_*}` 占位、**没有明文默认值**。用 MySQL 时必须设置 `DOC_DB_PASSWORD`；生产必须设置 `DOC_SESSION_KEY`。启用 LDAP / HTTP 自定义登录 / 邮件时再设对应变量。
+
 **默认程序会自动初始化一个超级管理员用户：`admin`，密码：`123456`。请登录后重新设置密码。**
 
 ### 常用命令
@@ -213,7 +215,11 @@ DOC_DB_HOST                 MySQL 地址
 DOC_DB_PORT                 MySQL 端口
 DOC_DB_DATABASE             数据库名或 sqlite 文件路径
 DOC_DB_USERNAME             数据库账号
-DOC_DB_PASSWORD             数据库密码
+DOC_DB_PASSWORD             数据库密码（MySQL 必填，example 无默认）
+DOC_SESSION_KEY             Session 签名密钥（生产必填，example 无默认）
+DOC_HTTP_LOGIN_SECRET       HTTP 自定义登录签名（启用时必填）
+DOC_LDAP_PASSWORD           LDAP 绑定密码（启用 LDAP 时必填）
+DOC_SMTP_PASSWORD           SMTP 密码（启用邮件时必填）
 DOC_ENABLE_EXPORT           开启导出（默认 false）
 DOC_HOME                    工作目录（也可用启动参数 -dir）
 ```
