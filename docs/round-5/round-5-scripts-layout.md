@@ -109,7 +109,7 @@
 |---|---|
 | 权威实现只在一处 | 逻辑、`lib/`、`.env.release.example` 只在 `deployments/scripts/` |
 | 根入口零业务 | Make/Just 只负责调用对应 `.sh` / `.bat` / `.ps1`，不复制逻辑、不改默认参数 |
-| 覆盖高频命令 | 至少：`build`、`release`、`test`（T7）；按需加 `help` |
+| 覆盖高频命令 | 至少：`build`、`release`、`test`（T7）；已补 `run`（开发 `go run`）；按需加 `help` |
 | CI | **直接调** `deployments/scripts/...`；也可 `make test`（需保证 runner 有 make） |
 | 根 `scripts/` | **迁完即删**；仓库中不再保留该目录 |
 
@@ -119,7 +119,7 @@
 |---|---|---|
 | **`justfile`** | **跨平台首选**（Windows / Linux / macOS） | [`just`](https://github.com/casey/just) 对 Windows 友好；配方里按 OS 选 `release.ps1` / `release.sh` |
 | **`Makefile`** | Linux / macOS / CI（GNU Make） | Windows 原生 cmd 不友好；可用 Git Bash / WSL / 自行安装 make，**不强制** Windows 用户依赖 Make |
-| 两者并存 | 推荐 | 配方保持同名同义（`build` / `release` / `test`）；Just 与 Make 都只调权威脚本 |
+| 两者并存 | 推荐 | 配方保持同名同义（`build` / `release` / `test` / `run`）；Just 与 Make 都只调权威脚本 |
 
 #### 目标命令（示例）
 
@@ -127,6 +127,7 @@
 make help | just --list
 make build | just build
 make test  | just test
+make run   | just run
 make release VERSION=1.0.0
 just release 1.0.0
 ```
@@ -142,6 +143,9 @@ build:
 test:
     {{ if os() == "windows" { "deployments/scripts/test.ps1" } else { "bash deployments/scripts/test.sh" } }}
 
+run *args:
+    {{ if os() == "windows" { "deployments/scripts/run.ps1" } else { "bash deployments/scripts/run.sh" } }} {{ args }}
+
 release version:
     {{ if os() == "windows" { "deployments/scripts/release.ps1" } else { "bash deployments/scripts/release.sh" } }} {{version}}
 ```
@@ -149,15 +153,17 @@ release version:
 `Makefile` 示意（偏 Unix）：
 
 ```makefile
-.PHONY: build test release help
+.PHONY: build test run release help
 build:
 	bash deployments/scripts/build.sh
 test:
 	bash deployments/scripts/test.sh
+run:
+	bash deployments/scripts/run.sh $(ARGS)
 release:
 	bash deployments/scripts/release.sh "$(VERSION)"
 help:
-	@echo "build | test | release VERSION=x.y.z"
+	@echo "build | test | run | release VERSION=x.y.z"
 ```
 
 **明确不做：** 根 `scripts/` 任何残留（含 README / 转发脚本）；避免 Make/Just 与第二套脚本入口并存。
@@ -167,6 +173,7 @@ help:
 | 任务 | 影响 |
 |---|---|
 | **T7** 测试工程化 | 权威：`deployments/scripts/test.sh`；本地：`make test` / `just test`；CI 调权威路径 |
+| **开发启动** | 权威：`deployments/scripts/run.sh` / `run.ps1`；本地：`make run` / `just run`（`go run` + `--dir` 仓库根；不加热重载） |
 | **T14** 对象存储 | `doc storage migrate`；可选 `make`/`just` 挂名 |
 | 未来 CI | `bash deployments/scripts/test.sh`（或 `make test`） |
 

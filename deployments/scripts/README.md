@@ -1,11 +1,12 @@
 # deployments/scripts/
 
-构建、测试与发版脚本（Round 5 T15：由仓库根 `scripts/` 迁入）。日常入口优先用仓库根 **`make`** / **`just`**。
+构建、测试、开发启动与发版脚本（Round 5 T15：由仓库根 `scripts/` 迁入）。日常入口优先用仓库根 **`make`** / **`just`**。
 
 | 文件 | 用途 |
 |------|------|
 | `build.sh` / `build.bat` | 多平台编译（Zig / MinGW） |
 | `test.sh` / `test.ps1` | 白名单包 `go test` + 覆盖率门槛（T7） |
+| `run.sh` / `run.ps1` | 开发启动：`go run ./cmd/doc --dir <仓库根>`（不落盘二进制，不加热重载） |
 | `release.sh` / `release.bat` / `release.ps1` | 一键发版（编译 → 打包 → tag → Gitea Release；可选 `--github`） |
 | `lib/json.sh` / `lib/json_test.sh` | 纯 bash JSON 解析 + 单测 |
 | `.env.release.example` | 发版环境变量模板 |
@@ -16,11 +17,16 @@
 make help          # 或 just --list
 make build         # just build
 make test          # just test
+make run           # just run（开发启动）
+make run ARGS=install
+just run install
 make release VERSION=1.0.0
 just release 1.0.0
 ```
 
-Windows 未装 Make 时：`just test` 或直接 `powershell -File deployments\scripts\test.ps1`。
+Windows 未装 Make 时：`just test` / `just run`，或直接 `powershell -File deployments\scripts\test.ps1` / `run.ps1`。
+
+`go run` 的二进制在临时目录，脚本会固定 `--dir` 为仓库根；不要用裸 `go run ./cmd/doc`。sqlite 需要 CGO；Windows 未设 `CC` 时优先 `gcc`，否则 Zig。just 自身的 flag 写成 `just run -- --help`。
 
 CI 直接调用权威路径：`bash deployments/scripts/test.sh`（见 `.gitea/workflows/test.yml`）。
 
