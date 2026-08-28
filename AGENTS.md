@@ -80,6 +80,18 @@ bash deployments/scripts/test.sh
 Windows：`just test` 或 `powershell -File deployments/scripts/test.ps1`。  
 覆盖率门槛见 `docs/round-5/coverage-baseline.txt`；CI 为 `.gitea/workflows/test.yml`。
 
+## 开发启动
+
+本地调试用 `go run`（不落盘 `doc` / `doc.exe`，不加热重载）。权威脚本会设 CGO，并固定 `--dir` 为仓库根：
+
+```bash
+make run           # 或 just run
+make run ARGS=install
+just run install
+```
+
+Windows：`just run` 或 `powershell -File deployments/scripts/run.ps1`。不要用裸 `go run ./cmd/doc`（工作目录会落到临时目录）。
+
 ## 决策确认
 
 影响对外契约、鉴权、数据或生产配置时先确认；小改动直接做。  

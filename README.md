@@ -49,6 +49,7 @@ MinDoc 的前身是 [SmartWiki](https://github.com/lifei6671/SmartWiki) 文档�
 |------|------|------|
 | `make build` / `just build` | 各平台 | 调用 `deployments/scripts/build.sh` 或 `build.bat` |
 | `make test` / `just test` | 各平台 | 白名单包测试 + 覆盖率门槛 |
+| `make run` / `just run` | 各平台 | 开发启动：`go run`（不落盘二进制；固定 `--dir` 为仓库根） |
 | `deployments/scripts/build.sh` | Linux / macOS | Linux 本机构建使用系统 gcc/clang |
 | `deployments/scripts/build.bat` | Windows | Linux 交叉编译使用 **Zig** |
 
@@ -93,6 +94,25 @@ bash deployments/scripts/test.sh
 
 Windows：`just test` 或 `powershell -File deployments\scripts\test.ps1`。  
 默认闸 `pkg/`、`internal/{errs,auth,logging,i18n,repository}`；覆盖率不低于 [docs/round-5/coverage-baseline.txt](docs/round-5/coverage-baseline.txt)。CI 见 `.gitea/workflows/test.yml`。
+
+### 开发运行
+
+日常改代码、打断点用 `go run`，不要先 `just build`。脚本会打开 CGO，并把 `--dir` 钉在仓库根（`go run` 的临时二进制不能当工作目录）。**不加热重载**，改完停掉再跑一次。
+
+```bash
+# 首次：复制配置（没有 app.conf 时程序也会从 example 拷一份）
+cp conf/app.conf.example conf/app.conf
+
+just run install    # 初始化数据库
+just run            # 启动 Web（默认 127.0.0.1:8181）
+just run mcp        # 其它子命令原样后传
+```
+
+Windows：`just run`（或 `powershell -File deployments\scripts\run.ps1`）。  
+Linux / macOS：`just run` 或 `make run`；传子命令用 `make run ARGS=install`。  
+just 自身的 flag：`just run -- --help`。
+
+需要发布用二进制时再 `just build` 后执行 `./doc`（Windows 为 `.\doc.exe`）。
 
 ### 手动编译
 

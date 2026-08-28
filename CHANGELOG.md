@@ -4,6 +4,10 @@
 
 其余任务（T6 Vite、T12、T14、T16 等）见 [round-5-execution-plan.md](docs/round-5/round-5-execution-plan.md)。已交付项见 **2.3.0** / **2.3.1**。
 
+### Added
+
+- 开发启动：`just run` / `make run`（权威脚本 `deployments/scripts/run.sh` / `run.ps1`，`go run` 且固定 `--dir` 为仓库根；不加热重载）
+
 ### Changed
 
 - T8：`BookResult` / `DocumentSearchResult` / `AttachmentResult` / `CommentResult` / `DocumentHistorySimpleResult` / `ConvertBookResult` / `BlogResult` 迁入 `internal/dto/`；查询进 Repo。`SelectMemberResult` 暂留 model（选择器查询仍在 Team/Itemsets）
