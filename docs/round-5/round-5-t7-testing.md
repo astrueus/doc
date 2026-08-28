@@ -2,7 +2,7 @@
 
 > 对应 [round-5-execution-plan.md §九 T7](./round-5-execution-plan.md#九t7--测试工程化1~2-天)。  
 > 脚本落点以 [T15](./round-5-scripts-layout.md) 为准（**方案 A** → `deployments/scripts/test.sh`；本地可用根目录 `make test` / `just test`）。  
-> **状态：** ✅ 已落地（`deployments/scripts/test.sh` + `test.ps1` + `.gitea/workflows/test.yml`）；Gitea Runner 上线后需再勾一次 CI 绿。
+> **状态：** ✅ 已落地（`deployments/scripts/test.sh` + `test.ps1` + `.github/workflows/test.yml`）；GitHub Actions 合入后需再勾一次 CI 绿。
 
 ---
 
@@ -64,8 +64,8 @@ go tool cover -func=coverage.out | tee coverage.txt
 
 ### 建议文件
 
-- 若用 Gitea Actions：`.gitea/workflows/test.yml`  
-- 或 GitHub 兼容：`.github/workflows/test.yml`（按实际托管二选一，文档写清）
+- GitHub Actions：`.github/workflows/test.yml`（当前）  
+- 不再使用 Gitea Actions（已删除 `.gitea/`）
 
 ### Job 要点
 
@@ -112,7 +112,7 @@ go tool cover -func=coverage.out | tee coverage.txt
 ## 七、验收
 
 - [x] 本地一键：`deployments/scripts/test.sh` / `test.ps1` 绿（Windows 本机 2026-08-18）  
-- [x] CI workflow 入库（`.gitea/workflows/test.yml` 硬闸白名单）；**Runner 就绪后**再确认云端绿  
+- [x] CI workflow 入库（`.github/workflows/test.yml` 硬闸白名单）；**GitHub Actions 跑过后**再确认云端绿  
 - [x] 覆盖率快照入库；门槛见 [coverage-baseline.txt](./coverage-baseline.txt)（T8/T9 后重测为 22.5%）  
 - [x] 路径与 T15 方案 A 一致  
 

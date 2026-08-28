@@ -4,6 +4,10 @@
 
 其余任务（T6 Vite、T12、T14、T16 等）见 [round-5-execution-plan.md](docs/round-5/round-5-execution-plan.md)。已交付项见 **2.3.0**～**2.3.2**。
 
+### Changed
+
+- CI 测试闸改到 `.github/workflows/test.yml`（GitHub Actions）；删除 `.gitea/`（私人 Gitea 仓跑不了 Actions）
+
 ## 2.3.2 — 2026-08-28
 
 无 Breaking。应用行为与 2.3.1 兼容；本版补开发启动入口、内部读路径重构，以及 example 去掉硬编码密钥。生产升级无需清 session。

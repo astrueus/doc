@@ -78,7 +78,7 @@ bash deployments/scripts/test.sh
 ```
 
 Windows：`just test` 或 `powershell -File deployments/scripts/test.ps1`。  
-覆盖率门槛见 `docs/round-5/coverage-baseline.txt`；CI 为 `.gitea/workflows/test.yml`。
+覆盖率门槛见 `docs/round-5/coverage-baseline.txt`；CI 为 `.github/workflows/test.yml`。
 
 ## 开发启动
 
