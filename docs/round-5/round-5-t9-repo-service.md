@@ -114,6 +114,7 @@ internal/service/
 - [x] `go test` 相关包不回退（`internal/repository`、`internal/mcp`）
 - [x] **无** ORM 替换
 - [x] Web 试点：`DocumentController.Content` 的文档 `Find` 走 `DocumentRepo`；阅读页 `Read` 仍走 model 缓存（待 T12）
+- [x] 本轮验收以代码与 `go test ./internal/repository ./internal/mcp` 为准（2026-08-31 收口）；未建 `internal/service/`
 
 ---
 

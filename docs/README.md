@@ -2,8 +2,8 @@
 
 本目录存放与项目维护、上游同步相关的文档。
 
-> **整体进度快照（2026-08-17，主干 `master`）**  
-> Round 1–2 ✅ · Round 3 MCP MVP ✅ · §十七 P0 ✅ · Round 4 代码主线 ✅ · **Round 5 ⏳**（工程化 / Vite / 对象存储 / kratos 向评估；搜索 FULLTEXT ⏸）。  
+> **整体进度快照（2026-08-31，主干 `master`）**  
+> Round 1–2 ✅ · Round 3 MCP MVP ✅ · §十七 P0 ✅ · Round 4 代码主线 ✅ · **Round 5 🔶**（批次 A/B 已合入，T12-a 缓存内核已落地；搜索 FULLTEXT ⏸）。  
 > 明细见 [refactor-roadmap.md §七](./refactor-roadmap.md#七迭代进度追踪) 与 [round-5/round-5-execution-plan.md](./round-5/round-5-execution-plan.md)。
 
 ## 入口（本目录）
@@ -35,7 +35,7 @@
 | Round 2 | 目录一步到位 + 强类型配置 + 路由/中间件 | ✅ | 升级说明 [upgrade-round-2.md](./round-1-4/upgrade-round-2.md) |
 | Round 3 | MCP 10 工具 + HTTP Bearer | ✅ MVP | 搜索 FULLTEXT → R5 后 ⏸ |
 | Round 4 | 模型 / zap / i18n / 前端 P1 / Repo / 测试 | ✅ 主线 | 遗留移交 Round 5 |
-| Round 5 | 工程化 / Vite / 对象存储 / kratos 向评估 | ⏳ | 见 [round-5](./round-5/)；T3/T4/T13 ⏸ |
+| Round 5 | 工程化 / Vite / 对象存储 / kratos 向评估 | 🔶 | 见 [round-5](./round-5/)；T12-a 已落地；T3/T4/T13 ⏸ |
 
 **Round 4 已合入（`v2.2.1`）要点：** BookModel 拆分、`md_` 修复、zap、Session 只存 id、前端 P1、`internal/i18n`、Repository 初版、pkg 单测、MCP P0。  
 **Round 5 承接：** Vite、缓存/ORM（kratos 向）报告、MCP P1、测试 CI、对象存储、`scripts`↔`deployments`、分层债；**不含**旧 FULLTEXT 实施与拆 bootstrap。

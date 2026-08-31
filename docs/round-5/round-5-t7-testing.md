@@ -2,7 +2,7 @@
 
 > 对应 [round-5-execution-plan.md §九 T7](./round-5-execution-plan.md#九t7--测试工程化1~2-天)。  
 > 脚本落点以 [T15](./round-5-scripts-layout.md) 为准（**方案 A** → `deployments/scripts/test.sh`；本地可用根目录 `make test` / `just test`）。  
-> **状态：** ✅ 已落地（`deployments/scripts/test.sh` + `test.ps1` + `.github/workflows/test.yml`）；GitHub Actions 合入后需再勾一次 CI 绿。
+> **状态：** ✅ 已落地（`deployments/scripts/test.sh` + `test.ps1` + `.github/workflows/test.yml`）；**2026-08-31 确认云端 CI 绿**。
 
 ---
 
@@ -46,9 +46,10 @@ COVER_MIN=0          # 百分比整数；0 表示只生成报告不闸（首版�
 ./internal/logging/...
 ./internal/i18n/...
 ./internal/repository/...
+./internal/cache/...
 ```
 
-可选追加（不阻塞首版）：`./internal/mcp/...`、`./internal/cache/...`。
+可选追加（不阻塞首版）：`./internal/mcp/...`。`./internal/cache/...` 已随 T12-a 纳入默认白名单。
 
 首版命令形态：
 
@@ -112,8 +113,8 @@ go tool cover -func=coverage.out | tee coverage.txt
 ## 七、验收
 
 - [x] 本地一键：`deployments/scripts/test.sh` / `test.ps1` 绿（Windows 本机 2026-08-18）  
-- [x] CI workflow 入库（`.github/workflows/test.yml` 硬闸白名单）；**GitHub Actions 跑过后**再确认云端绿  
-- [x] 覆盖率快照入库；门槛见 [coverage-baseline.txt](./coverage-baseline.txt)（T8/T9 后重测为 22.5%）  
+- [x] CI workflow 入库（`.github/workflows/test.yml` 硬闸白名单）；**2026-08-31 确认云端绿**  
+- [x] 覆盖率快照入库；门槛见 [coverage-baseline.txt](./coverage-baseline.txt)（T12-a 后白名单含 `internal/cache`，2026-08-31 重测 **29.3%**）  
 - [x] 路径与 T15 方案 A 一致  
 
 ---

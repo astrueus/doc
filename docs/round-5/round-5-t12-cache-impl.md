@@ -2,7 +2,8 @@
 
 > 对应 [round-5-execution-plan.md §十三附 T12](./round-5-execution-plan.md#十三附t12--缓存-b-实施闸门)。  
 > **依据：** [round-5-cache-evaluation.md](./round-5-cache-evaluation.md)（2026-08-05：完全重构，不兼容旧方案）。  
-> **状态：** ⏳ 可排期实施（**不再**依赖「维持 A / 观望一周」闸门；上线前仍要有压测与指标看板）。
+> **状态：** 🔶 T12-a 已落地（2026-08-31）；T12-b Redis/Tag/PubSub、T12-c/d 业务接入未做。  
+> 业务路径仍走旧 `beego/cache` 适配，本切片**不删** `beego_adapter.go`。
 
 ---
 
@@ -44,9 +45,11 @@ internal/cache/
 │   └── msgpack.go        # 或 JSON；统一一处
 └── cachetest/            # 内存双层 fake，单测用
 
-# 删除或移出业务路径：
+# 删除或移出业务路径（T12-c/d）：
 # beego_adapter.go / 旧全局 Get/Set 包装（可留 Deprecated 一版编译期删干净）
 ```
+
+**T12-a 已落地（2026-08-31）：** `aside.go`、`options.go`、`key.go`、`coalesce.go`、`soft_ttl.go`、`null_value.go`、`metrics.go`、`jitter.go`、`store/{store,memory}.go`、`codec/msgpack.go`、`cachetest/`。L1/L2 均为内存 Store。`ristretto.go` / `redis.go` / `pubsub.go` / `tag.go` 留给 T12-b。现网仍走 `beego_adapter.go`。
 
 业务接入示例：
 
@@ -138,7 +141,7 @@ default_jitter = 0.1
 
 | PR | 内容 | 验收要点 |
 |---|---|---|
-| **T12-a** | Store + Aside 内核 + 单测（含 stampede / 负缓存 / soft refresh） | `go test` 并发 miss 回源 =1；Soft 触发异步刷新 |
+| **T12-a** | Store + Aside 内核 + 单测（含 stampede / 负缓存 / soft refresh） | `go test` 并发 miss 回源 =1；Soft 触发异步刷新。**2026-08-31 已完成**（内存 L1/L2，尚未接 Ristretto/Redis） |
 | **T12-b** | Redis L2 + Tag + Pub/Sub；conf；metrics | 双进程：A Invalidate 后 B 的 L1 被刷掉 |
 | **T12-c** | Document / Blog 接入；model 内旧 cache 调用删除 | 阅读 / 发布冒烟；按书失效正确 |
 | **T12-d** | MCP Token 接入 + 压测脚本 / 文档 | 登录态 / MCP 不回归；README 运维说明 |
@@ -182,12 +185,12 @@ default_jitter = 0.1
 
 ## 八、验收清单
 
-- [ ] 业务路径零 `beego/cache` 依赖（Session 除外）  
-- [ ] Document / Blog / Token 均经 `GetOrLoad`；写后 Invalidate/Tag 有单测  
-- [ ] 击穿 / 穿透 / Soft refresh / jitter 有自动化测试或压测记录  
-- [ ] Pub/Sub 多实例 L1 失效验证（至少 docker-compose 双实例手册）  
-- [ ] metrics 可刮取或日志聚合字段齐全  
-- [ ] conf.example + 部署文档 + `DOC_CACHE_*`  
+- [ ] 业务路径零 `beego/cache` 依赖（Session 除外）— **T12-c/d**  
+- [ ] Document / Blog / Token 均经 `GetOrLoad`；写后 Invalidate/Tag 有单测 — **T12-c/d**  
+- [x] 击穿 / 穿透 / Soft refresh / jitter 有自动化测试（T12-a：`internal/cache/aside_test.go`；压测记录仍待 T12-d）  
+- [ ] Pub/Sub 多实例 L1 失效验证（至少 docker-compose 双实例手册）— **T12-b**  
+- [ ] metrics 可刮取或日志聚合字段齐全 — **T12-b**（T12-a 仅进程内 `Metrics` 计数）  
+- [ ] conf.example + 部署文档 + `DOC_CACHE_*` — **T12-b**  
 
 ---
 

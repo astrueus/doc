@@ -26,7 +26,7 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Root = Find-RepoRoot -Start $ScriptDir
 Set-Location $Root
 
-$defaultPkgs = "./pkg/... ./internal/errs/... ./internal/auth/... ./internal/logging/... ./internal/i18n/... ./internal/repository/..."
+$defaultPkgs = "./pkg/... ./internal/errs/... ./internal/auth/... ./internal/logging/... ./internal/i18n/... ./internal/repository/... ./internal/cache/..."
 $pkgText = if ($env:TEST_PKGS) { $env:TEST_PKGS } else { $defaultPkgs }
 $pkgs = $pkgText -split "\s+" | Where-Object { $_ }
 

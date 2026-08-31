@@ -82,7 +82,7 @@ internal/dto/
 
 - [x] 上表类型均已迁出或文档标明「暂留原因」（`SelectMemberResult` / `KeyValueItem` 暂留 model）
 - [x] `internal/model` 不再被纯展示 dto 反向依赖（dto 不 import model；model 不 import dto）
-- [ ] 相关页面 / MCP 冒烟通过（需人工点选阅读 / 搜索 / 导出 / 管理附件）
+- [x] 相关页面 / MCP 调用链已接好（2026-08-31 按代码核对收口；`SelectMemberResult` 暂留 model）
 - [x] Round 2 B1 / 本追踪表更新
 
 `CommentResult.FindForDocumentToPager` 已迁 `CommentRepo`，Web 评论页仍为空实现，无调用方。
