@@ -2,8 +2,8 @@
 
 > 对应 [round-5-execution-plan.md §十三附 T12](./round-5-execution-plan.md#十三附t12--缓存-b-实施闸门)。  
 > **依据：** [round-5-cache-evaluation.md](./round-5-cache-evaluation.md)（2026-08-05：完全重构，不兼容旧方案）。  
-> **状态：** 🔶 T12-a 已落地（2026-08-31）；T12-b Redis/Tag/PubSub、T12-c/d 业务接入未做。  
-> 业务路径仍走旧 `beego/cache` 适配，本切片**不删** `beego_adapter.go`。
+> **状态：** 🔶 T12-a/b 已落地（2026-08-31）；T12-c/d 业务接入未做。  
+> 业务路径仍走旧 `beego/cache` 适配，本切片**不删** `beego_adapter.go`，**未改** `RegisterCache()`。
 
 ---
 
@@ -28,28 +28,32 @@
 
 ```text
 internal/cache/
-├── aside.go              # Aside[T]、Options、GetOrLoad
+├── aside.go              # Aside[T]、GetOrLoad / Set / Delete / InvalidateTag
+├── runtime.go            # Open(ctx, Settings) → Runtime；NewAsideFrom
 ├── key.go                # KeyBuilder / 前缀 doc:v1:
 ├── options.go            # TTL / SoftTTL / Jitter / Tags / CacheNull
-├── coalesce.go           # singleflight（可分片 Group 降锁竞争）
-├── soft_ttl.go           # stale-while-revalidate 调度
+├── coalesce.go           # singleflight
+├── soft_ttl.go           # stale-while-revalidate
 ├── null_value.go         # 负缓存哨兵
-├── metrics.go            # hit/miss/load/shared/err
-├── pubsub.go             # L1 失效广播
-├── tag.go                # Redis SET 维护 tag→keys
+├── metrics.go            # 计数；Snapshot.Map() 日志字段
+├── pubsub.go             # Broadcaster + MemoryBus / NoopBus
+├── pubsub_redis.go       # Redis Pub/Sub
+├── tag.go                # TagIndex + 进程内实现
+├── tag_redis.go          # Redis SET tag→keys
 ├── store/
 │   ├── store.go          # Store 接口 Get/Set/Del
+│   ├── memory.go         # 单测 L1/L2
 │   ├── ristretto.go      # L1
-│   └── redis.go          # L2（go-redis）
+│   └── redis.go          # L2（go-redis；key 不再叠前缀）
 ├── codec/
-│   └── msgpack.go        # 或 JSON；统一一处
+│   └── msgpack.go
 └── cachetest/            # 内存双层 fake，单测用
 
 # 删除或移出业务路径（T12-c/d）：
 # beego_adapter.go / 旧全局 Get/Set 包装（可留 Deprecated 一版编译期删干净）
 ```
 
-**T12-a 已落地（2026-08-31）：** `aside.go`、`options.go`、`key.go`、`coalesce.go`、`soft_ttl.go`、`null_value.go`、`metrics.go`、`jitter.go`、`store/{store,memory}.go`、`codec/msgpack.go`、`cachetest/`。L1/L2 均为内存 Store。`ristretto.go` / `redis.go` / `pubsub.go` / `tag.go` 留给 T12-b。现网仍走 `beego_adapter.go`。
+**T12-a/b 已落地（2026-08-31）：** 上表文件均已存在。`Open` / `Runtime` / `NewAsideFrom` 在 `runtime.go`；现网仍走 `beego_adapter.go`，调用方未切。
 
 业务接入示例：
 
@@ -112,28 +116,36 @@ InvalidateTag(tag):
 
 ---
 
-## 四、配置（全新）
+## 四、配置
+
+T12-b **增量**写进现有 `[cache]`，保留 `cache_provider` / file / `cache_redis_prefix=doc::cache` 直到 T12-c 切调用方。Aside 前缀与 beego 前缀分开，避免现网 Redis 键冲突。
 
 ```ini
 [cache]
-enable = true
-# local | redis | chain（推荐 chain=L1+L2；local 仅开发）
-mode = chain
+# —— 现网 beego/cache（T12-c 前仍生效）——
+cache = "${DOC_CACHE||false}"
+cache_provider = "${DOC_CACHE_PROVIDER||file}"
+cache_redis_host = "${DOC_CACHE_REDIS_HOST||127.0.0.1:6379}"
+cache_redis_prefix = "${DOC_CACHE_REDIS_PREFIX||doc::cache}"
 
-l1_max_cost = 67108864          # 64MiB 量级，按机器调
-l1_num_counters = 1000000
-
-redis_addr = "${DOC_CACHE_REDIS_ADDR||127.0.0.1:6379}"
-redis_password = "${DOC_CACHE_REDIS_PASSWORD}"
-redis_db = "${DOC_CACHE_REDIS_DB||0}"
-redis_prefix = "${DOC_CACHE_REDIS_PREFIX||doc:v1:}"
-
-pubsub_channel = "${DOC_CACHE_PUBSUB_CHANNEL||doc:cache:invalidate}"
-default_jitter = 0.1
+# —— T12 Aside（Open / Runtime；默认 local，不强制现网 Redis）——
+cache_mode = "${DOC_CACHE_MODE||local}"
+cache_l1_max_cost = "${DOC_CACHE_L1_MAX_COST||67108864}"
+cache_l1_num_counters = "${DOC_CACHE_L1_NUM_COUNTERS||1000000}"
+cache_redis_addr = "${DOC_CACHE_REDIS_ADDR}"   # 空则回退 cache_redis_host
+cache_pubsub_channel = "${DOC_CACHE_PUBSUB_CHANNEL||doc:cache:invalidate}"
+cache_default_jitter = "${DOC_CACHE_DEFAULT_JITTER||0.1}"
+cache_aside_prefix = "${DOC_CACHE_ASIDE_PREFIX||doc:v1:}"
 ```
 
-- **硬切** `DOC_*`；不读旧 `MINDOC_*` / beego file 路径。  
-- `mode=local`：CI / 单测无 Redis 时可用（仅 L1，无跨实例）。
+| `cache_mode` | L1 | L2 | Tag | Bus |
+|---|---|---|---|---|
+| `local`（默认） | Ristretto | 无 | 进程内 | Noop |
+| `redis` | Redis | 无 | Redis SET | Redis Pub/Sub |
+| `chain` | Ristretto | Redis | Redis SET | Redis Pub/Sub |
+
+- Redis 数据 key **不再叠一层前缀**（`KeyBuilder` 已是 `doc:v1:...`）。Tag key 形如 `doc:v1:tag:book:12`。  
+- `Open` 已实现；**bootstrap 仍未调用**（T12-c 再接）。
 
 ---
 
@@ -141,8 +153,8 @@ default_jitter = 0.1
 
 | PR | 内容 | 验收要点 |
 |---|---|---|
-| **T12-a** | Store + Aside 内核 + 单测（含 stampede / 负缓存 / soft refresh） | `go test` 并发 miss 回源 =1；Soft 触发异步刷新。**2026-08-31 已完成**（内存 L1/L2，尚未接 Ristretto/Redis） |
-| **T12-b** | Redis L2 + Tag + Pub/Sub；conf；metrics | 双进程：A Invalidate 后 B 的 L1 被刷掉 |
+| **T12-a** | Store + Aside 内核 + 单测（含 stampede / 负缓存 / soft refresh） | **2026-08-31 已完成** |
+| **T12-b** | Redis L2 + Tag + Pub/Sub；conf；metrics；`Open` | **2026-08-31 已完成**（miniredis / MemoryBus 单测；业务未切） |
 | **T12-c** | Document / Blog 接入；model 内旧 cache 调用删除 | 阅读 / 发布冒烟；按书失效正确 |
 | **T12-d** | MCP Token 接入 + 压测脚本 / 文档 | 登录态 / MCP 不回归；README 运维说明 |
 
@@ -164,9 +176,8 @@ default_jitter = 0.1
 
 ### 指标
 
-- `cache_hit{layer=l1|l2}` / `cache_miss` / `cache_load` / `cache_load_shared` / `cache_load_err` / `cache_null_hit`  
-- `cache_load_seconds`（histogram）  
-- L1 cost / keys；Redis pool 等待  
+- T12-b：`MetricsSnapshot.Map()` → `cache_l1_hit` / `cache_l2_hit` / `cache_miss` / `cache_load` / `cache_load_shared` / `cache_load_err` / `cache_null_hit` / `cache_soft_refresh`（写日志即可）  
+- T12-d 可选：Prometheus 刮取、`cache_load_seconds` histogram、L1 cost / Redis pool 等待  
 
 ### 压测场景
 
@@ -187,10 +198,10 @@ default_jitter = 0.1
 
 - [ ] 业务路径零 `beego/cache` 依赖（Session 除外）— **T12-c/d**  
 - [ ] Document / Blog / Token 均经 `GetOrLoad`；写后 Invalidate/Tag 有单测 — **T12-c/d**  
-- [x] 击穿 / 穿透 / Soft refresh / jitter 有自动化测试（T12-a：`internal/cache/aside_test.go`；压测记录仍待 T12-d）  
-- [ ] Pub/Sub 多实例 L1 失效验证（至少 docker-compose 双实例手册）— **T12-b**  
-- [ ] metrics 可刮取或日志聚合字段齐全 — **T12-b**（T12-a 仅进程内 `Metrics` 计数）  
-- [ ] conf.example + 部署文档 + `DOC_CACHE_*` — **T12-b**  
+- [x] 击穿 / 穿透 / Soft refresh / jitter 有自动化测试（`aside_test.go`；压测记录仍待 T12-d）  
+- [x] Pub/Sub 多实例 L1 失效（`TestAsidePubSubFlushesPeerL1` / `TestOpenChainPubSubFlushesPeerL1`；手册见下文附录）  
+- [x] metrics 日志字段：`MetricsSnapshot.Map()`（`cache_l1_hit` 等）；Prometheus 刮取非必须，未做  
+- [x] conf.example + `DOC_CACHE_MODE` 等新键 + env 文档 — **T12-b**  
 
 ---
 
@@ -204,6 +215,30 @@ default_jitter = 0.1
 | **合计** | **4~7 天** |
 
 （若直接嵌 jetcache-go，a+b 可压缩约 1~1.5 天，但要验收 Facade 可替换性。）
+
+---
+
+## 附录 · 双实例 L1 失效手册（T12-b）
+
+T12-c 之前 **bootstrap 不调用 `Open`**，现网双进程不会走新内核。验证以单测为准；手工 compose 可选。
+
+### 已覆盖的自动化
+
+| 测试 | 说明 |
+|---|---|
+| `TestAsidePubSubFlushesPeerL1` | 共享 Memory L2 + MemoryBus；A `Delete` 后 B 的 L1 为空 |
+| `TestOpenChainPubSubFlushesPeerL1` | 两套 `Open(mode=chain)` + miniredis；同上 |
+
+有 Bus 的 `Aside` / `Runtime` 须 `Close()`（单测已 `t.Cleanup`）。
+
+### 手工（T12-c 接入后）
+
+1. Redis：`docker run --rm -p 6379:6379 redis:7`  
+2. 两份进程同一 `DOC_CACHE_MODE=chain`、`DOC_CACHE_REDIS_ADDR`  
+3. 实例 A 走写路径（会 `Delete` / `InvalidateTag`）  
+4. 实例 B 下一读不应继续命中本机 L1（可对日志字段 `cache_l1_hit` / `cache_miss`）
+
+不必为验证 T12-b 真跑双容器。
 
 ---
 

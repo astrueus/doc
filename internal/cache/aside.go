@@ -2,6 +2,8 @@ package cache
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"sync"
 	"time"
@@ -21,97 +23,20 @@ type envelope struct {
 	HardAt   int64  `msgpack:"h"`
 }
 
-type tagIndex struct {
-	mu sync.Mutex
-	m  map[string]map[string]struct{}
-}
-
-func newTagIndex() *tagIndex {
-	return &tagIndex{m: make(map[string]map[string]struct{})}
-}
-
-func (t *tagIndex) add(key string, tags []string) {
-	if t == nil || key == "" || len(tags) == 0 {
-		return
-	}
-	t.mu.Lock()
-	defer t.mu.Unlock()
-	for _, tag := range tags {
-		if tag == "" {
-			continue
-		}
-		set, ok := t.m[tag]
-		if !ok {
-			set = make(map[string]struct{})
-			t.m[tag] = set
-		}
-		set[key] = struct{}{}
-	}
-}
-
-func (t *tagIndex) keysOf(tags []string) []string {
-	if t == nil {
-		return nil
-	}
-	t.mu.Lock()
-	defer t.mu.Unlock()
-	seen := make(map[string]struct{})
-	var out []string
-	for _, tag := range tags {
-		for k := range t.m[tag] {
-			if _, ok := seen[k]; ok {
-				continue
-			}
-			seen[k] = struct{}{}
-			out = append(out, k)
-		}
-	}
-	return out
-}
-
-func (t *tagIndex) removeKeys(keys []string) {
-	if t == nil || len(keys) == 0 {
-		return
-	}
-	drop := make(map[string]struct{}, len(keys))
-	for _, k := range keys {
-		drop[k] = struct{}{}
-	}
-	t.mu.Lock()
-	defer t.mu.Unlock()
-	for tag, set := range t.m {
-		for k := range set {
-			if _, ok := drop[k]; ok {
-				delete(set, k)
-			}
-		}
-		if len(set) == 0 {
-			delete(t.m, tag)
-		}
-	}
-}
-
-func (t *tagIndex) removeTags(tags []string) {
-	if t == nil {
-		return
-	}
-	t.mu.Lock()
-	defer t.mu.Unlock()
-	for _, tag := range tags {
-		delete(t.m, tag)
-	}
-}
-
 // Aside 是 Cache-Aside Facade：L1 → L2 → singleflight(loader)。
 type Aside[T any] struct {
-	l1      store.Store
-	l2      store.Store
-	codec   codec.Codec
-	loadSF  Coalesce
-	softSF  Coalesce
-	metrics *Metrics
-	now     func() time.Time
-	tags    *tagIndex
+	l1            store.Store
+	l2            store.Store
+	codec         codec.Codec
+	loadSF        Coalesce
+	softSF        Coalesce
+	metrics       *Metrics
+	now           func() time.Time
+	tags          TagIndex
+	bus           Broadcaster
+	origin        string
+	defaultJitter float64
+	subCancel     context.CancelFunc
 
 	refreshWG sync.WaitGroup
 }
@@ -120,9 +45,14 @@ type Aside[T any] struct {
 type AsideOption func(*asideConfig)
 
 type asideConfig struct {
-	codec   codec.Codec
-	metrics *Metrics
-	now     func() time.Time
+	codec         codec.Codec
+	metrics       *Metrics
+	now           func() time.Time
+	tags          TagIndex
+	bus           Broadcaster
+	origin        string
+	defaultJitter float64
+	skipSubscribe bool
 }
 
 // WithCodec 覆盖默认 msgpack。
@@ -140,12 +70,39 @@ func WithClock(now func() time.Time) AsideOption {
 	return func(cfg *asideConfig) { cfg.now = now }
 }
 
+// WithTagIndex 注入 tag 索引；nil 则用进程内实现。
+func WithTagIndex(t TagIndex) AsideOption {
+	return func(cfg *asideConfig) { cfg.tags = t }
+}
+
+// WithBus 注入失效广播；nil 则不广播。
+func WithBus(b Broadcaster) AsideOption {
+	return func(cfg *asideConfig) { cfg.bus = b }
+}
+
+// WithOrigin 设置本实例 ID，Pub/Sub 用来跳过自己。
+func WithOrigin(id string) AsideOption {
+	return func(cfg *asideConfig) { cfg.origin = id }
+}
+
+// WithDefaultJitter 在 Options.Jitter 为 0 时使用的抖动比例。
+func WithDefaultJitter(j float64) AsideOption {
+	return func(cfg *asideConfig) { cfg.defaultJitter = j }
+}
+
+func withSkipSubscribe() AsideOption {
+	return func(cfg *asideConfig) { cfg.skipSubscribe = true }
+}
+
 // NewAside 构造 Facade。l1 必填；l2 可为 nil（仅本地）。
 func NewAside[T any](l1, l2 store.Store, opts ...AsideOption) *Aside[T] {
 	cfg := asideConfig{
 		codec:   codec.Msgpack(),
 		metrics: &Metrics{},
 		now:     time.Now,
+		tags:    NewMemoryTags(),
+		bus:     NewNoopBus(),
+		origin:  newOriginID(),
 	}
 	for _, opt := range opts {
 		if opt != nil {
@@ -161,14 +118,75 @@ func NewAside[T any](l1, l2 store.Store, opts ...AsideOption) *Aside[T] {
 	if cfg.now == nil {
 		cfg.now = time.Now
 	}
-	return &Aside[T]{
-		l1:      l1,
-		l2:      l2,
-		codec:   cfg.codec,
-		metrics: cfg.metrics,
-		now:     cfg.now,
-		tags:    newTagIndex(),
+	if cfg.tags == nil {
+		cfg.tags = NewMemoryTags()
 	}
+	if cfg.bus == nil {
+		cfg.bus = NewNoopBus()
+	}
+	if cfg.origin == "" {
+		cfg.origin = newOriginID()
+	}
+	a := &Aside[T]{
+		l1:            l1,
+		l2:            l2,
+		codec:         cfg.codec,
+		metrics:       cfg.metrics,
+		now:           cfg.now,
+		tags:          cfg.tags,
+		bus:           cfg.bus,
+		origin:        cfg.origin,
+		defaultJitter: cfg.defaultJitter,
+	}
+	if !cfg.skipSubscribe {
+		ctx, cancel := context.WithCancel(context.Background())
+		a.subCancel = cancel
+		_ = a.bus.Subscribe(ctx, a.origin, a.onRemoteInvalidate)
+	}
+	return a
+}
+
+// NewAsideFrom 从 Runtime 构造 Facade（订阅由 Runtime 统一处理）。
+func NewAsideFrom[T any](rt *Runtime, opts ...AsideOption) *Aside[T] {
+	if rt == nil {
+		return NewAside[T](nil, nil, opts...)
+	}
+	base := []AsideOption{
+		WithTagIndex(rt.Tags),
+		WithBus(rt.Bus),
+		WithOrigin(rt.Origin),
+		WithMetrics(rt.Metrics),
+		WithDefaultJitter(rt.DefaultJitter),
+		withSkipSubscribe(),
+	}
+	return NewAside[T](rt.L1, rt.L2, append(base, opts...)...)
+}
+
+func newOriginID() string {
+	var b [8]byte
+	if _, err := rand.Read(b[:]); err != nil {
+		return "local"
+	}
+	return hex.EncodeToString(b[:])
+}
+
+// Close 停止 Pub/Sub 订阅并等待 Soft 刷新结束。
+func (a *Aside[T]) Close() {
+	if a == nil {
+		return
+	}
+	if a.subCancel != nil {
+		a.subCancel()
+		a.subCancel = nil
+	}
+	a.waitRefresh()
+}
+
+func (a *Aside[T]) onRemoteInvalidate(msg InvalidateMsg) {
+	if a == nil || a.l1 == nil || len(msg.Keys) == 0 {
+		return
+	}
+	_ = a.l1.Del(context.Background(), msg.Keys...)
 }
 
 // Metrics 返回计数器。
@@ -177,6 +195,13 @@ func (a *Aside[T]) Metrics() *Metrics {
 		return nil
 	}
 	return a.metrics
+}
+
+func (a *Aside[T]) applyJitter(opt Options) Options {
+	if opt.Jitter == 0 && a.defaultJitter > 0 {
+		opt.Jitter = a.defaultJitter
+	}
+	return opt
 }
 
 // GetOrLoad 按 L1 → L2 → loader 读取；Soft-TTL 命中时返回旧值并异步刷新。
@@ -188,7 +213,7 @@ func (a *Aside[T]) GetOrLoad(ctx context.Context, key string, opt Options, load 
 	if load == nil {
 		return zero, errors.New("cache: loader required")
 	}
-	opt = opt.normalized()
+	opt = a.applyJitter(opt.normalized())
 
 	if v, ok, err := a.readLayers(ctx, key, opt, load); ok {
 		return v, err
@@ -219,10 +244,10 @@ func (a *Aside[T]) Set(ctx context.Context, key string, v T, opt Options) error 
 	if a == nil || a.l1 == nil {
 		return errors.New("cache: aside not initialized")
 	}
-	return a.writeValue(ctx, key, v, opt.normalized())
+	return a.writeValue(ctx, key, v, a.applyJitter(opt.normalized()))
 }
 
-// Delete 删除 L1/L2 上的 key。
+// Delete 删除 L1/L2 上的 key，并广播让对端只刷 L1。
 func (a *Aside[T]) Delete(ctx context.Context, keys ...string) error {
 	if a == nil {
 		return nil
@@ -230,17 +255,19 @@ func (a *Aside[T]) Delete(ctx context.Context, keys ...string) error {
 	return a.deleteKeys(ctx, keys...)
 }
 
-// InvalidateTag 按 tag 失效（T12-a 为进程内索引；T12-b 迁 Redis SET）。
+// InvalidateTag 按 tag 失效：查出 keys → Delete → 删 tagset。
 func (a *Aside[T]) InvalidateTag(ctx context.Context, tags ...string) error {
-	if a == nil || len(tags) == 0 {
+	if a == nil || len(tags) == 0 || a.tags == nil {
 		return nil
 	}
-	keys := a.tags.keysOf(tags)
+	keys, err := a.tags.KeysOf(ctx, tags)
+	if err != nil {
+		return err
+	}
 	if err := a.deleteKeys(ctx, keys...); err != nil {
 		return err
 	}
-	a.tags.removeTags(tags)
-	return nil
+	return a.tags.RemoveTags(ctx, tags)
 }
 
 func (a *Aside[T]) waitRefresh() {
@@ -407,7 +434,11 @@ func (a *Aside[T]) writeEnvelope(ctx context.Context, key string, rec envelope, 
 			return err
 		}
 	}
-	a.tags.add(key, opt.Tags)
+	if a.tags != nil && len(opt.Tags) > 0 {
+		if err := a.tags.Add(ctx, key, opt.Tags, hardTTL); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -424,6 +455,15 @@ func (a *Aside[T]) deleteKeys(ctx context.Context, keys ...string) error {
 			first = err
 		}
 	}
-	a.tags.removeKeys(keys)
+	if a.tags != nil {
+		if err := a.tags.RemoveKeys(ctx, keys); err != nil && first == nil {
+			first = err
+		}
+	}
+	if a.bus != nil {
+		if err := a.bus.Publish(ctx, InvalidateMsg{Op: "del", Keys: append([]string(nil), keys...), Origin: a.origin}); err != nil && first == nil {
+			first = err
+		}
+	}
 	return first
 }

@@ -15,7 +15,7 @@ type Options struct {
 	SoftTTL time.Duration
 	// Jitter 为 TTL 抖动比例（如 0.1 表示 ±10%），减轻雪崩。
 	Jitter float64
-	// Tags 写入时登记，供 InvalidateTag 使用（T12-a 为进程内索引）。
+	// Tags 写入时登记，供 InvalidateTag 使用。
 	Tags []string
 	// CacheNull 为 true 时，loader 返回 ErrNotFound 会写入负缓存。
 	CacheNull bool

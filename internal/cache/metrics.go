@@ -2,7 +2,7 @@ package cache
 
 import "sync/atomic"
 
-// Metrics 为进程内计数，T12-b 再接到可刮取后端。
+// Metrics 为进程内计数；用 Snapshot().Map() 写入日志字段。
 type Metrics struct {
 	L1Hit       atomic.Int64
 	L2Hit       atomic.Int64
@@ -41,4 +41,18 @@ type MetricsSnapshot struct {
 	LoadErr     int64
 	NullHit     int64
 	SoftRefresh int64
+}
+
+// Map 返回可写入日志的稳定字段名。
+func (s MetricsSnapshot) Map() map[string]int64 {
+	return map[string]int64{
+		"cache_l1_hit":       s.L1Hit,
+		"cache_l2_hit":       s.L2Hit,
+		"cache_miss":         s.Miss,
+		"cache_load":         s.Load,
+		"cache_load_shared":  s.LoadShared,
+		"cache_load_err":     s.LoadErr,
+		"cache_null_hit":     s.NullHit,
+		"cache_soft_refresh": s.SoftRefresh,
+	}
 }
