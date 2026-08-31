@@ -182,7 +182,7 @@ cache_redis_db = "${DOC_CACHE_REDIS_DB||0}"
 cache_redis_password = "${DOC_CACHE_REDIS_PASSWORD}"
 #缓存键的前缀（现网 beego/cache 适配；T12 Aside 用 cache_aside_prefix）
 cache_redis_prefix = "${DOC_CACHE_REDIS_PREFIX||doc::cache}"
-# Aside 拓扑：local | redis | chain（T12-b 已实现 Open；业务调用仍走上方 cache_provider）
+# Aside 拓扑：local | redis | chain（T12-c 起 Document/Blog 走 Open；cache=false 则直打库）
 cache_mode = "${DOC_CACHE_MODE||local}"
 # Ristretto L1 容量（字节）与计数器
 cache_l1_max_cost = "${DOC_CACHE_L1_MAX_COST||67108864}"

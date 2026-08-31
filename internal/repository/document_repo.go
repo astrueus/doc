@@ -2,10 +2,12 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	"git.itopcms.com/astrueus/doc/internal/cache"
 	"git.itopcms.com/astrueus/doc/internal/config"
 	"git.itopcms.com/astrueus/doc/internal/dto"
 	"git.itopcms.com/astrueus/doc/internal/model"
@@ -55,7 +57,7 @@ func localizeDocumentTimes(d *model.Document) *model.Document {
 	return d
 }
 
-func (r *documentRepo) Find(ctx context.Context, id int) (*model.Document, error) {
+func (r *documentRepo) findFromDB(ctx context.Context, id int) (*model.Document, error) {
 	if id <= 0 {
 		return nil, model.ErrInvalidParameter
 	}
@@ -71,6 +73,36 @@ func (r *documentRepo) Find(ctx context.Context, id int) (*model.Document, error
 	return localizeDocumentTimes(doc), nil
 }
 
+func (r *documentRepo) Find(ctx context.Context, id int) (*model.Document, error) {
+	if a := documentAside(); a != nil {
+		k := cacheKeys()
+		v, err := a.GetOrLoad(ctx, k.DocumentByID(id), metaCacheOptions(k.TagDocument(id)), func(context.Context) (model.Document, error) {
+			d, err := r.findFromDB(ctx, id)
+			if err != nil {
+				if errors.Is(err, model.ErrDataNotExist) || errors.Is(err, model.ErrInvalidParameter) {
+					return model.Document{}, cache.ErrNotFound
+				}
+				return model.Document{}, err
+			}
+			d.AttachList = nil
+			d.Lang = ""
+			return *d, nil
+		})
+		if errors.Is(err, cache.ErrNotFound) {
+			if id <= 0 {
+				return nil, model.ErrInvalidParameter
+			}
+			return nil, model.ErrDataNotExist
+		}
+		if err != nil {
+			return nil, err
+		}
+		out := v
+		return localizeDocumentTimes(&out), nil
+	}
+	return r.findFromDB(ctx, id)
+}
+
 func (r *documentRepo) Save(ctx context.Context, d *model.Document) error {
 	_ = ctx
 	return d.InsertOrUpdate()
@@ -79,7 +111,7 @@ func (r *documentRepo) Save(ctx context.Context, d *model.Document) error {
 func (r *documentRepo) UpdateMarkdownWithVersion(ctx context.Context, id int, expectVersion int64, markdown string, modifyAt int, newVersion int64) (int64, error) {
 	doc := model.NewDocument()
 	o := r.ormer(ctx)
-	return o.QueryTable(doc.TableNameWithPrefix()).
+	aff, err := o.QueryTable(doc.TableNameWithPrefix()).
 		Filter("document_id", id).
 		Filter("version", expectVersion).
 		Update(orm.Params{
@@ -87,6 +119,14 @@ func (r *documentRepo) UpdateMarkdownWithVersion(ctx context.Context, id int, ex
 			"version":   newVersion,
 			"modify_at": modifyAt,
 		})
+	if err == nil && aff > 0 && cache.Kernel() != nil {
+		if d, ferr := r.findFromDB(ctx, id); ferr == nil {
+			InvalidateDocument(d)
+		} else {
+			InvalidateDocument(&model.Document{DocumentId: id})
+		}
+	}
+	return aff, err
 }
 
 func (r *documentRepo) FindListByBookID(ctx context.Context, bookID int) ([]*model.Document, error) {
@@ -103,7 +143,7 @@ func (r *documentRepo) FindListByBookID(ctx context.Context, bookID int) ([]*mod
 	return docs, nil
 }
 
-func (r *documentRepo) FindByIdentify(ctx context.Context, identify string, bookID int) (*model.Document, error) {
+func (r *documentRepo) findByIdentifyDB(ctx context.Context, identify string, bookID int) (*model.Document, error) {
 	doc := model.NewDocument()
 	o := r.ormer(ctx)
 	err := o.QueryTable(doc.TableNameWithPrefix()).Filter("book_id", bookID).Filter("identify", identify).One(doc)
@@ -114,6 +154,34 @@ func (r *documentRepo) FindByIdentify(ctx context.Context, identify string, book
 		return nil, err
 	}
 	return localizeDocumentTimes(doc), nil
+}
+
+func (r *documentRepo) FindByIdentify(ctx context.Context, identify string, bookID int) (*model.Document, error) {
+	if a := documentAside(); a != nil {
+		k := cacheKeys()
+		tags := []string{k.TagBook(bookID)}
+		v, err := a.GetOrLoad(ctx, k.DocumentByIdentify(bookID, identify), metaCacheOptions(tags...), func(context.Context) (model.Document, error) {
+			d, err := r.findByIdentifyDB(ctx, identify, bookID)
+			if err != nil {
+				if err == orm.ErrNoRows {
+					return model.Document{}, cache.ErrNotFound
+				}
+				return model.Document{}, err
+			}
+			d.AttachList = nil
+			d.Lang = ""
+			return *d, nil
+		})
+		if errors.Is(err, cache.ErrNotFound) {
+			return nil, orm.ErrNoRows
+		}
+		if err != nil {
+			return nil, err
+		}
+		out := v
+		return localizeDocumentTimes(&out), nil
+	}
+	return r.findByIdentifyDB(ctx, identify, bookID)
 }
 
 func (r *documentRepo) FindFirstByBookID(ctx context.Context, bookID int) (*model.Document, error) {

@@ -44,7 +44,7 @@ func (c *BlogController) Index() {
 	}
 	blogReadSession := fmt.Sprintf("blog:read:%d", blogId)
 
-	blog, err := model.NewBlog().FindFromCache(blogId)
+	blog, err := blogRepo().Find(c.requestContext(), blogId)
 
 	if err != nil {
 		c.ShowErrorPage(404, i18n.Tr(c.Lang, "message.blog_not_existed"))

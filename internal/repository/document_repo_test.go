@@ -30,7 +30,7 @@ func setupDocumentTestDB(t *testing.T) repository.DocumentRepo {
 		if err := orm.RegisterDataBase(testDBAlias, "sqlite3", ":memory:"); err != nil {
 			panic(err)
 		}
-		orm.RegisterModelWithPrefix("", new(model.Document), new(model.Book), new(model.Member))
+		orm.RegisterModelWithPrefix("", new(model.Document), new(model.Book), new(model.Member), new(model.Blog))
 		if err := orm.RunSyncdb(testDBAlias, false, true); err != nil {
 			panic(err)
 		}
@@ -44,6 +44,9 @@ func setupDocumentTestDB(t *testing.T) repository.DocumentRepo {
 	}
 	if _, err := testOrm.Raw("DELETE FROM members").Exec(); err != nil {
 		t.Fatalf("clear members: %v", err)
+	}
+	if _, err := testOrm.Raw("DELETE FROM blogs").Exec(); err != nil {
+		t.Fatalf("clear blogs: %v", err)
 	}
 	return repository.NewDocumentRepo(testOrm)
 }
