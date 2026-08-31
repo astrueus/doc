@@ -7,13 +7,11 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
 	"bytes"
 	"context"
-	"encoding/json"
 	"net/http"
 
 	"git.itopcms.com/astrueus/doc/internal/cache"
@@ -23,9 +21,6 @@ import (
 	"git.itopcms.com/astrueus/doc/internal/model"
 	"git.itopcms.com/astrueus/doc/internal/repository"
 	"git.itopcms.com/astrueus/doc/pkg/filetil"
-	beegoCache "github.com/beego/beego/v2/client/cache"
-	_ "github.com/beego/beego/v2/client/cache/memcache"
-	_ "github.com/beego/beego/v2/client/cache/redis"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
@@ -339,106 +334,16 @@ func ResolveCommand(args []string) {
 
 }
 
-// 注册缓存管道
+// RegisterCache 为 beego/cache 适配占位。T12-d 起业务（文档/博客/MCP Token）走 Aside；
+// Session 由 Beego session 独立配置。cache_provider 仅兼容旧 conf，可忽略。
 func RegisterCache() {
-	g := cfg.MustGlobal()
-	if !g.Cache.Enable {
-		cache.Init(&cache.NullCache{})
-		return
+	cache.Init(&cache.NullCache{})
+	if cfg.MustGlobal().Cache.Enable {
+		logs.Info("beego 业务缓存已停用（Document/Blog/MCP Token 走 Aside）。cache_provider 可忽略。")
 	}
-	logs.Info("正常初始化缓存配置.")
-	cacheProvider := g.Cache.Provider
-	if cacheProvider == "file" {
-		cacheFilePath := g.Cache.FilePath
-		if strings.HasPrefix(cacheFilePath, "./") {
-			cacheFilePath = filepath.Join(cfg.WorkingDirectory, string(cacheFilePath[1:]))
-		}
-		fileCache := beegoCache.NewFileCache()
-
-		fileConfig := make(map[string]string, 0)
-
-		fileConfig["CachePath"] = cacheFilePath
-		fileConfig["DirectoryLevel"] = g.Cache.FileDirLevel
-		fileConfig["EmbedExpiry"] = g.Cache.FileExpiry
-		fileConfig["FileSuffix"] = g.Cache.FileSuffix
-
-		bc, err := json.Marshal(&fileConfig)
-		if err != nil {
-			logs.Error("初始化file缓存失败:", err)
-			os.Exit(1)
-		}
-
-		_ = fileCache.StartAndGC(string(bc))
-
-		cache.Init(fileCache)
-
-	} else if cacheProvider == "memory" {
-		cacheInterval := g.Cache.MemoryInterval
-		memory := beegoCache.NewMemoryCache()
-		beegoCache.DefaultEvery = cacheInterval
-		cache.Init(memory)
-	} else if cacheProvider == "redis" {
-		var redisConfig struct {
-			Conn     string `json:"conn"`
-			Password string `json:"password"`
-			DbNum    string `json:"dbNum"`
-			Key      string `json:"key"`
-		}
-		redisConfig.DbNum = "0"
-		redisConfig.Conn = g.Cache.RedisHost
-		if key := g.Cache.RedisPrefix; key != "" {
-			redisConfig.Key = key
-		}
-		if pwd := g.Cache.RedisPassword; pwd != "" {
-			redisConfig.Password = pwd
-		}
-		if dbNum := g.Cache.RedisDB; dbNum > 0 {
-			redisConfig.DbNum = strconv.Itoa(dbNum)
-		}
-
-		bc, err := json.Marshal(&redisConfig)
-		if err != nil {
-			logs.Error("初始化Redis缓存失败:", err)
-			os.Exit(1)
-		}
-		redisCache, err := beegoCache.NewCache("redis", string(bc))
-
-		if err != nil {
-			logs.Error("初始化Redis缓存失败:", err)
-			os.Exit(1)
-		}
-
-		cache.Init(redisCache)
-	} else if cacheProvider == "memcache" {
-
-		var memcacheConfig struct {
-			Conn string `json:"conn"`
-		}
-		memcacheConfig.Conn = g.Cache.MemcacheHost
-
-		bc, err := json.Marshal(&memcacheConfig)
-		if err != nil {
-			logs.Error("初始化 Memcache 缓存失败 ->", err)
-			os.Exit(1)
-		}
-		memcache, err := beegoCache.NewCache("memcache", string(bc))
-
-		if err != nil {
-			logs.Error("初始化 Memcache 缓存失败 ->", err)
-			os.Exit(1)
-		}
-
-		cache.Init(memcache)
-
-	} else {
-		cache.Init(&cache.NullCache{})
-		logs.Warn("不支持的缓存管道,缓存将禁用 ->", cacheProvider)
-		return
-	}
-	logs.Info("缓存初始化完成.")
 }
 
-// RegisterAside 打开 T12 缓存内核（Document / Blog）。MCP Token 仍走上方 beego 适配。
+// RegisterAside 打开 T12 缓存内核（Document / Blog / MCP Token）。
 func RegisterAside() {
 	repository.RegisterCacheInvalidation()
 	g := cfg.MustGlobal()
@@ -449,7 +354,7 @@ func RegisterAside() {
 	}
 	rt, err := cache.Open(context.Background(), cache.SettingsFrom(g.Cache))
 	if err != nil {
-		logs.Error("初始化 Aside 缓存失败，文档/博客将直打库:", err)
+		logs.Error("初始化 Aside 缓存失败，文档/博客/Token 将直打库:", err)
 		cache.SetKernel(nil)
 		return
 	}

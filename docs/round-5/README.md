@@ -2,7 +2,7 @@
 
 工程化收尾、对象存储、分层评估。总表见 [round-5-execution-plan.md](./round-5-execution-plan.md)。
 
-**进度（2026-08-31）：** 批次 A/B 已合入；T12-a/b/c 缓存已落地（Token 待 T12-d）；搜索 T3/T4 持续冻结。
+**进度（2026-08-31）：** 批次 A/B 已合入；**T12 缓存已落地**（含 Token）；搜索 T3/T4 持续冻结。
 
 ## 执行计划与评估
 
@@ -28,6 +28,7 @@
 | [round-5-t10-controller-split.md](./round-5-t10-controller-split.md) | T10 Controller 拆分（本轮暂缓） |
 | [round-5-t11-security-headers.md](./round-5-t11-security-headers.md) | T11 安全头 |
 | [round-5-t12-cache-impl.md](./round-5-t12-cache-impl.md) | T12 缓存实施 |
+| [round-5-t12-ops.md](./round-5-t12-ops.md) | T12 运维与压测 |
 | [round-5-t14-object-storage.md](./round-5-t14-object-storage.md) | T14 对象存储 |
 | [round-5-t16-oauth2.md](./round-5-t16-oauth2.md) | T16 OAuth2 |
 

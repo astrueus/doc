@@ -6,6 +6,7 @@
 |------|------|
 | `build.sh` / `build.bat` | 多平台编译（Zig / MinGW） |
 | `test.sh` / `test.ps1` | 白名单包 `go test` + 覆盖率门槛（T7） |
+| `cache_load_test.sh` / `cache_load_test.ps1` | T12 缓存击穿/负缓存/Soft-TTL 单测 + 并行 bench |
 | `run.sh` / `run.ps1` | 开发启动：`go run ./cmd/doc --dir <仓库根>`（不落盘二进制，不加热重载） |
 | `release.sh` / `release.bat` / `release.ps1` | 一键发版（编译 → 打包 → tag → Gitea Release；可选 `--github`） |
 | `lib/json.sh` / `lib/json_test.sh` | 纯 bash JSON 解析 + 单测 |

@@ -7,12 +7,13 @@ import (
 	beegocache "github.com/beego/beego/v2/client/cache"
 )
 
-// Init wires a Beego cache backend as the process-wide Default Cache.
+// Init 把 Beego cache 后端接到进程级 Default。
+// 业务路径已改走 Aside；仅保留给适配单测与 NullCache 占位。
 func Init(c beegocache.Cache) {
 	Default = newAdapter(c)
 }
 
-// Get loads key into dst (msgpack). Prefer passing a real request ctx when available.
+// Get 按 key 反序列化到 dst（msgpack）。业务请用 Aside.GetOrLoad。
 func Get(ctx context.Context, key string, dst any) error {
 	return Default.Get(ctx, key, dst)
 }

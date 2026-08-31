@@ -11,12 +11,10 @@ import (
 	"net"
 	"net/http"
 	"strings"
-	"time"
 
-	"git.itopcms.com/astrueus/doc/internal/cache"
 	"git.itopcms.com/astrueus/doc/internal/config"
 	"git.itopcms.com/astrueus/doc/internal/model"
-	"github.com/beego/beego/v2/core/logs"
+	"git.itopcms.com/astrueus/doc/internal/repository"
 )
 
 var errUnauthorized = errors.New("unauthorized")
@@ -38,16 +36,9 @@ func tokenIDFromCtx(ctx context.Context) int {
 	return id
 }
 
-func tokenCacheKey(hash string) string {
-	return "mcp:tok:" + hash
-}
-
-// InvalidateAPITokenCache drops the Bearer auth cache entry for a token hash.
+// InvalidateAPITokenCache 吊销后删除 Token 缓存；等价于 repository.InvalidateAPIToken。
 func InvalidateAPITokenCache(ctx context.Context, tokenHash string) {
-	if cache.Default == nil || tokenHash == "" {
-		return
-	}
-	_ = cache.Delete(ctx, tokenCacheKey(tokenHash))
+	repository.InvalidateAPIToken(ctx, tokenHash)
 }
 
 func verifyBearer(r *http.Request, cfg *config.MCPSection) (*authIdentity, error) {
@@ -76,38 +67,12 @@ func verifyBearer(r *http.Request, cfg *config.MCPSection) (*authIdentity, error
 	sum := sha256.Sum256([]byte(raw))
 	hash := hex.EncodeToString(sum[:])
 
-	if cache.Default != nil {
-		var cached model.Member
-		if err := cache.Get(r.Context(), tokenCacheKey(hash), &cached); err == nil && cached.MemberId > 0 {
-			// Cache stores member only; re-resolve token id lightly from DB if needed for rate limit.
-			t, err := memberRepo().FindAPITokenByHash(r.Context(), hash)
-			if err == nil && !t.IsRevoked() && !t.IsExpired(time.Now()) {
-				return &authIdentity{Member: &cached, TokenID: t.TokenId, TokenHash: hash}, nil
-			}
-			_ = cache.Delete(r.Context(), tokenCacheKey(hash))
-		}
-	}
-
-	t, err := memberRepo().FindAPITokenByHash(r.Context(), hash)
-	if err != nil {
+	ctx := repository.ContextWithClientIP(r.Context(), clientIP(r))
+	ident, err := memberRepo().ResolveAPIToken(ctx, hash)
+	if err != nil || ident == nil || ident.Member == nil || ident.Member.MemberId <= 0 {
 		return nil, errUnauthorized
 	}
-	if t.IsRevoked() || t.IsExpired(time.Now()) {
-		return nil, errUnauthorized
-	}
-
-	member, err := memberRepo().Find(r.Context(), t.MemberId)
-	if err != nil || member.MemberId <= 0 {
-		return nil, errUnauthorized
-	}
-
-	go updateLastUsed(t.TokenId, clientIP(r))
-
-	if cache.Default != nil {
-		_ = cache.Set(r.Context(), tokenCacheKey(hash), *member, 5*time.Minute)
-	}
-
-	return &authIdentity{Member: member, TokenID: t.TokenId, TokenHash: hash}, nil
+	return &authIdentity{Member: ident.Member, TokenID: ident.TokenID, TokenHash: hash}, nil
 }
 
 func identityFromStdioMember(cfg *config.MCPSection) (*authIdentity, error) {
@@ -120,18 +85,6 @@ func identityFromStdioMember(cfg *config.MCPSection) (*authIdentity, error) {
 		return nil, errUnauthorized
 	}
 	return &authIdentity{Member: member, TokenID: 0, TokenHash: ""}, nil
-}
-
-func updateLastUsed(tokenID int, ip string) {
-	defer func() {
-		if rec := recover(); rec != nil {
-			logs.Error("updateLastUsed panic: %v", rec)
-		}
-	}()
-	err := memberRepo().TouchAPITokenLastUsed(context.Background(), tokenID, ip)
-	if err != nil {
-		logs.Warning("updateLastUsed token=%d: %v", tokenID, err)
-	}
 }
 
 func clientIP(r *http.Request) string {

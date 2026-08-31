@@ -17,6 +17,8 @@ type MemberRepo interface {
 	FindByAccount(ctx context.Context, account string) (*model.Member, error)
 	FindAPITokenByHash(ctx context.Context, hash string) (*model.MemberApiToken, error)
 	TouchAPITokenLastUsed(ctx context.Context, tokenID int, ip string) error
+	// ResolveAPIToken 按 token 哈希解析成员；Aside 开启时走 GetOrLoad。
+	ResolveAPIToken(ctx context.Context, tokenHash string) (*APITokenIdentity, error)
 	FindForUsersByBookID(ctx context.Context, lang string, bookID, pageIndex, pageSize int) ([]*dto.MemberRelationshipResult, int, error)
 	FindNotJoinUsersByAccount(ctx context.Context, bookID, limit int, account string) ([]*model.Member, error)
 	FindNotJoinUsersByAccountOrRealName(ctx context.Context, bookID, limit int, keyWord string) ([]*model.Member, error)

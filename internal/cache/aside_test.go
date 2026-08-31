@@ -326,3 +326,28 @@ func TestMemoryStoreExpiry(t *testing.T) {
 		t.Fatal("should expire")
 	}
 }
+
+func BenchmarkAsideGetOrLoadParallel(b *testing.B) {
+	l1, l2 := cachetest.MemoryPair()
+	a := NewAside[int](l1, l2)
+	var loads atomic.Int32
+	opt := Options{TTL: time.Minute, SoftTTL: 50 * time.Second}
+	load := func(context.Context) (int, error) {
+		loads.Add(1)
+		return 1, nil
+	}
+	_, err := a.GetOrLoad(context.Background(), "hot", opt, load)
+	if err != nil {
+		b.Fatal(err)
+	}
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			if _, err := a.GetOrLoad(context.Background(), "hot", opt, load); err != nil {
+				b.Error(err)
+			}
+		}
+	})
+	b.StopTimer()
+	b.ReportMetric(float64(loads.Load()), "loads")
+}
