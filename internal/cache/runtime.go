@@ -82,7 +82,7 @@ func (s Settings) normalized() Settings {
 	return s
 }
 
-// Runtime 是按 mode 组好的 L1/L2/Tag/Bus。T12-b 不接入 RegisterCache。
+// Runtime 是按 mode 组好的 L1/L2/Tag/Bus。T12-c 由 RegisterAside 接入。
 type Runtime struct {
 	L1            store.Store
 	L2            store.Store

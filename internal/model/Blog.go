@@ -2,15 +2,12 @@ package model
 
 import (
 	"bytes"
-	"context"
-	"fmt"
-	"git.itopcms.com/astrueus/doc/pkg/htmlutil"
-	"git.itopcms.com/astrueus/doc/pkg/urlutil"
 	"strings"
 	"time"
 
-	"git.itopcms.com/astrueus/doc/internal/cache"
 	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/pkg/htmlutil"
+	"git.itopcms.com/astrueus/doc/pkg/urlutil"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
@@ -115,30 +112,6 @@ func (b *Blog) Find(blogId int) (*Blog, error) {
 	}
 
 	return b.Link()
-}
-
-// 从缓存中读取文章
-func (b *Blog) FindFromCache(blogId int) (blog *Blog, err error) {
-	key := fmt.Sprintf("blog-id-%d", blogId)
-	var temp Blog
-	err = cache.Get(context.Background(), key, &temp)
-	if err == nil {
-		b = &temp
-		b.Link()
-		logs.Debug("从缓存读取文章成功 ->", key)
-		return b, nil
-	} else {
-		logs.Error("读取缓存失败 ->", err)
-	}
-
-	blog, err = b.Find(blogId)
-	if err == nil {
-		//默认一个小时
-		if err := cache.Put(context.Background(), key, blog, time.Hour*1); err != nil {
-			logs.Error("将文章存入缓存失败 ->", err)
-		}
-	}
-	return
 }
 
 // 查找指定用户的指定文章
@@ -253,13 +226,14 @@ func (b *Blog) Save(cols ...string) error {
 	if b.BlogId > 0 {
 		b.Modified = time.Now()
 		_, err = o.Update(b, cols...)
-		key := fmt.Sprintf("blog-id-%d", b.BlogId)
-		cache.Delete(context.Background(), key)
-
 	} else {
 
 		b.Created = time.Now()
 		_, err = o.Insert(b)
+	}
+
+	if err == nil {
+		notifyBlogMutated(b)
 	}
 
 	return err
@@ -350,8 +324,10 @@ func (b *Blog) Delete(blogId int) error {
 	_, err := o.QueryTable(b.TableNameWithPrefix()).Filter("blog_id", blogId).Delete()
 	if err != nil {
 		logs.Error("删除文章失败 ->", err)
+		return err
 	}
-	return err
+	notifyBlogMutated(&Blog{BlogId: blogId})
+	return nil
 }
 
 // 查询下一篇文章

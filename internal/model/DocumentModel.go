@@ -1,23 +1,18 @@
 package model
 
 import (
-	"context"
-	"git.itopcms.com/astrueus/doc/pkg/htmlutil"
-	"git.itopcms.com/astrueus/doc/pkg/urlutil"
-	"time"
-
-	"git.itopcms.com/astrueus/doc/internal/i18n"
-
-	"fmt"
-	"strconv"
-
 	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 
-	"git.itopcms.com/astrueus/doc/internal/cache"
 	"git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/i18n"
+	"git.itopcms.com/astrueus/doc/pkg/htmlutil"
+	"git.itopcms.com/astrueus/doc/pkg/urlutil"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
@@ -140,7 +135,7 @@ func (item *Document) InsertOrUpdate(cols ...string) error {
 	if err != nil {
 		return err
 	}
-
+	notifyDocumentMutated(item)
 	return nil
 }
 
@@ -164,6 +159,7 @@ func (item *Document) RecursiveDocument(docId int) error {
 	if doc, err := item.Find(docId); err == nil {
 		o.Delete(doc)
 		NewDocumentHistory().Clear(doc.DocumentId)
+		notifyDocumentMutated(doc)
 	}
 	var maps []orm.Params
 
@@ -176,78 +172,17 @@ func (item *Document) RecursiveDocument(docId int) error {
 	for _, param := range maps {
 		if docId, ok := param["document_id"].(string); ok {
 			id, _ := strconv.Atoi(docId)
+			child := &Document{DocumentId: id}
+			if found, ferr := NewDocument().Find(id); ferr == nil {
+				child = found
+			}
 			o.QueryTable(item.TableNameWithPrefix()).Filter("document_id", id).Delete()
+			notifyDocumentMutated(child)
 			item.RecursiveDocument(id)
 		}
 	}
 
 	return nil
-}
-
-// 将文档写入缓存
-func (item *Document) PutToCache() {
-	go func(m Document) {
-
-		if m.Identify == "" {
-
-			if err := cache.Put(context.Background(), "Document.Id."+strconv.Itoa(m.DocumentId), m, time.Second*3600); err != nil {
-				logs.Info("文档缓存失败:", m.DocumentId)
-			}
-		} else {
-			if err := cache.Put(context.Background(), fmt.Sprintf("Document.BookId.%d.Identify.%s", m.BookId, m.Identify), m, time.Second*3600); err != nil {
-				logs.Info("文档缓存失败:", m.DocumentId)
-			}
-		}
-
-	}(*item)
-}
-
-// 清除缓存
-func (item *Document) RemoveCache() {
-	go func(m Document) {
-		cache.Put(context.Background(), "Document.Id."+strconv.Itoa(m.DocumentId), m, time.Second*3600)
-
-		if m.Identify != "" {
-			cache.Put(context.Background(), fmt.Sprintf("Document.BookId.%d.Identify.%s", m.BookId, m.Identify), m, time.Second*3600)
-		}
-	}(*item)
-}
-
-// 从缓存获取
-func (item *Document) FromCacheById(id int) (*Document, error) {
-
-	if err := cache.Get(context.Background(), "Document.Id."+strconv.Itoa(id), &item); err == nil && item.DocumentId > 0 {
-		logs.Info("从缓存中获取文档信息成功 ->", item.DocumentId)
-		return item.localizeTimes(), nil
-	}
-
-	if item.DocumentId > 0 {
-		item.PutToCache()
-	}
-	item, err := item.Find(id)
-
-	if err == nil {
-		item.PutToCache()
-	}
-	return item, err
-}
-
-// 根据文档标识从缓存中查询文档
-func (item *Document) FromCacheByIdentify(identify string, bookId int) (*Document, error) {
-
-	key := fmt.Sprintf("Document.BookId.%d.Identify.%s", bookId, identify)
-
-	if err := cache.Get(context.Background(), key, item); err == nil && item.DocumentId > 0 {
-		logs.Info("从缓存中获取文档信息成功 ->", key)
-		return item.localizeTimes(), nil
-	}
-
-	defer func() {
-		if item.DocumentId > 0 {
-			item.PutToCache()
-		}
-	}()
-	return item.FindByIdentityFirst(identify, bookId)
 }
 
 // 根据项目ID查询文档列表.
@@ -280,8 +215,6 @@ func (item *Document) ReleaseContent() error {
 		logs.Error(fmt.Sprintf("发布失败 -> %+v", item), err)
 		return err
 	}
-	//当文档发布后，需要清除已缓存的转换文档和文档缓存
-	item.RemoveCache()
 
 	if err := os.RemoveAll(filepath.Join(config.WorkingDirectory, "uploads", "books", strconv.Itoa(item.BookId))); err != nil {
 		logs.Error("删除已缓存的文档目录失败 -> ", filepath.Join(config.WorkingDirectory, "uploads", "books", strconv.Itoa(item.BookId)))

@@ -29,3 +29,7 @@ func memberRepo() repository.MemberRepo {
 func attachmentRepo() repository.AttachmentRepo {
 	return repository.NewAttachmentRepo(orm.NewOrm())
 }
+
+func blogRepo() repository.BlogRepo {
+	return repository.NewBlogRepo(orm.NewOrm())
+}

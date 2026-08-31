@@ -1,4 +1,4 @@
-﻿package app
+package app
 
 import (
 	"flag"
@@ -12,13 +12,16 @@ import (
 	"time"
 
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 
 	"git.itopcms.com/astrueus/doc/internal/cache"
 	cfg "git.itopcms.com/astrueus/doc/internal/config"
+	"git.itopcms.com/astrueus/doc/internal/i18n"
 	"git.itopcms.com/astrueus/doc/internal/logging"
 	"git.itopcms.com/astrueus/doc/internal/model"
+	"git.itopcms.com/astrueus/doc/internal/repository"
 	"git.itopcms.com/astrueus/doc/pkg/filetil"
 	beegoCache "github.com/beego/beego/v2/client/cache"
 	_ "github.com/beego/beego/v2/client/cache/memcache"
@@ -26,7 +29,6 @@ import (
 	"github.com/beego/beego/v2/client/orm"
 	"github.com/beego/beego/v2/core/logs"
 	"github.com/beego/beego/v2/server/web"
-	"git.itopcms.com/astrueus/doc/internal/i18n"
 	"github.com/fsnotify/fsnotify"
 	"github.com/lifei6671/gocaptcha"
 	"go.uber.org/zap"
@@ -332,6 +334,7 @@ func ResolveCommand(args []string) {
 
 	RegisterDataBase()
 	RegisterCache()
+	RegisterAside()
 	RegisterModel()
 
 }
@@ -435,6 +438,25 @@ func RegisterCache() {
 	logs.Info("缓存初始化完成.")
 }
 
+// RegisterAside 打开 T12 缓存内核（Document / Blog）。MCP Token 仍走上方 beego 适配。
+func RegisterAside() {
+	repository.RegisterCacheInvalidation()
+	g := cfg.MustGlobal()
+	if !g.Cache.Enable {
+		cache.SetKernel(nil)
+		logs.Info("Aside 缓存未开启（cache=false）。")
+		return
+	}
+	rt, err := cache.Open(context.Background(), cache.SettingsFrom(g.Cache))
+	if err != nil {
+		logs.Error("初始化 Aside 缓存失败，文档/博客将直打库:", err)
+		cache.SetKernel(nil)
+		return
+	}
+	cache.SetKernel(rt)
+	logs.Info("Aside 缓存已就绪, mode=", rt.Mode)
+}
+
 // 自动加载配置文件.修改了监听端口号和数据库配置无法自动生效.
 func RegisterAutoLoadConfig() {
 	if cfg.AutoLoadDelay > 0 {
@@ -458,6 +480,7 @@ func RegisterAutoLoadConfig() {
 							continue
 						}
 						RegisterCache()
+						RegisterAside()
 						RegisterLogger("")
 						logs.Info("配置文件已加载 ->", cfg.ConfigurationFile)
 					} else if ev.Op&fsnotify.Rename == fsnotify.Rename {

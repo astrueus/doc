@@ -51,3 +51,8 @@ func (k KeyBuilder) TagBook(bookID int) string {
 func (k KeyBuilder) TagDocument(id int) string {
 	return "document:" + strconv.Itoa(id)
 }
+
+// TagBlog 按博客失效用 tag。
+func (k KeyBuilder) TagBlog(id int) string {
+	return "blog:" + strconv.Itoa(id)
+}

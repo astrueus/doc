@@ -2,8 +2,8 @@
 
 > 对应 [round-5-execution-plan.md §十三附 T12](./round-5-execution-plan.md#十三附t12--缓存-b-实施闸门)。  
 > **依据：** [round-5-cache-evaluation.md](./round-5-cache-evaluation.md)（2026-08-05：完全重构，不兼容旧方案）。  
-> **状态：** 🔶 T12-a/b 已落地（2026-08-31）；T12-c/d 业务接入未做。  
-> 业务路径仍走旧 `beego/cache` 适配，本切片**不删** `beego_adapter.go`，**未改** `RegisterCache()`。
+> **状态：** 🔶 T12-a/b/c 已落地（2026-08-31）；T12-d MCP Token / 压测未做。  
+> Document / Blog 已走 `GetOrLoad`；MCP Token 仍用 `beego/cache` 适配。`beego_adapter.go` **未删**。
 
 ---
 
@@ -53,7 +53,7 @@ internal/cache/
 # beego_adapter.go / 旧全局 Get/Set 包装（可留 Deprecated 一版编译期删干净）
 ```
 
-**T12-a/b 已落地（2026-08-31）：** 上表文件均已存在。`Open` / `Runtime` / `NewAsideFrom` 在 `runtime.go`；现网仍走 `beego_adapter.go`，调用方未切。
+**T12-a/b/c 已落地（2026-08-31）：** 内核 + `Open` + Document/Blog 接入。`RegisterAside()` 在 bootstrap 调用；现网 MCP Token 仍走 `beego_adapter.go`。
 
 业务接入示例：
 
@@ -145,7 +145,7 @@ cache_aside_prefix = "${DOC_CACHE_ASIDE_PREFIX||doc:v1:}"
 | `chain` | Ristretto | Redis | Redis SET | Redis Pub/Sub |
 
 - Redis 数据 key **不再叠一层前缀**（`KeyBuilder` 已是 `doc:v1:...`）。Tag key 形如 `doc:v1:tag:book:12`。  
-- `Open` 已实现；**bootstrap 仍未调用**（T12-c 再接）。
+- `Open` 由 `RegisterAside()` 在 `cache=true` 时调用（默认 `cache_mode=local`）。`cache=false` 则文档/博客直打库。
 
 ---
 
@@ -155,7 +155,7 @@ cache_aside_prefix = "${DOC_CACHE_ASIDE_PREFIX||doc:v1:}"
 |---|---|---|
 | **T12-a** | Store + Aside 内核 + 单测（含 stampede / 负缓存 / soft refresh） | **2026-08-31 已完成** |
 | **T12-b** | Redis L2 + Tag + Pub/Sub；conf；metrics；`Open` | **2026-08-31 已完成**（miniredis / MemoryBus 单测；业务未切） |
-| **T12-c** | Document / Blog 接入；model 内旧 cache 调用删除 | 阅读 / 发布冒烟；按书失效正确 |
+| **T12-c** | Document / Blog 接入；model 内旧 cache 调用删除 | **2026-08-31 已完成**（`DocumentRepo`/`BlogRepo` + 写路径钩子失效；Token 仍待 T12-d） |
 | **T12-d** | MCP Token 接入 + 压测脚本 / 文档 | 登录态 / MCP 不回归；README 运维说明 |
 
 可选并行：**T12-engine-jetcache**：若选 jetcache-go 作引擎，在 a 中换 store 实现，业务 API 不变。
@@ -196,8 +196,9 @@ cache_aside_prefix = "${DOC_CACHE_ASIDE_PREFIX||doc:v1:}"
 
 ## 八、验收清单
 
-- [ ] 业务路径零 `beego/cache` 依赖（Session 除外）— **T12-c/d**  
-- [ ] Document / Blog / Token 均经 `GetOrLoad`；写后 Invalidate/Tag 有单测 — **T12-c/d**  
+- [ ] 业务路径零 `beego/cache` 依赖（Session 除外）— **T12-d**（MCP Token 仍走适配）  
+- [x] Document / Blog 经 `GetOrLoad`；写后 Invalidate/Tag 有单测 — **T12-c**  
+- [ ] MCP Token 经 `GetOrLoad` — **T12-d**  
 - [x] 击穿 / 穿透 / Soft refresh / jitter 有自动化测试（`aside_test.go`；压测记录仍待 T12-d）  
 - [x] Pub/Sub 多实例 L1 失效（`TestAsidePubSubFlushesPeerL1` / `TestOpenChainPubSubFlushesPeerL1`；手册见下文附录）  
 - [x] metrics 日志字段：`MetricsSnapshot.Map()`（`cache_l1_hit` 等）；Prometheus 刮取非必须，未做  
@@ -220,7 +221,7 @@ cache_aside_prefix = "${DOC_CACHE_ASIDE_PREFIX||doc:v1:}"
 
 ## 附录 · 双实例 L1 失效手册（T12-b）
 
-T12-c 之前 **bootstrap 不调用 `Open`**，现网双进程不会走新内核。验证以单测为准；手工 compose 可选。
+T12-c 已接 `RegisterAside()`。`cache=true` 且 `cache_mode=chain` 时，双进程会走新内核。验证仍以单测为准；手工 compose 可选。
 
 ### 已覆盖的自动化
 

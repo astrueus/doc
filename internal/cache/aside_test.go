@@ -307,6 +307,9 @@ func TestKeyBuilder(t *testing.T) {
 	if k.TagBook(8) != "book:8" {
 		t.Fatal(k.TagBook(8))
 	}
+	if k.TagBlog(4) != "blog:4" {
+		t.Fatal(k.TagBlog(4))
+	}
 }
 
 func TestMemoryStoreExpiry(t *testing.T) {

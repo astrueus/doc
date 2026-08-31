@@ -115,14 +115,14 @@ func (c *DocumentController) Read() {
 
 	doc := model.NewDocument()
 	if docId, err := strconv.Atoi(id); err == nil {
-		doc, err = doc.FromCacheById(docId)
+		doc, err = documentRepo().Find(c.requestContext(), docId)
 		if err != nil || doc == nil {
-			logs.Error("从缓存中读取文档时失败 ->", err)
+			logs.Error("读取文档时失败 ->", err)
 			c.ShowErrorPage(404, i18n.Tr(c.Lang, "message.doc_not_exist"))
 			return
 		}
 	} else {
-		doc, err = doc.FromCacheByIdentify(id, bookResult.BookId)
+		doc, err = documentRepo().FindByIdentify(c.requestContext(), id, bookResult.BookId)
 		if err != nil || doc == nil {
 			if err == orm.ErrNoRows {
 				c.ShowErrorPage(404, i18n.Tr(c.Lang, "message.doc_not_exist"))
@@ -147,7 +147,6 @@ func (c *DocumentController) Read() {
 
 	doc.IncrViewCount(doc.DocumentId)
 	doc.ViewCount = doc.ViewCount + 1
-	doc.PutToCache()
 
 	if c.IsAjax() {
 		var data struct {
