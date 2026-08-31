@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/beego/beego/v2/server/web"
 )
@@ -28,13 +29,13 @@ type Config struct {
 	MCP      MCPSection
 
 	// Root / process-level (also present as unstructured keys for Beego).
-	BaseURL         string
-	Timezone        string
-	AutoLoadDelay   int
-	HTTPAddr        string
-	HTTPPort        int
-	RunMode         string
-	AppName         string
+	BaseURL       string
+	Timezone      string
+	AutoLoadDelay int
+	HTTPAddr      string
+	HTTPPort      int
+	RunMode       string
+	AppName       string
 }
 
 type AppSection struct {
@@ -57,12 +58,12 @@ type HTTPSection struct {
 }
 
 type SessionSection struct {
-	On               bool
-	Name             string
-	ServerKey        string
-	Provider         string
-	ProviderConfig   string
-	GCMaxLifetime    int64
+	On             bool
+	Name           string
+	ServerKey      string
+	Provider       string
+	ProviderConfig string
+	GCMaxLifetime  int64
 }
 
 type DatabaseSection struct {
@@ -76,36 +77,50 @@ type DatabaseSection struct {
 }
 
 type CacheSection struct {
-	Enable           bool
-	Provider         string
-	MemoryInterval   int
-	FilePath         string
-	FileSuffix       string
-	FileDirLevel     string
-	FileExpiry       string
-	MemcacheHost     string
-	RedisHost        string
-	RedisDB          int
-	RedisPassword    string
-	RedisPrefix      string
+	Enable         bool
+	Provider       string
+	MemoryInterval int
+	FilePath       string
+	FileSuffix     string
+	FileDirLevel   string
+	FileExpiry     string
+	MemcacheHost   string
+	RedisHost      string
+	RedisDB        int
+	RedisPassword  string
+	RedisPrefix    string
+	// Mode 为 Aside 拓扑：local / redis / chain（T12；默认 local）。
+	Mode string
+	// L1MaxCost 为 Ristretto MaxCost，默认 64MiB。
+	L1MaxCost int64
+	// L1NumCounters 为 Ristretto NumCounters，默认 1e6。
+	L1NumCounters int64
+	// RedisAddr 优先于 RedisHost；空则回退 RedisHost。
+	RedisAddr string
+	// PubSubChannel 跨实例 L1 失效频道。
+	PubSubChannel string
+	// DefaultJitter 为 Aside TTL 抖动比例。
+	DefaultJitter float64
+	// AsidePrefix 为新内核 key 前缀（与 beego RedisPrefix 分开）。
+	AsidePrefix string
 }
 
 type LogSection struct {
-	Path      string
-	MaxLines  int
-	MaxSize   int
-	Daily     bool
-	MaxDays   int
-	Level     string
-	IsAsync   bool
-	Format    string // file format: json (default) | console; stderr always console-style
+	Path     string
+	MaxLines int
+	MaxSize  int
+	Daily    bool
+	MaxDays  int
+	Level    string
+	IsAsync  bool
+	Format   string // file format: json (default) | console; stderr always console-style
 }
 
 type UploadSection struct {
-	FileExt     string
-	FileSize    string
-	MaxSize     string
-	MaxMemory   string
+	FileExt   string
+	FileSize  string
+	MaxSize   string
+	MaxMemory string
 }
 
 type MailSection struct {
@@ -133,11 +148,11 @@ type LDAPSection struct {
 }
 
 type ExportSection struct {
-	Enable         bool
-	ProcessNum     int
-	LimitNum       int
-	QueueLimitNum  int
-	OutputPath     string
+	Enable        bool
+	ProcessNum    int
+	LimitNum      int
+	QueueLimitNum int
+	OutputPath    string
 }
 
 type CDNSection struct {
@@ -250,6 +265,13 @@ func readFromAppConfig() *Config {
 			RedisDB:        secInt("cache", "cache_redis_db", 0),
 			RedisPassword:  secString("cache", "cache_redis_password", ""),
 			RedisPrefix:    secString("cache", "cache_redis_prefix", "doc::cache"),
+			Mode:           secString("cache", "cache_mode", "local"),
+			L1MaxCost:      int64(secInt("cache", "cache_l1_max_cost", 67108864)),
+			L1NumCounters:  int64(secInt("cache", "cache_l1_num_counters", 1000000)),
+			RedisAddr:      secString("cache", "cache_redis_addr", ""),
+			PubSubChannel:  secString("cache", "cache_pubsub_channel", "doc:cache:invalidate"),
+			DefaultJitter:  secFloat("cache", "cache_default_jitter", 0.1),
+			AsidePrefix:    secString("cache", "cache_aside_prefix", "doc:v1:"),
 		},
 		Log: LogSection{
 			Path:     secString("log", "log_path", "./runtime/logs"),
@@ -377,6 +399,18 @@ func secInt(section, key string, def int) int {
 
 func secBool(section, key string, def bool) bool {
 	return web.AppConfig.DefaultBool(section+"::"+key, def)
+}
+
+func secFloat(section, key string, def float64) float64 {
+	s := strings.TrimSpace(web.AppConfig.DefaultString(section+"::"+key, ""))
+	if s == "" {
+		return def
+	}
+	v, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return def
+	}
+	return v
 }
 
 // MustGlobal returns Global or a zero-value read from AppConfig (after best-effort Load).

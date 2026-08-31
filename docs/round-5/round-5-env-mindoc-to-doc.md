@@ -102,7 +102,14 @@
 | `MINDOC_CACHE_REDIS_HOST` | `DOC_CACHE_REDIS_HOST` | |
 | `MINDOC_CACHE_REDIS_DB` | `DOC_CACHE_REDIS_DB` | |
 | `MINDOC_CACHE_REDIS_PASSWORD` | `DOC_CACHE_REDIS_PASSWORD` | |
-| `MINDOC_CACHE_REDIS_PREFIX` | `DOC_CACHE_REDIS_PREFIX` | 默认值改为 `doc::cache` |
+| `MINDOC_CACHE_REDIS_PREFIX` | `DOC_CACHE_REDIS_PREFIX` | 默认值改为 `doc::cache`（现网 beego 适配） |
+| （无旧名） | `DOC_CACHE_MODE` | T12 Aside：`local` / `redis` / `chain`，默认 `local` |
+| （无旧名） | `DOC_CACHE_L1_MAX_COST` | Ristretto MaxCost，默认 67108864 |
+| （无旧名） | `DOC_CACHE_L1_NUM_COUNTERS` | 默认 1000000 |
+| （无旧名） | `DOC_CACHE_REDIS_ADDR` | 空则回退 `DOC_CACHE_REDIS_HOST` |
+| （无旧名） | `DOC_CACHE_PUBSUB_CHANNEL` | 默认 `doc:cache:invalidate` |
+| （无旧名） | `DOC_CACHE_DEFAULT_JITTER` | 默认 `0.1` |
+| （无旧名） | `DOC_CACHE_ASIDE_PREFIX` | Aside key 前缀，默认 `doc:v1:`；**不要**改 beego 的 `DOC_CACHE_REDIS_PREFIX` |
 | `MINDOC_LOG_PATH` | `DOC_LOG_PATH` | |
 | `MINDOC_LOG_MAX_LINES` | `DOC_LOG_MAX_LINES` | |
 | `MINDOC_LOG_MAX_SIZE` | `DOC_LOG_MAX_SIZE` | |

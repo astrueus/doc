@@ -114,7 +114,7 @@ go tool cover -func=coverage.out | tee coverage.txt
 
 - [x] 本地一键：`deployments/scripts/test.sh` / `test.ps1` 绿（Windows 本机 2026-08-18）  
 - [x] CI workflow 入库（`.github/workflows/test.yml` 硬闸白名单）；**2026-08-31 确认云端绿**  
-- [x] 覆盖率快照入库；门槛见 [coverage-baseline.txt](./coverage-baseline.txt)（T12-a 后白名单含 `internal/cache`，2026-08-31 重测 **29.3%**）  
+- [x] 覆盖率快照入库；门槛见 [coverage-baseline.txt](./coverage-baseline.txt)（白名单含 `internal/cache`；T12-b 后 **34.3%**）  
 - [x] 路径与 T15 方案 A 一致  
 
 ---

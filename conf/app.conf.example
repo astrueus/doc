@@ -180,8 +180,21 @@ cache_redis_host = "${DOC_CACHE_REDIS_HOST||127.0.0.1:6379}"
 cache_redis_db = "${DOC_CACHE_REDIS_DB||0}"
 #redis服务器密码
 cache_redis_password = "${DOC_CACHE_REDIS_PASSWORD}"
-#缓存键的前缀
+#缓存键的前缀（现网 beego/cache 适配；T12 Aside 用 cache_aside_prefix）
 cache_redis_prefix = "${DOC_CACHE_REDIS_PREFIX||doc::cache}"
+# Aside 拓扑：local | redis | chain（T12-b 已实现 Open；业务调用仍走上方 cache_provider）
+cache_mode = "${DOC_CACHE_MODE||local}"
+# Ristretto L1 容量（字节）与计数器
+cache_l1_max_cost = "${DOC_CACHE_L1_MAX_COST||67108864}"
+cache_l1_num_counters = "${DOC_CACHE_L1_NUM_COUNTERS||1000000}"
+# Aside Redis 地址；空则回退 cache_redis_host
+cache_redis_addr = "${DOC_CACHE_REDIS_ADDR}"
+# 跨实例 L1 失效频道
+cache_pubsub_channel = "${DOC_CACHE_PUBSUB_CHANNEL||doc:cache:invalidate}"
+# Aside TTL 抖动比例
+cache_default_jitter = "${DOC_CACHE_DEFAULT_JITTER||0.1}"
+# Aside key 前缀（不要改现网 cache_redis_prefix）
+cache_aside_prefix = "${DOC_CACHE_ASIDE_PREFIX||doc:v1:}"
 
 #########日志储存配置##############
 [log]

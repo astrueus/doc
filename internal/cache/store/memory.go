@@ -11,7 +11,7 @@ type memItem struct {
 	exp time.Time // 零值表示不过期
 }
 
-// Memory 进程内 Store，供单测与 mode=local。并发安全。
+// Memory 进程内 Store，供单测。并发安全。
 type Memory struct {
 	mu  sync.RWMutex
 	m   map[string]memItem
