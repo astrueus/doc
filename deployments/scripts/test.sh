@@ -28,7 +28,7 @@ done
 [[ -f "$ROOT/go.mod" && -d "$ROOT/cmd/doc" ]] || die "cannot locate repo root; script dir: $SCRIPT_DIR"
 cd "$ROOT"
 
-DEFAULT_PKGS="./pkg/... ./internal/errs/... ./internal/auth/... ./internal/logging/... ./internal/i18n/... ./internal/repository/..."
+DEFAULT_PKGS="./pkg/... ./internal/errs/... ./internal/auth/... ./internal/logging/... ./internal/i18n/... ./internal/repository/... ./internal/cache/..."
 # shellcheck disable=SC2206
 PKGS=( ${TEST_PKGS:-$DEFAULT_PKGS} )
 

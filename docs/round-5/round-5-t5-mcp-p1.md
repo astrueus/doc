@@ -3,7 +3,8 @@
 > 对应 [round-5-execution-plan.md §七 T5](./round-5-execution-plan.md#七t5--mcp-体验-p10.5~1-天)。  
 > 承接 Round 3 §十七 P1，并**纳入 Book 写工具最小集**（修订原 §17.3「当前阶段不做」——本轮做 create/update；delete 仍默认不做）。  
 > **状态：** ✅ 已合入 `master`（`80ee298`，分支 `feat/r5-mcp-p1` 保留）。  
-> **2026-08-18 增补：** `create_document` 增加可选 `auto_release`（与 update/append 对齐）；**不**读取项目级 `book.auto_release`。
+> **2026-08-18 增补：** `create_document` 增加可选 `auto_release`（与 update/append 对齐）；**不**读取项目级 `book.auto_release`。  
+> **2026-08-31：** 按代码、`internal/mcp` 单测与 [`mcp-integration.md`](../mcp-integration.md) 核对，方案内验收框补勾收口。
 
 ---
 
@@ -72,10 +73,10 @@ create_document:
 
 ### 验收
 
-- [ ] 新 identify → 创建成功  
-- [ ] 已存在 + `if_exists=update` → 内容更新；版本冲突返回 `6100`  
-- [ ] 已存在 + 缺省 → 仍报错，不静默覆盖  
-- [ ] `auto_release=true` 后 `get_document.release` 有 HTML；省略则 `release` 仍空/旧值  
+- [x] 新 identify → 创建成功  
+- [x] 已存在 + `if_exists=update` → 内容更新；版本冲突返回 `6100`  
+- [x] 已存在 + 缺省 → 仍报错，不静默覆盖  
+- [x] `auto_release=true` 后 `get_document.release` 有 HTML；省略则 `release` 仍空/旧值  
 
 ---
 
@@ -98,9 +99,9 @@ create_document:
 
 ### 验收
 
-- [ ] 短文：`truncated=false`，正文完整  
-- [ ] 长文 + `max_chars=500`：长度合规且带标记  
-- [ ] 权限与现网 `get_document` 一致  
+- [x] 短文：`truncated=false`，正文完整  
+- [x] 长文 + `max_chars=500`：长度合规且带标记  
+- [x] 权限与现网 `get_document` 一致  
 
 ---
 
@@ -123,9 +124,9 @@ DocIdentify  string `json:"doc_identify"`  // 文档 identify，非数字 id
 
 ### 验收
 
-- [ ] 公开书命中项同时含 `book_identify` + `doc_identify`  
-- [ ] 客户端可凭二者直接调 `get_document` / `update_*`  
-- [ ] 私有书仍受登录/权限约束  
+- [x] 公开书命中项同时含 `book_identify` + `doc_identify`  
+- [x] 客户端可凭二者直接调 `get_document` / `update_*`  
+- [x] 私有书仍受登录/权限约束  
 
 ---
 
@@ -212,12 +213,12 @@ Token / stdio 身份与现网一致；私有书创建后，`list_books` 应对�
 
 ### 5.6 验收
 
-- [ ] `create_book` 成功返回 identify；创建者可 `list_books` 见到  
-- [ ] identify 冲突、无建书权限 → 明确错误  
-- [ ] `update_book` 只改传入字段；私有/公开切换后读权限行为正确  
-- [ ] 无 `delete_book` 工具  
-- [ ] 既有 Document 10 工具 + P1-1~3 不回归  
-- [ ] `mcp-integration.md` 与 schema 单测已更新  
+- [x] `create_book` 成功返回 identify；创建者可 `list_books` 见到  
+- [x] identify 冲突、无建书权限 → 明确错误  
+- [x] `update_book` 只改传入字段；私有/公开切换后读权限行为正确  
+- [x] 无 `delete_book` 工具  
+- [x] 既有 Document 10 工具 + P1-1~3 不回归  
+- [x] `mcp-integration.md` 与 schema 单测已更新  
 
 ---
 

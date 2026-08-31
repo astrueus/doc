@@ -10,7 +10,7 @@
 > 同时汇总"顺带发现的技术债"与"前端现代化"两条支线，给出多轮可独立上线的迭代计划。
 >
 > **文档生成依据：** 当前仓库代码基线（2026-07 起）；进度以 **2026-08-03 / 分支** `v2.2.1` 为准。  
-> **总进度：** Round 1–2 ✅ · Round 3 MCP MVP ✅ · Round 3 §十七 P0 ✅ · Round 4 代码主线 ✅ · **Round 5 🔶 批次 A 进行中**（T1/T2/T15/T7；搜索 FULLTEXT ⏸）。详见 [§七](#七迭代进度追踪)、[docs/README.md](./README.md)、[round-5-execution-plan.md](./round-5/round-5-execution-plan.md)。
+> **总进度：** Round 1–2 ✅ · Round 3 MCP MVP ✅ · Round 3 §十七 P0 ✅ · Round 4 代码主线 ✅ · **Round 5 🔶 批次 A/B 已合入，T12-a 进行中**（搜索 FULLTEXT ⏸ 持续冻结）。详见 [§七](#七迭代进度追踪)、[docs/README.md](./README.md)、[round-5-execution-plan.md](./round-5/round-5-execution-plan.md)。
 >
 > **相关文档：**
 >
@@ -636,16 +636,18 @@ type Cache interface {
 
 ### 🎯 Round 5：工程化收尾 + 对象存储 + 分层评估（3~5 周，按需推进）
 
-> **进度（2026-08-18）：** 🔶 批次 A 已开工（T1/T2 评估收口、T15 脚本搬迁、T7 测试入口）。明细见 [round-5-execution-plan.md](./round-5/round-5-execution-plan.md)。
+> **进度（2026-08-31）：** 🔶 批次 A/B 已合入；T12-a 缓存内核已落地。搜索 FULLTEXT 持续冻结。明细见 [round-5-execution-plan.md](./round-5/round-5-execution-plan.md)。
 
 - [x] **T1/T2** 缓存报告 + ORM/分层评估（**朝 kratos 靠拢**；model 可生成；只评估）
-- [ ] **T3** 搜索 FULLTEXT — **⏸ 暂不实施**（方案不完善，等重定义）
-- [ ] **T5** MCP P1 · **T6** Vite P2
-- [x] **T7** 测试 CI（路径见 T15；Gitea Runner 就绪后勾云端绿）
-- [ ] **T8/T9** `*Result`→dto + Repository / 可选 Service
+- [ ] **T3** 搜索 FULLTEXT — **⏸ 持续冻结**（2026-08-31 确认不处理）
+- [x] **T5** MCP P1（`create_book` / `update_book` 最小集）
+- [ ] **T6** Vite P2
+- [x] **T7** 测试 CI（**云端已确认绿**；白名单含 cache）
+- [x] **T8/T9** `*Result`→dto + Repository（未建 service；Read 等 T12）
 - [ ] **T14** 对象存储上传 + `uploads/` 旧数据迁移
 - [x] **T15** `scripts/` 全迁 `deployments/scripts/` + 根 Makefile/justfile
-- [ ] （可选/闸门）T10 Controller · T11 安全头 · T12 缓存实施
+- [ ] （可选）T10 Controller · T11 安全头
+- [ ] **T12** 缓存实施 — 🔶 **T12-a 已落地**；b/c/d 未做
 - [ ] **T4** 倒排 · **T13** 拆 bootstrap — **⏸ 冻结 / 暂不拆**
 - [x] **明确不做本轮：** 完整 ORM/kratos 替换实施、Bootstrap5/Vue SPA、MCP `delete_book`、OTel、FULLTEXT 旧路线编码
 
@@ -776,19 +778,21 @@ type Cache interface {
 
 
 
-### Round 5 — 🔶 批次 A 已开工
+### Round 5 — 🔶 批次 A/B 已合入，T12-a 已落地
 
 详见 [round-5-execution-plan.md §十四](./round-5/round-5-execution-plan.md#十四追踪表) / [§一附](./round-5/round-5-execution-plan.md#一附2026-08-03-决策修订)。
 
 - [x] T1 缓存报告 · T2 ORM/分层（kratos 方向）报告
-- [ ] T3 搜索 FULLTEXT — **⏸ 暂不实施**
-- [ ] T5 MCP P1 · T6 Vite
-- [x] T7 测试 CI（workflow 已入库，待 Runner）
-- [ ] T8 `*Result`→dto · T9 Repo/Service
+- [ ] T3 搜索 FULLTEXT — **⏸ 持续冻结**（2026-08-31 确认不处理）
+- [x] T5 MCP P1
+- [ ] T6 Vite
+- [x] T7 测试 CI（**云端已确认绿**）
+- [x] T8 `*Result`→dto · T9 Repo（未建 service）
 - [ ] **T14** 对象存储 + 旧数据迁移
 - [x] **T15** scripts → `deployments/scripts/`
-- [ ] （可选/闸门）T10 · T11 · T12
-- [ ] T4 倒排 · T13 bootstrap — **⏸**
+- [ ] T11 安全头 · T16 OAuth2
+- [ ] T12 缓存实施 — 🔶 **T12-a 已落地**
+- [ ] T4 倒排 · T10 Controller · T13 bootstrap — **⏸**
 
 ---
 

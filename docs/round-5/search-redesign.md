@@ -1,6 +1,6 @@
 # 搜索方案重定义（Search Redesign）
 
-> **状态：** 📝 草案（2026-08-05）· **引擎选型未决**（候选见 §五，待 spike / 评审终裁）  
+> **状态：** 📝 草案（2026-08-05）· **引擎选型未决** · **2026-08-31 确认持续冻结，本轮不处理**  
 > **用途：** 取代 Round 3/5 原定的「MySQL FULLTEXT / SQLite FTS5 + 标题加权」路线；作为 [round-5-execution-plan.md §五 T3](./round-5-execution-plan.md#五t3--搜索最小方案-fulltext--fts5--⏸-暂不实施) / [§六 T4](./round-5-execution-plan.md#六t4--倒排--向量检索评估--⏸-冻结) 的**解冻前提文档**。  
 > **上游对照：** [upstream-mindoc-checklist.md §1.1 / §1.2](../upstream-mindoc-checklist.md)（#1027 自研倒排 + #1034 reindex）——**不作为终态跟进目标**。  
 > **现状：** Web（`SearchController`）与 MCP（`internal/mcp/search_provider.go`）均为 SQL `LIKE`，排序弱、中文差、两套实现易漂移。
