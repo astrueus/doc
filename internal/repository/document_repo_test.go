@@ -27,11 +27,16 @@ func setupDocumentTestDB(t *testing.T) repository.DocumentRepo {
 		config.Global = &config.Config{
 			Database: config.DatabaseSection{Prefix: ""},
 		}
-		if err := orm.RegisterDataBase(testDBAlias, "sqlite3", ":memory:"); err != nil {
+		// 命名 memory + cache=shared：多连接（含 last_used 异步写）看到同一套表。
+		const dsn = "file:document_repo_test?mode=memory&cache=shared"
+		if err := orm.RegisterDataBase("default", "sqlite3", dsn); err != nil {
 			panic(err)
 		}
-		orm.RegisterModelWithPrefix("", new(model.Document), new(model.Book), new(model.Member), new(model.Blog))
-		if err := orm.RunSyncdb(testDBAlias, false, true); err != nil {
+		if err := orm.RegisterDataBase(testDBAlias, "sqlite3", dsn); err != nil {
+			panic(err)
+		}
+		orm.RegisterModelWithPrefix("", new(model.Document), new(model.Book), new(model.Member), new(model.Blog), new(model.MemberApiToken))
+		if err := orm.RunSyncdb(testDBAlias, false, false); err != nil {
 			panic(err)
 		}
 		testOrm = orm.NewOrmUsingDB(testDBAlias)
@@ -47,6 +52,9 @@ func setupDocumentTestDB(t *testing.T) repository.DocumentRepo {
 	}
 	if _, err := testOrm.Raw("DELETE FROM blogs").Exec(); err != nil {
 		t.Fatalf("clear blogs: %v", err)
+	}
+	if _, err := testOrm.Raw("DELETE FROM member_api_tokens").Exec(); err != nil {
+		t.Fatalf("clear member_api_tokens: %v", err)
 	}
 	return repository.NewDocumentRepo(testOrm)
 }

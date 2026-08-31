@@ -17,5 +17,5 @@ type Cache interface {
 	Clear(ctx context.Context) error
 }
 
-// Default is the process-wide Cache instance set by Init.
+// Default 为进程级 beego 适配实例（T12-d 起业务不再读写）。
 var Default Cache

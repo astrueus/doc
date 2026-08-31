@@ -158,9 +158,9 @@ cdnimg = "${DOC_CDN_IMG_URL}"
 
 ######################缓存配置###############################
 [cache]
-#是否开启缓存，true 开启/false 不开启
+#是否开启缓存，true 开启/false 不开启（Aside：文档/博客/MCP Token）
 cache = "${DOC_CACHE||false}"
-#缓存方式:memory/memcache/redis/file
+# 旧 beego/cache 后端；T12-d 起业务不再使用，可忽略。Session 走 [session]
 cache_provider = "${DOC_CACHE_PROVIDER||file}"
 #当配置缓存方式为memory时,内存回收时间,单位是秒
 cache_memory_interval = "${DOC_CACHE_MEMORY_INTERVAL||120}"
@@ -180,9 +180,10 @@ cache_redis_host = "${DOC_CACHE_REDIS_HOST||127.0.0.1:6379}"
 cache_redis_db = "${DOC_CACHE_REDIS_DB||0}"
 #redis服务器密码
 cache_redis_password = "${DOC_CACHE_REDIS_PASSWORD}"
-#缓存键的前缀（现网 beego/cache 适配；T12 Aside 用 cache_aside_prefix）
+#缓存键的前缀（遗留 beego/cache；T12 Aside 用 cache_aside_prefix）
 cache_redis_prefix = "${DOC_CACHE_REDIS_PREFIX||doc::cache}"
-# Aside 拓扑：local | redis | chain（T12-c 起 Document/Blog 走 Open；cache=false 则直打库）
+
+# Aside 拓扑：local | redis | chain（Document/Blog/MCP Token；cache=false 则直打库）
 cache_mode = "${DOC_CACHE_MODE||local}"
 # Ristretto L1 容量（字节）与计数器
 cache_l1_max_cost = "${DOC_CACHE_L1_MAX_COST||67108864}"

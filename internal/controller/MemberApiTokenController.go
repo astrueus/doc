@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"git.itopcms.com/astrueus/doc/internal/i18n"
-	"git.itopcms.com/astrueus/doc/internal/mcp"
 	"git.itopcms.com/astrueus/doc/internal/model"
+	"git.itopcms.com/astrueus/doc/internal/repository"
 )
 
 type MemberApiTokenController struct {
@@ -104,7 +104,7 @@ func (c *MemberApiTokenController) Revoke() {
 		c.JsonResult(6006, err.Error())
 		return
 	}
-	mcp.InvalidateAPITokenCache(c.Ctx.Request.Context(), token.TokenHash)
+	repository.InvalidateAPIToken(c.requestContext(), token.TokenHash)
 	c.JsonResult(0, "ok")
 }
 

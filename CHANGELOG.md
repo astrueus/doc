@@ -2,15 +2,16 @@
 
 ## Unreleased / Round 5
 
-其余任务（T6 Vite、T12-d、T14、T16 等）见 [round-5-execution-plan.md](docs/round-5/round-5-execution-plan.md)。已交付项见 **2.3.0**～**2.3.2**。
+其余任务（T6 Vite、T14、T16 等）见 [round-5-execution-plan.md](docs/round-5/round-5-execution-plan.md)。已交付项见 **2.3.0**～**2.3.2**。
 
 ### Breaking
 
-- 文档 / 博客阅读缓存改为 Aside（键前缀 `doc:v1:`）。旧 `Document.Id.*` / `blog-id-*` 不再命中。`cache=true` 时走 `cache_mode`（默认 `local`，不强制 Redis）。MCP Token 仍用旧 beego 适配（T12-d）。
+- 文档 / 博客 / MCP Token 缓存改为 Aside（键前缀 `doc:v1:`）。旧 `Document.Id.*` / `blog-id-*` / `mcp:tok:` 不再命中。`cache=true` 时走 `cache_mode`（默认 `local`，不强制 Redis）。`cache_provider` 不再初始化 beego 业务缓存。
 
 ### Changed
 
 - CI 测试闸改到 `.github/workflows/test.yml`（GitHub Actions）；删除 `.gitea/`（私人 Gitea 仓跑不了 Actions）
+- T12-d：MCP Token 走 `GetOrLoad`；启动不再初始化 beego 业务缓存（`cache_provider` 可忽略）
 
 ## 2.3.2 — 2026-08-28
 

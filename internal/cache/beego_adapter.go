@@ -1,3 +1,4 @@
+// beego/cache 适配仅供 adapter_test 与 NullCache 占位；业务读写走 Aside。
 package cache
 
 import (
