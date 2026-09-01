@@ -11,7 +11,7 @@
 
 | 维度    | 当前 `doc` 状态                                                                |
 | ----- | -------------------------------------------------------------------------- |
-| 搜索    | SQL `LIKE`（FULLTEXT/FTS5 ⏸ 见 Round 5 T3），见 `internal/model/DocumentSearchResult.go` |
+| 搜索    | SQL `LIKE`（FULLTEXT/FTS5 ⏸ 见 Round 6 T3），见 `internal/model/DocumentSearchResult.go` |
 | 编辑器   | editor.md + wangEditor + **已接** KaTeX / Mermaid；**无** Cherry / Draw.io     |
 | 系统角色  | 3 种（超管/管理员/普通），见 `internal/config` / 枚举                                     |
 | 数据库   | MySQL + SQLite，**无** PostgreSQL                                            |
@@ -35,7 +35,7 @@
 | 0.1 | WorkingDirectory / `DOC_HOME` | ✅ | `internal/config/working_dir.go`：`-dir` > `DOC_HOME` > 可执行目录 |
 | 0.2 | 时区 | ✅ | `time/tzdata`；模型 `.In(time.Local)`；`date_format` 本地化 |
 | 0.3 | 大文件上传 | ✅ | `upload_max_size` / `upload_max_memory` → Beego MaxUploadSize |
-| 1.1 | 倒排 / FULLTEXT 搜索打底 | ⏸ | 仍为 `LIKE`；Round 5 **T3 暂不实施**，待搜索方案重定义 |
+| 1.1 | 倒排 / FULLTEXT 搜索打底 | ⏸ | 仍为 `LIKE`；**Round 6 T3** 待搜索方案重定义 |
 | 1.2 | `doc reindex` | ⏸ | 无该命令；随 1.1 / T3 冻结 |
 | 1.3 | 全局搜索快捷键守卫 | ❌ | 未见 `shouldIgnoreShortcut` 等共享守卫 |
 | 2.1 | Editor.md + Mermaid + KaTeX | ✅ | `widgets/scripts.tpl` + katex/mermaid 静态资源 + 阅读页接线 |
@@ -634,7 +634,7 @@ Day 1 下午    : 回归（编辑/阅读/Blog/PDF）
 > - 落地轮次：Round 3（用户价值最高的一轮）
 >
 > **保留的历史信息**（对齐上游 mindoc 时可参考）：
-> - MCP 与搜索的耦合关系仍在；FULLTEXT/FTS5 + 标题加权原计划 Round 3，**📦 已移交 Round 5 T3**（见 [round-5-execution-plan.md](./round-5/round-5-execution-plan.md)）
+> - MCP 与搜索的耦合关系仍在；FULLTEXT/FTS5 + 标题加权原计划 Round 3，**📦 已移交 Round 6 T3**（见 [search-redesign.md](./round-6/search-redesign.md)）
 > - 内部数据源仍走 `DocumentSearchResult.FindToPager` 与 `models/Document.FindById`，权限按 `BookRole` 过滤（比公开文档过滤更严格）
 
 ---

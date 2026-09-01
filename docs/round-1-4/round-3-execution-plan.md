@@ -5,7 +5,7 @@
 > **代码直接落在 Round 2 完成的** `internal/mcp/` — 零重复搬迁。
 >
 > **进度标记（2026-08-03）：** T2–T7 ✅（MCP MVP 闭环）。§十七 **P0 ✅**（经 Round 4 T13）。  
-> **已移交 Round 5：** T1 搜索 FULLTEXT/FTS5 → [R5 T3](../round-5/round-5-execution-plan.md#五t3--搜索最小方案-fulltext--fts5--⏸-暂不实施)（**R5 决策：⏸ 暂不实施，等重定义**）；§十七 P1 → [R5 T5](../round-5/round-5-execution-plan.md#七t5--mcp-体验-p10.5~1-天)；倒排评估 → [R5 T4](../round-5/round-5-execution-plan.md#六t4--倒排--向量检索评估--⏸-冻结)（随搜索冻结）。`search_document` 过渡期仍为 `LIKE`。
+> **已移交：** T1 搜索 FULLTEXT/FTS5 → [Round 6 T3](../round-6/search-redesign.md)（曾入 R5，2026-09-01 再划出；过渡期 LIKE）；§十七 P1 → [R5 T5](../round-5/round-5-execution-plan.md)；倒排评估 → [Round 6 T4](../round-6/round-6-execution-plan.md)。
 > **实测后续：** Cursor MCP 批量写入 `docs/` 后的体验缺口与是否做 Book 级工具，见 [§十七](#十七后续规划mcp-实测反馈与体验增强)。
 
 ---
@@ -21,7 +21,7 @@
 
 | 序号  | 任务                                                      | 工作量          | 上线感知                               |
 | --- | ------------------------------------------------------- | ------------ | ---------------------------------- |
-| T1  | 搜索最小方案（MySQL FULLTEXT / SQLite FTS5 + 标题加权）             | 2~3 天        | 📦 **已移交 Round 5 T3**（原 ⏸ 暂缓；过渡期 LIKE） |
+| T1  | 搜索最小方案（MySQL FULLTEXT / SQLite FTS5 + 标题加权）             | 2~3 天        | 📦 **已移交 Round 6 T3**（过渡期 LIKE） |
 | T2  | MCP MVP · stdio · 4 个读工具                                | 2 天          | 新增 CLI `doc mcp`                   |
 | T3  | MCP MVP · stdio · 6 个写工具（含乐观锁 + 确认参数）                   | 2~3 天        | 同上                                 |
 | T4  | `internal/model/MemberApiToken` 新表 + 后台管理页              | 2 天          | 新增管理页 `/member/api-tokens`         |
@@ -242,7 +242,7 @@ web/views/member/
 
 ## 六、T1 · 搜索最小方案（2~3 天）
 
-> **状态（2026-08-03）：📦 已移交 [Round 5 T3](../round-5/round-5-execution-plan.md#五t3--搜索最小方案-fulltext--fts52~4-天)。**  
+> **状态（2026-09-01）：📦 已移交 [Round 6 T3](../round-6/search-redesign.md)**（曾入 Round 5）。  
 > 下文为历史底稿（原 2026-07-30 ⏸ 暂缓）。曾尝试按本节落地后已还原，不纳入 Round 3 合入范围。待评估点包括：索引列 `markdown` vs 现网 `release`、迁移形态、锁表风险、是否与 MCP 解耦等。  
 > **过渡：** `search_document` 现基于 `DocumentSearchResult` / `LIKE`；方案底稿勿删，由 Round 5 执行。
 

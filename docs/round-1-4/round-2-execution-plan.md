@@ -795,7 +795,7 @@ Round 3 直接 `internal/mcp/server.go` 落地，零迁移。
 | # | 项 | 优先级 | 状态 | 说明 |
 | --- | --- | --- | --- | --- |
 | B1 | `*Result` → `internal/dto/` | 中 / 可决策跳过 | ⏭ 跳过 | **决策 2026-07-30**：本轮不做。📦 **已移交 Round 5 T8**（原写 Round 4 再搬）。 |
-| B2 | `internal/app/` 拆成 `app.go` + `bootstrap.go` + `web.go` | 低 | ⏭ 跳过 | **决策 2026-07-30**：本轮不做；📦 **已移交 Round 5 T13**（低优）。 |
+| B2 | `internal/app/` 拆成 `app.go` + `bootstrap.go` + `web.go` | 低 | ⏭ 跳过 | **决策 2026-07-30**：本轮不做；📦 **Round 5 T13 → 2026-09-01 Round 6**（低优）。 |
 | B3 | `enumerate_legacy.go` → `enum.go` + `working_dir.go` + `getters.go` | 低 | ✅ | 方案 A：纯文件拆分，API 不变；已删除 `enumerate_legacy.go` |
 | B4 | 收敛剩余 `web.AppConfig` 直读 | 低 | ✅ | 业务调用方改走 `MustGlobal()` / Getter；`config.go` 内 loader 保留 AppConfig 读取。 |
 

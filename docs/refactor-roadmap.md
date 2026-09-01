@@ -10,7 +10,7 @@
 > 同时汇总"顺带发现的技术债"与"前端现代化"两条支线，给出多轮可独立上线的迭代计划。
 >
 > **文档生成依据：** 当前仓库代码基线（2026-07 起）；进度以 **2026-08-03 / 分支** `v2.2.1` 为准。  
-> **总进度：** Round 1–2 ✅ · Round 3 MCP MVP ✅ · Round 3 §十七 P0 ✅ · Round 4 代码主线 ✅ · **Round 5 🔶 批次 A/B 已合入，T12 缓存已落地**（搜索 FULLTEXT ⏸ 持续冻结）。详见 [§七](#七迭代进度追踪)、[docs/README.md](./README.md)、[round-5-execution-plan.md](./round-5/round-5-execution-plan.md)。
+> **总进度：** Round 1–2 ✅ · Round 3 MCP MVP ✅ · Round 3 §十七 P0 ✅ · Round 4 代码主线 ✅ · **Round 5 🔶 T12 已落地，T14/T16 待做** · **Round 6 📝 Vite/搜索等已划入未开工**。详见 [§七](#七迭代进度追踪)、[docs/README.md](./README.md)、[round-5-execution-plan.md](./round-5/round-5-execution-plan.md)、[round-6-execution-plan.md](./round-6/round-6-execution-plan.md)。
 >
 > **相关文档：**
 >
@@ -20,7 +20,8 @@
 >   - [round-3-execution-plan.md](./round-1-4/round-3-execution-plan.md) — Round 3 · MCP Server（10 工具 + Bearer + 搜索）
 >   - [round-4-execution-plan.md](./round-1-4/round-4-execution-plan.md) — Round 4 · 模型 / 日志 / i18n / 前端（含完成度核查）
 >   - [round-4-coverage.md](./round-1-4/round-4-coverage.md) — Round 4 T10 测试基线
->   - [round-5-execution-plan.md](./round-5/round-5-execution-plan.md) — Round 5 · 工程化 + 对象存储 + kratos 向分层评估
+>   - [round-5-execution-plan.md](./round-5/round-5-execution-plan.md) — Round 5 · 工程化 + 对象存储 + OAuth2 + kratos 向分层评估  
+>   - [round-6-execution-plan.md](./round-6/round-6-execution-plan.md) — Round 6 · Vite / 搜索 / Controller / 安全头 / bootstrap
 > - **参考文档：**
 >   - [frontend-backend-split-migration-plan.md](./round-1-4/frontend-backend-split-migration-plan.md) — 前后端目录拆分（Round 2 目标目录已更新，附录 A/B 硬编码定位仍适用）
 >   - [router-split-migration-plan.md](./router/router-split-migration-plan.md) — 路由按职责拆分与 `/api` 前缀治理（Round 2 T6 使用）
@@ -53,7 +54,7 @@
 | CLI 服务 | `cobra` + `kardianos/service`                        | Round 1/2               |
 | 数据库驱动  | `go-sql-driver/mysql` + `mattn/go-sqlite3`           | 稳定，无 PostgreSQL         |
 | MCP    | 官方 `modelcontextprotocol/go-sdk`；stdio + HTTP `/mcp` | ✅ Round 3 MVP + T13 P0  |
-| 前端     | Bootstrap 3.2 + jQuery + editor.md 等；P1 已去 IE / 补版本号 | ⏳ Vite → Round 5 T6            |
+| 前端     | Bootstrap 3.2 + jQuery + editor.md 等；P1 已去 IE / 补版本号 | ⏳ Vite → Round 6 T6            |
 | 搜索     | Web/MCP 现为 `LIKE`                                   | ⏸ FULLTEXT 旧方案冻结；等搜索方案重定义（Round 5 T3）       |
 
 
@@ -550,7 +551,7 @@ type Cache interface {
 | ---------- | -------------------------------------------------------------------------------- | --------- |
 | ~~**P0**~~ | ~~修 katex 404、editor.md 升 v1.7.17、mermaid 升 10.x~~ ✅ **已完成（历史 PR）**              | ~~0.5 天~~ |
 | **P1**     | 静态资源加版本号（现有 `cdnjs "..." "version"` 机制铺开）；删 `respond.js` / `html5shiv`（不再支持 IE8） | 1~2 天     |
-| **P2**     | 引入前端构建工具（Vite），vendor 集中管理；抽离 `views/*.tpl` 里的内联 JS                              | 1~2 周 · 📦 Round 5 T6     |
+| **P2**     | 引入前端构建工具（Vite），vendor 集中管理；抽离 `views/*.tpl` 里的内联 JS                              | 1~2 周 · 📦 Round 6 T6     |
 | **P3**     | 逐步替换：Bootstrap 3 → Bootstrap 5 或 Tailwind；jQuery 组件 → Vue 3 组件（增量迁移，不用一次性 SPA 化） | 3~4 周     |
 | **P4**     | 后端只做 API + 模板；`web-ui/` 用 Vue 3 + TypeScript + Vite 做完整 SPA；老模板路由保留兼容期           | 长期        |
 
@@ -625,33 +626,31 @@ type Cache interface {
 - [x] **日志换** `uber-go/zap` + Lumberjack + beego/logs shim；stdio 禁 stdout
 - [x] **i18n**：移除 `beego/i18n`，落地 `internal/i18n`（保留 `.ini`；未强绑 go-i18n/toml）
 - [x] **前端 P1**：去 IE shim / 条件注释；cdnjs 版本号
-- [ ] **前端 P2**：Vite 构建 — **→ Round 5 T6**
+- [ ] **前端 P2**：Vite 构建 — **→ Round 6 T6**
 - [x] **Session**：只存 `member_id` + remember msgpack；FilterUser 跟进修复
 - [x] **测试基线**：`pkg/`* + errs/auth/logging/i18n/repository（见 [round-4-coverage.md](./round-1-4/round-4-coverage.md)）
 - [ ] （可选）T7「维持 A」缓存评估报告；T12 ORM 评估报告 — **→ Round 5 T1/T2**
-- [ ] （可选）根据 MCP 使用反馈评估倒排索引（bleve / meilisearch）— **→ Round 5 T4**
+- [ ] （可选）根据 MCP 使用反馈评估倒排索引（bleve / meilisearch）— **→ Round 6 T4**
 - [x] （可选）**T13 MCP 体验 P0** 已收口；P1 + Book 写最小集 → Round 5 T5
 
 **风险：** 较高，但可拆多个小 PR。**ORM 迁移建议单独立项**，别混进来。
 
 ### 🎯 Round 5：工程化收尾 + 对象存储 + 分层评估（3~5 周，按需推进）
 
-> **进度（2026-08-31）：** 🔶 批次 A/B 已合入；**T12 缓存已落地**（含 Token）。搜索 FULLTEXT 持续冻结。明细见 [round-5-execution-plan.md](./round-5/round-5-execution-plan.md)。
+> **进度（2026-09-01）：** 🔶 T12 已落地。T6 / T3 / T4 / T10 / T11 / T13 → [Round 6](./round-6/round-6-execution-plan.md)。本轮剩余 T14、T16。明细见 [round-5-execution-plan.md](./round-5/round-5-execution-plan.md)。
 
 - [x] **T1/T2** 缓存报告 + ORM/分层评估（**朝 kratos 靠拢**；model 可生成；只评估）
-- [ ] **T3** 搜索 FULLTEXT — **⏸ 持续冻结**（2026-08-31 确认不处理）
 - [x] **T5** MCP P1（`create_book` / `update_book` 最小集）
-- [ ] **T6** Vite P2
 - [x] **T7** 测试 CI（**云端已确认绿**；白名单含 cache）
 - [x] **T8/T9** `*Result`→dto + Repository（未建 service；阅读页 T12-c 已切 Repo 缓存）
 - [ ] **T14** 对象存储上传 + `uploads/` 旧数据迁移
 - [x] **T15** `scripts/` 全迁 `deployments/scripts/` + 根 Makefile/justfile
-- [ ] （可选）T10 Controller · T11 安全头
+- [ ] **T16** OAuth2
 - [x] **T12** 缓存实施 — ✅ **T12-a/b/c/d 已落地**
-- [ ] **T4** 倒排 · **T13** 拆 bootstrap — **⏸ 冻结 / 暂不拆**
+- [x] **明确移交 Round 6：** T3/T4 搜索、T6 Vite、T10 Controller、T11 安全头、T13 bootstrap
 - [x] **明确不做本轮：** 完整 ORM/kratos 替换实施、Bootstrap5/Vue SPA、MCP `delete_book`、OTel、FULLTEXT 旧路线编码
 
-**风险：** 中。对象存储与 Vite 体量大宜单开；分层评估勿与实施混 PR；搜索冻结避免半成品索引。
+**风险：** 中。对象存储宜单开；分层评估勿与实施混 PR。Vite / 搜索见 Round 6。
 
 ---
 
@@ -668,7 +667,7 @@ type Cache interface {
 | 4   | `config_auto_delay` 热加载                     | `commands/command.go:468-512`；重构配置时要保留或明确宣布废弃                                                           | Round 2 完成时明确表态                                                                                                                         |
 | 5   | `orm.DefaultRowsLimit = -1` 全局关掉了默认分页       | `commands/command.go:39`；重构 model 时不要依赖默认                                                               | 显式在每个 Query 里写 `Limit()`                                                                                                                |
 | 6   | Beego `web.BConfig.WebConfig.ViewsPath` 硬编码 | `commands/command.go:345-347`；目录变动要同步                                                                   | Round 2 迁移时统一改                                                                                                                          |
-| 7   | 前端 vendor 无版本管理                             | 升级/回退困难                                                                                                 | 📦 Round 5 T6 引入 Vite 时用 npm/pnpm 管起来                                                                                                         |
+| 7   | 前端 vendor 无版本管理                             | 升级/回退困难                                                                                                 | 📦 Round 6 T6 引入 Vite 时用 npm/pnpm 管起来                                                                                                         |
 | 8   | **AI 通过 MCP 批量误删/误覆盖文档**                    | `delete_document` 若无保护，AI 幻觉可导致成片文档消失                                                                   | ① 强制 `confirm: true` 参数；② 每分钟删除/写入次数限流（`golang.org/x/time/rate`）；③ 写工具保存前存快照到 `DocumentHistory`；④ Round 3 上线前先在测试项目跑                    |
 | 9   | **AI 与人同时编辑同一文档**                           | AI 覆盖人的未保存改动，或反之                                                                                        | `update_document_content` 强制带 `expect_version`（对应 `Document.Version` 时间戳）做乐观锁；版本不匹配返回 `VERSION_CONFLICT`，AI 侧 `get_document` 后重试        |
 | 10  | **MCP API Token 泄露**                        | Token 一旦泄露，AI 侧任何写权限都可能被滥用                                                                              | ① 数据库只存 `sha256(token)`，不存明文；② 支持 `expires_at` 和一键撤销；③ 记录 `last_used_at`，异常访问可审计；④ HTTP 强制 HTTPS（部署要求）                                  |
@@ -774,25 +773,32 @@ type Cache interface {
 - [x] 前端 P1 — `98c8bb4`
 - [x] T10 测试基线 — `cd8e446`；[round-4-coverage.md](./round-1-4/round-4-coverage.md)
 - [x] T13 MCP P0 — `c70d4c1`
-- [ ] 前端 P2 Vite / T7·T12 报告 / T13 P1 / T11 — **→ [Round 5](./round-5/round-5-execution-plan.md)**
+- [ ] 前端 P2 Vite / T7·T12 报告 / T13 P1 / T11 — **→ [Round 5](./round-5/round-5-execution-plan.md) / [Round 6](./round-6/round-6-execution-plan.md)**
 
 
 
-### Round 5 — 🔶 批次 A/B 已合入，T12 缓存已落地
+### Round 5 — 🔶 T12 已落地，T14/T16 待做
 
 详见 [round-5-execution-plan.md §十四](./round-5/round-5-execution-plan.md#十四追踪表) / [§一附](./round-5/round-5-execution-plan.md#一附2026-08-03-决策修订)。
 
 - [x] T1 缓存报告 · T2 ORM/分层（kratos 方向）报告
-- [ ] T3 搜索 FULLTEXT — **⏸ 持续冻结**（2026-08-31 确认不处理）
 - [x] T5 MCP P1
-- [ ] T6 Vite
 - [x] T7 测试 CI（**云端已确认绿**）
 - [x] T8 `*Result`→dto · T9 Repo（未建 service）
 - [ ] **T14** 对象存储 + 旧数据迁移
 - [x] **T15** scripts → `deployments/scripts/`
-- [ ] T11 安全头 · T16 OAuth2
+- [ ] T16 OAuth2
 - [x] T12 缓存实施 — ✅ **T12-a/b/c/d 已落地**
-- [ ] T4 倒排 · T10 Controller · T13 bootstrap — **⏸**
+- [x] T3/T4/T6/T10/T11/T13 — **📦 → [Round 6](./round-6/round-6-execution-plan.md)**
+
+### Round 6 — 📝 已划入，未开工
+
+详见 [round-6-execution-plan.md](./round-6/round-6-execution-plan.md)。
+
+- [ ] T6 Vite P2
+- [ ] T3 搜索重定义后实施 · T4 hybrid（⏸ 引擎未决）
+- [ ] T10 Controller 子包拆分 · T11 安全头 · T13 拆 bootstrap
+- [ ] （既定路径、可并列）kratos ① data → ② biz
 
 ---
 
@@ -826,6 +832,7 @@ type Cache interface {
 | **2026-08-03** | **Round 5：`scripts/` 迁 `deployments/`？** | **方案 A 全迁** + 根 Makefile/justfile（T15）；2026-08-18 已落地 | 部署资产已在 deployments；构建/测试脚本落点统一 |
 | **2026-08-03** | **Round 5：ORM 评估朝向？** | **朝 go-kratos 分层靠拢**；期望 model **可自动生成**；模型与业务逻辑拆分 | 本轮只出评估报告不实施；见 R5 T2 |
 | **2026-08-18** | **Round 5 T2：本轮 ORM/分层结论？** | **A：维持 beego/orm + 扩 Repo**；Round 6+ **既定** ① 数据层（生成 model + `data`）→ ② 业务层（`biz`）；③ 全量 kratos HTTP 默认不做。ent vs gorm gen 开工前 spike，默认倾向 gorm gen | 见 [round-5-orm-migration-evaluation.md](./round-5/round-5-orm-migration-evaluation.md) |
+| **2026-09-01** | **T6 与冻结项是否仍留 Round 5？** | **否**：T6 Vite、T3/T4 搜索、T10 Controller、T11 安全头、T13 bootstrap **划入 Round 6** | 本轮只收口已落地项并继续 T14/T16；见 [round-6-execution-plan.md](./round-6/round-6-execution-plan.md) |
 | **2026-08-18** | **model 文件 PascalCase → snake_case？** | **与 T8 合并 `git mv`**，不单开本批 PR | 避免 Result 迁 dto 前搬两次 |
 | **2026-07-31** | **MCP MVP 之后还要不要扩工具面？**                                             | **先补体验，不大扩工具**                                                            | Cursor 实测：10 工具读写闭环已够用；痛点是长文写入、stdio stdout 污染、`append` 缺锁/`auto_release`。详见 round-3 §十七 P0/P1/P2                                                                                                                                                                             |
 | **2026-07-31** | **是否增加 MCP** `create_book` **/** `update_book`**？**                 | Round 3：**不做**。**2026-08-18 Round 5 T5：做最小集** | 当时 MVP 只改文档。R5 出现 AI/CI 建空项目需求；`create_book`/`update_book` 元数据最小集；仍不做 `delete_book`、封面。见 [round-5-t5-mcp-p1.md](./round-5/round-5-t5-mcp-p1.md) |
