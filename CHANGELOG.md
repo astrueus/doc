@@ -2,7 +2,7 @@
 
 ## Unreleased / Round 5
 
-其余任务（T6 Vite、T14、T16 等）见 [round-5-execution-plan.md](docs/round-5/round-5-execution-plan.md)。已交付项见 **2.3.0**～**2.3.2**。
+其余任务（T14、T16；Vite / 搜索等见 Round 6）见 [round-5-execution-plan.md](docs/round-5/round-5-execution-plan.md)、[round-6-execution-plan.md](docs/round-6/round-6-execution-plan.md)。已交付项见 **2.3.0**～**2.3.2**。
 
 ### Breaking
 

@@ -25,9 +25,9 @@
 | T6 | Session/gob 序列化换 msgpack（**根治** Round 2 风险 13） | 1~2 天 | 否 |
 | T7 | 缓存方案 B 评估 · 上 `gocache/v3` 或 singleflight + tag | 2~3 天 | 否 | 📦 **已移交 Round 5 T1/T12** |
 | T8 | 前端 P1：静态资源版本号 + 删 IE 兼容 shim | 1~2 天 | 否 | ✅ 已完成 |
-| T9 | 前端 P2：Vite 构建 + vendor 集中 + 抽离内联 JS | 1~2 周 | 否 | 📦 **已移交 Round 5 T6** |
+| T9 | 前端 P2：Vite 构建 + vendor 集中 + 抽离内联 JS | 1~2 周 | 否 | 📦 **已移交 Round 6 T6** |
 | T10 | 补测试：`pkg/` + Repository（抽出后立即补） | 持续 | 否 | ✅ 基线；CI → R5 T7 |
-| T11 | （可选）根据 Round 3 MCP 反馈决定是否上倒排/向量检索 | 独立立项 | 否 | 📦 **已移交 Round 5 T4** |
+| T11 | （可选）根据 Round 3 MCP 反馈决定是否上倒排/向量检索 | 独立立项 | 否 | 📦 **已移交 Round 6 T4** |
 | T12 | （可选）**评估** ORM 迁移到 gorm/ent/sqlc，本轮**只出评估报告不实施** | 3 天 | 否 | 📦 **已移交 Round 5 T2** |
 | T13 | （可选）**MCP 体验增强**：承接 Round 3 [§十七](./round-3-execution-plan.md#十七后续规划mcp-实测反馈与体验增强) 未做完的 P0/P1；**不含** `create_book`/`update_book` | 1~2 天 | 否 | ✅ P0；P1 📦→R5 T5 |
 
@@ -562,7 +562,7 @@ loader := cache.NewLoadable[[]byte](chain, func(ctx, key) ([]byte, error) {
 
 ### T9 · P2（1~2 周）
 
-> 📦 **已移交 [Round 5 T6](../round-5/round-5-execution-plan.md#八t6--前端-p2-vite1~2-周)**。下文保留为步骤底稿，Round 4 **不再排期**。
+> 📦 **已移交 [Round 6 T6](../round-6/round-6-t6-vite.md)**（曾入 Round 5，2026-09-01 再划出）。下文保留为步骤底稿，Round 4 **不再排期**。
 >
 > 引入 Vite 前端构建。**注意：** 本轮**不做** Bootstrap 升级、不做 Vue 3 迁移；只搭构建流水线 + vendor 集中管理 + 抽离内联 JS。
 >
@@ -756,7 +756,7 @@ Round 4 结束前团队开会拍板：
 | 6 | `refactor(round4): replace gob with msgpack for cache/session` | T6 | 中 | 无（上线**需清缓存+session**） |
 | 7 | `docs(round4): cache evaluation (gocache/v3 or stay)` | T7 | 小 | 📦→R5 T1（本轮不再开） |
 | 8 | `chore(round4): frontend P1 – versioning + drop IE shims` | T8 | 小 | ✅ 已合 |
-| 9 | `feat(round4): Vite build pipeline + manifest integration` | T9 | 大 | 📦→R5 T6 |
+| 9 | `feat(round4): Vite build pipeline + manifest integration` | T9 | 大 | 📦→R6 T6 |
 | 10 | `test(round4): repository + pkg tests` | T10 | 中 | ✅ 基线；CI→R5 T7 |
 | 11 | `docs(round4): search backend evaluation report` | T11 | 小 | 📦→R5 T4 |
 | 12 | `docs(round4): ORM migration evaluation report` | T12 | 小 | 📦→R5 T2 |
@@ -812,7 +812,7 @@ Round 4 结束前团队开会拍板：
 | T6 | Session 只存 id + remember msgpack | ✅ 已做完 | `v2.2.1` | `4141346` + `f9be16c` | ✅ 已完成；跟进：`FilterUser`/`Account` 改用 `auth.MemberIDFromSession` |
 | T7 | 缓存评估报告 | 📦→R5 T1 | — | — | **已移交** [Round 5 T1](../round-5/round-5-execution-plan.md#三t1--缓存方案评估报告0.5~1-天)；报告未写 |
 | T8 | 前端 P1 | ✅ 已做完 | `v2.2.1` | `98c8bb4` | ✅ 模板去 IE 条件注释；cdnjs `"version"`；`web/static` 下仍可能残留 html5shiv 等文件（未引用即可） |
-| T9 | Vite 构建 (P2) | 📦→R5 T6 | — | — | **已移交** [Round 5 T6](../round-5/round-5-execution-plan.md#八t6--前端-p2-vite1~2-周) |
+| T9 | Vite 构建 (P2) | 📦→R6 T6 | — | — | **已移交** [Round 6 T6](../round-6/round-6-t6-vite.md) |
 | T10 | 补测试 | ✅ pkg + Repo 测已做 | `v2.2.1` | `cd8e446` | ✅ 基线见 [round-4-coverage.md](./round-4-coverage.md)；`scripts/test.sh`/CI → **R5 T7** |
 | T11 | 搜索后端评估 | 📦→R5 T4 | — | — | **已移交** [Round 5 T4](../round-5/round-5-execution-plan.md#六t4--倒排--向量检索评估可选--数据闸门) |
 | T12 | ORM 迁移评估报告 | 📦→R5 T2 | — | — | **已移交** [Round 5 T2](../round-5/round-5-execution-plan.md#四t2--orm-迁移评估报告1~3-天--不实施) |
@@ -822,7 +822,7 @@ Round 4 结束前团队开会拍板：
 
 1. **轻量文档：** Round 5 T1 / T2  
 2. **按需体验：** Round 5 T5（原 T13 P1）  
-3. **大块工程：** Round 5 T6 Vite  
+3. **大块工程：** Round 6 T6 Vite  
 4. **数据闸门：** Round 5 T4 / T12（勿再当 Round 4 待办）
 
 ---
@@ -851,7 +851,7 @@ Round 4 结束前团队开会拍板：
 | **T7「维持 A」报告** | [T1](../round-5/round-5-execution-plan.md#三t1--缓存方案评估报告0.5~1-天) | 纯文档；实施见 R5 T12（闸门） |
 | **T12 ORM 评估报告** | [T2](../round-5/round-5-execution-plan.md#四t2--orm-迁移评估报告1~3-天--不实施) | 只评估不实施 |
 | **T13 P1** | [T5](../round-5/round-5-execution-plan.md#七t5--mcp-体验-p10.5~1-天) | upsert / get 截断 / search identify |
-| **T9 Vite** | [T6](../round-5/round-5-execution-plan.md#八t6--前端-p2-vite1~2-周) | 建议独立 sprint |
+| **T9 Vite** | [T6](../round-6/round-6-t6-vite.md) | 建议独立 sprint |
 | **T11 倒排/向量** | [T4](../round-5/round-5-execution-plan.md#六t4--倒排--向量检索评估可选--数据闸门) | 数据闸门不变 |
 | **T7 上 gocache 实施** | [T12](../round-5/round-5-execution-plan.md) | 缺压力数据时勿开 |
 | `scripts/test.sh` / CI | [T7](../round-5/round-5-execution-plan.md#九t7--测试工程化1~2-天) | T10 有意缺口 |
@@ -883,8 +883,8 @@ Round 4 结束前团队开会拍板：
 | 日志 | zap + Lumberjack；stderr 有色 / 文件 json | ✅ |
 | i18n | `internal/i18n` + 既有 `.ini` | 原写 go-i18n/toml → **已偏离并文档化** |
 | Model | BookModel 已拆；Repo 初版 | ✅；Service → Round 5 T9 |
-| MCP | MVP + P0；写路径走 DocumentRepo | 📦 P1 → R5 T5；倒排 → R5 T4 |
-| 前端 | P1（去 IE / 版本号）✅ | 📦 P2 Vite → Round 5 T6 |
+| MCP | MVP + P0；写路径走 DocumentRepo | 📦 P1 → R5 T5；倒排 → R6 T4 |
+| 前端 | P1（去 IE / 版本号）✅ | 📦 P2 Vite → Round 6 T6 |
 | 测试 | pkg + errs/auth/logging/i18n/repository 基线 | 📦 CI 硬闸 → Round 5 T7 |
 | AI 协作 | `AGENTS.md` / `CLAUDE.md` / Cursor 规则 | ✅ 中文约定 |
 
