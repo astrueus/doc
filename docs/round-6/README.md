@@ -2,7 +2,7 @@
 
 承接 Round 5 **未做且本轮不再排期**的项：Vite、搜索重定义、Controller 拆分、安全头、拆 bootstrap。总表见 [round-6-execution-plan.md](./round-6-execution-plan.md)。
 
-**进度（2026-09-01）：** 📝 已从 Round 5 划入；**尚未开工**。Round 5 仍推进 T14 对象存储、T16 OAuth2。
+**进度（2026-09-01）：** 📝 已从 Round 5 划入；**尚未开工**。Round 5 仍推进 T14 对象存储、T16 联邦登录。
 
 ## 执行计划
 
