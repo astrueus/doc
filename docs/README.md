@@ -21,6 +21,7 @@
 | [round-1-4/](./round-1-4/) | Round 1–4 执行计划、升级说明、前后端拆分清单 |
 | [issue-log/](./issue-log/) | 问题收集（序号递增，待排期） |
 | [round-5/](./round-5/) | Round 5 执行计划、评估与任务细化 |
+| [2.4.0-federated-auth/](./2.4.0-federated-auth/) | T16 联邦登录实施文档（先文档后代码） |
 | [round-6/](./round-6/) | Round 6：Vite / 搜索 / Controller / 安全头 / bootstrap |
 | [router/](./router/) | 路由分类参考与拆分计划 |
 | [deploy-spug/](./deploy-spug/) | Spug 部署 |
@@ -36,7 +37,7 @@
 | Round 2 | 目录一步到位 + 强类型配置 + 路由/中间件 | ✅ | 升级说明 [upgrade-round-2.md](./round-1-4/upgrade-round-2.md) |
 | Round 3 | MCP 10 工具 + HTTP Bearer | ✅ MVP | 搜索 FULLTEXT → R6 |
 | Round 4 | 模型 / zap / i18n / 前端 P1 / Repo / 测试 | ✅ 主线 | 遗留移交 Round 5 / 6 |
-| Round 5 | 工程化 / 对象存储 / OAuth2 / kratos 向评估 | 🔶 | 见 [round-5](./round-5/)；T12 已落地；T14/T16 待做 |
+| Round 5 | 工程化 / 对象存储 / 联邦登录 / kratos 向评估 | 🔶 | 见 [round-5](./round-5/)；T12 已落地；T14/T16 待做 |
 | Round 6 | Vite / 搜索重定义 / 拆分债 | 📝 | 见 [round-6](./round-6/)；未开工 |
 
 **Round 4 已合入（`v2.2.1`）要点：** BookModel 拆分、`md_` 修复、zap、Session 只存 id、前端 P1、`internal/i18n`、Repository 初版、pkg 单测、MCP P0。  

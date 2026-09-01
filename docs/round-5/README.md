@@ -31,6 +31,6 @@
 | [round-5-t12-cache-impl.md](./round-5-t12-cache-impl.md) | T12 缓存实施 |
 | [round-5-t12-ops.md](./round-5-t12-ops.md) | T12 运维与压测 |
 | [round-5-t14-object-storage.md](./round-5-t14-object-storage.md) | T14 对象存储 |
-| [round-5-t16-oauth2.md](./round-5-t16-oauth2.md) | T16 OAuth2 |
+| [round-5-t16-oauth2.md](./round-5-t16-oauth2.md) | T16 跳转 [联邦登录实施文档](../2.4.0-federated-auth/) |
 
 总纲：[../refactor-roadmap.md](../refactor-roadmap.md)

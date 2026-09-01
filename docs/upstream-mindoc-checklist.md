@@ -43,7 +43,7 @@
 | 2.3 | 阅读页 URL / 编辑跳转 | 🟡 | 已有 `pushState`；编辑入口 `?doc_id` 等未按上游最小方案补齐 |
 | 2.4 | 评论头像 | ❌ | 评论结果侧未系统渲染 `Member.Avatar` |
 | 3.1 | 只读 / 禁普通用户建项目 | ❌ | 无 `member_general_can_create_book` 一类开关 |
-| 3.2 | OAuth2（钉钉/企微） | 🟡 | **仅钉钉**；统一 Provider + 企微 → Round 5 **T16** |
+| 3.2 | OAuth2（钉钉/企微） | 🟡 | **仅钉钉（旧 tmp_reader）**；联邦重构 → Round 5 **T16** / [2.4.0-federated-auth](./2.4.0-federated-auth/) |
 | 3.3 | LDAPS | ❌ | LDAP 仍 `Dial`；无 `ldap_tls` / `useTLS` |
 | 4.1 | i18n `enabled_langs` | ❌ | 语言列表仍偏写死（如 en-us / zh-cn），无可配置启用列表 |
 | 4.2 | MCP Server | ✅ | `internal/mcp/`：官方 SDK，读写工具 + stdio/HTTP；P1/Book 写见 Round 5 T5 |
@@ -557,9 +557,9 @@ Day 1 下午    : 回归（编辑/阅读/Blog/PDF）
 **本地升级方案（已修订 · Round 5 T16）**
 
 - **原最小方案**（并行加企微、不重写公共 OAuth）**已废弃为默认路径**。  
-- **现行：** 见 [round-5-t16-oauth2.md](./round-5/round-5-t16-oauth2.md) / [round-5-execution-plan.md T16](./round-5/round-5-execution-plan.md) —— 统一 Provider 抽象，钉钉迁入，新增企业微信。  
-- **工作量：** 3~5 天。  
-- **验证：** 钉钉回归；企微可登录；LDAP/本地密码不回归。
+- **现行：** 见 [2.4.0-federated-auth](./2.4.0-federated-auth/) —— 联邦 Provider + 身份表；钉钉/企微；不兼容 tmp_reader。  
+- **工作量：** 约 5~8 天。  
+- **验证：** 见该目录 `05-验收.md`。
 
 ---
 
@@ -790,7 +790,7 @@ Day 1 下午    : 回归（编辑/阅读/Blog/PDF）
 | 2.3 | URL 与编辑跳转               | 利用现有 `pushState`，编辑按钮带 `?doc_id`                                                              | 0.5 天     | 路由层 `editor/` 重排         |
 | 2.4 | 评论头像                    | 模板直渲染 `Member.Avatar`，CSS 圆形                                                                  | 1~2 小时    | 用户主页跳转                   |
 | 3.1 | 只读账号                    | 用 `app.conf` 开关禁普通用户建项目，复用观察者角色                                                               | 0.5 天     | `MemberReadOnlyRole` 全链路 |
-| 3.2 | OAuth2                  | Round 5 **T16 重写**（统一 Provider + 钉钉 + 企微）                                                         | 3~5 天     | 见 [round-5-t16-oauth2.md](./round-5/round-5-t16-oauth2.md) |
+| 3.2 | OAuth2                  | Round 5 **T16 联邦登录**（身份表 + 钉钉 + 企微）                                                         | 5~8 天     | 见 [2.4.0-federated-auth](./2.4.0-federated-auth/) |
 | 3.3 | LDAPS                   | `utils/ldap.go` 加 `useTLS` 参数                                                                 | 2 小时      | mTLS、证书指纹                |
 | 4.1 | i18n                    | `app.conf` 加 `enabled_langs`，模板循环                                                             | 0.5 天     | 后台 UI、俄语翻译               |
 | 4.2 | MCP                     | **官方 `modelcontextprotocol/go-sdk`**，10 个工具（4 读 + 6 写），stdio + HTTP Bearer；详见 [refactor-roadmap.md §2.1](./refactor-roadmap.md#21-目标一mcp-serverai-接入) | 4~6 天    | 依赖倒排排序（Round 3 内一并做）    |

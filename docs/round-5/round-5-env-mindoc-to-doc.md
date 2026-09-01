@@ -192,4 +192,4 @@
 - [refactor-roadmap.md](../refactor-roadmap.md) Step 4（历史双读设想；本轮改为硬切）  
 - [`conf/app.conf.example`](../../conf/app.conf.example)  
 - [round-5-t14-object-storage.md](./round-5-t14-object-storage.md)  
-- [round-5-t16-oauth2.md](./round-5-t16-oauth2.md)  
+- [round-5-t16-oauth2.md](./round-5-t16-oauth2.md)（跳转 [2.4.0-federated-auth](../2.4.0-federated-auth/)）  

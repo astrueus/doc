@@ -645,7 +645,7 @@ type Cache interface {
 - [x] **T8/T9** `*Result`→dto + Repository（未建 service；阅读页 T12-c 已切 Repo 缓存）
 - [ ] **T14** 对象存储上传 + `uploads/` 旧数据迁移
 - [x] **T15** `scripts/` 全迁 `deployments/scripts/` + 根 Makefile/justfile
-- [ ] **T16** OAuth2
+- [ ] **T16** 联邦登录（实施文档 [2.4.0-federated-auth](./2.4.0-federated-auth/)）
 - [x] **T12** 缓存实施 — ✅ **T12-a/b/c/d 已落地**
 - [x] **明确移交 Round 6：** T3/T4 搜索、T6 Vite、T10 Controller、T11 安全头、T13 bootstrap
 - [x] **明确不做本轮：** 完整 ORM/kratos 替换实施、Bootstrap5/Vue SPA、MCP `delete_book`、OTel、FULLTEXT 旧路线编码
@@ -787,7 +787,7 @@ type Cache interface {
 - [x] T8 `*Result`→dto · T9 Repo（未建 service）
 - [ ] **T14** 对象存储 + 旧数据迁移
 - [x] **T15** scripts → `deployments/scripts/`
-- [ ] T16 OAuth2
+- [ ] T16 联邦登录
 - [x] T12 缓存实施 — ✅ **T12-a/b/c/d 已落地**
 - [x] T3/T4/T6/T10/T11/T13 — **📦 → [Round 6](./round-6/round-6-execution-plan.md)**
 
@@ -833,6 +833,7 @@ type Cache interface {
 | **2026-08-03** | **Round 5：ORM 评估朝向？** | **朝 go-kratos 分层靠拢**；期望 model **可自动生成**；模型与业务逻辑拆分 | 本轮只出评估报告不实施；见 R5 T2 |
 | **2026-08-18** | **Round 5 T2：本轮 ORM/分层结论？** | **A：维持 beego/orm + 扩 Repo**；Round 6+ **既定** ① 数据层（生成 model + `data`）→ ② 业务层（`biz`）；③ 全量 kratos HTTP 默认不做。ent vs gorm gen 开工前 spike，默认倾向 gorm gen | 见 [round-5-orm-migration-evaluation.md](./round-5/round-5-orm-migration-evaluation.md) |
 | **2026-09-01** | **T6 与冻结项是否仍留 Round 5？** | **否**：T6 Vite、T3/T4 搜索、T10 Controller、T11 安全头、T13 bootstrap **划入 Round 6** | 本轮只收口已落地项并继续 T14/T16；见 [round-6-execution-plan.md](./round-6/round-6-execution-plan.md) |
+| **2026-09-01** | **T16 联邦登录怎么做？** | **彻底重构**：`md_member_identities` 一人一号；`/login/federated/{provider}`；删除 tmp_reader、旧钉钉路由与 `internal/thirdparty/dingtalk`（F1 内聚）；钉钉+企微网页授权；OIDC 只留接口 | 现网无外部登录可依赖；06 能同批做的只有钉钉客户端内聚；见 [2.4.0-federated-auth](./2.4.0-federated-auth/) |
 | **2026-08-18** | **model 文件 PascalCase → snake_case？** | **与 T8 合并 `git mv`**，不单开本批 PR | 避免 Result 迁 dto 前搬两次 |
 | **2026-07-31** | **MCP MVP 之后还要不要扩工具面？**                                             | **先补体验，不大扩工具**                                                            | Cursor 实测：10 工具读写闭环已够用；痛点是长文写入、stdio stdout 污染、`append` 缺锁/`auto_release`。详见 round-3 §十七 P0/P1/P2                                                                                                                                                                             |
 | **2026-07-31** | **是否增加 MCP** `create_book` **/** `update_book`**？**                 | Round 3：**不做**。**2026-08-18 Round 5 T5：做最小集** | 当时 MVP 只改文档。R5 出现 AI/CI 建空项目需求；`create_book`/`update_book` 元数据最小集；仍不做 `delete_book`、封面。见 [round-5-t5-mcp-p1.md](./round-5/round-5-t5-mcp-p1.md) |
